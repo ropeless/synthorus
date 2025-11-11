@@ -2,6 +2,7 @@ Synthorus
 =========
 
 Synthorus is a Python package for creating synthetic data.
+
 The aim of the project is:
   - to provide a Python library for building synthetic data simulators
     based on probabilistic graphical models
