@@ -31,7 +31,8 @@ jobs:
       - name: Build source distribution
         run: |
           python -m ensurepip --upgrade
-          python -m pip install setuptools
+          pip install setuptools
+          pip install wheel build 
           python -m build --wheel
 
       - name: Upload distributions
