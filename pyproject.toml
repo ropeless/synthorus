@@ -1,0 +1,58 @@
+[project]
+name = "synthorus"
+version = "0.0.0a2"
+description = "A Python package for synthetic data generation."
+authors = [
+    {name = "Barry Drake", email ="barry@synthorus.org"},
+]
+requires-python = ">= 3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "compiled-knowledge",
+    "pandas",
+    "pyarrow",
+    "pyodbc",
+    "psycopg",
+    "psycopg-binary",
+    "xlsxwriter",
+    "pydantic",
+]
+
+[doc_extra]
+version_note = "A pre-release version."
+
+[project.urls]
+Homepage = "https://github.com/ropeless/synthorus"
+Issues = "https://github.com/ropeless/synthorus/issues"
+
+[tool.poetry]
+package-mode = false  # only using poetry for dependency management
+
+[tool.poetry.dependencies.compiled-knowledge]
+allow-prereleases = false
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "*"
+setuptools = "*"
+build = "*"
+jupyter-book = "<2.0.0"
+sphinx = "*"
+twine = "*"
+toml = "*"
+
+[tool.poetry.group.test.dependencies]
+coverage = "*"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"synthorus_demos.demo_files" = ["datasets/*.*", "datasets/*/*.*"]

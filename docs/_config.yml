@@ -1,0 +1,11 @@
+# jupyter-book configuration
+# Learn more at https://jupyterbook.org/en/stable/customize/config.html
+
+title: Synthorus Reference
+author: The Synthorus Community
+copyright: "2025"
+execute:
+  execute_notebooks: "off"
+  exclude_patterns: ["*_template.*"]
+sphinx:
+  extra_extensions: ['sphinx.ext.autodoc', 'sphinx.ext.napoleon']

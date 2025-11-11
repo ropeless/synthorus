@@ -1,0 +1,24 @@
+# Table of contents
+# Learn more at https://jupyterbook.org/customize/toc.html
+
+format: jb-book
+root: 1_01_front_matter
+parts:
+  - caption: Getting Started
+    chapters:
+    - file: 1_02_introduction
+    - file: 1_03_installation
+    - file: 1_04_developer_community
+  - caption: Tutorial
+    chapters:
+    - file: 2_01_background
+    - file: 2_02_workflow
+    - file: 2_03_simulator
+    - file: 2_04_datasource
+    - file: 2_05_model_spec
+    - file: 2_06_reports
+    - file: 2_07_spec_file
+  - caption: API
+    chapters:
+    - file: api/modules
+    - file: api_index

@@ -1,0 +1,22 @@
+[run]
+branch = True
+omit =
+    *_test.py
+    all_tests.py
+    all_coverage.py
+    */__init__.py
+    */Temp/*
+    helpers/*
+    */example/*.py
+
+[report]
+exclude_lines =
+    def __repr__
+    def dump\(
+    if __name__ == .__main__.:
+    main\(\)
+    raise NotImplementedError
+    class .*\bProtocol\):
+    @(abc\.)?abstractmethod
+    assert_never\(
+    \.\.\.
