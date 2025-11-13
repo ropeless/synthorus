@@ -22,7 +22,7 @@ def main():
         all_tests.as_posix()
     ])
 
-    print(f'Creating report')
+    print(f'Creating test coverage report')
     coverage_main([
         'html',
         '--rcfile=all_coveragerc.txt',

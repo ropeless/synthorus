@@ -12,9 +12,10 @@ def query(
     """
     Query the database and collect the results.
 
-    :param connection: A database connection object that can provide a cursor.
-    :param sql: The SQL as a string or Composable.
-    :param variables: As per 'execute(sql, variables)'.
+    Args:
+        connection: A database connection object that can provide a cursor.
+        sql: The SQL as a string or Composable.
+        variables: As per 'execute(sql, variables)'.
     """
     cursor = connection.cursor()
     cursor.execute(sql, variables)

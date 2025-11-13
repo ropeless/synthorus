@@ -4,7 +4,6 @@ This module supports secure random noise for Differential Privacy.
 
 import math
 from random import SystemRandom
-from typing import Sequence
 
 from scipy.stats import norm
 
@@ -29,10 +28,11 @@ class SafeRandom:
 
     def __init__(self, n: int):
         """
-        :param n: is a positive integer to control level of security.
-            4 is equivalent to AES128,
-            5 is equivalent to AES192,
-            6 is equivalent to AES256.
+        Args:
+            n: is a positive integer to control level of security.
+                4 is equivalent to AES128,
+                5 is equivalent to AES192,
+                6 is equivalent to AES256.
         """
         assert isinstance(n, int) and n > 0, 'SafeRandom n must be a positive integer'
         self._n = n
@@ -54,11 +54,11 @@ class SafeRandom:
         """
         # This is equivalent to making a random choice from n
         # self._unsafe_random() options.
-        for _ in range(self.choice_index(self._n)):
+        for _ in range(self.uniform(self._n)):
             self._unsafe_random()
         return self._unsafe_random()
 
-    def random_open(self):
+    def random_open(self) -> float:
         """
         Return a uniform random variate in (0, 1)
         """
@@ -68,7 +68,7 @@ class SafeRandom:
             u = self.random()
         return u
 
-    def choice_index(self, n):
+    def uniform(self, n: int) -> int:
         """
         Return a safe uniform random integer in [0, n],
         suitable for small-medium values of n.
@@ -81,14 +81,7 @@ class SafeRandom:
         u = norm.cdf(g) * n
         return max(0, min(int(u), n - 1))
 
-    def choice(self, options: Sequence):
-        """
-        Return an element from 'options' with each option
-        having equal probability of being returned.
-        """
-        return options[self.choice_index(len(options))]
-
-    def gauss(self, mu, sigma) -> float:
+    def gauss(self, mu: float, sigma: float) -> float:
         """
         Provide a Gaussian random variate with scale mean of 'mu'
         and standard deviation of 'sigma'.
@@ -100,7 +93,7 @@ class SafeRandom:
         """
         return mu + sigma * self._gauss_sum() / self._sqrt_n
 
-    def laplace(self, mu, b) -> float:
+    def laplace(self, mu: float, b: float) -> float:
         """
         Provide a Laplace random variate with offset 'mu' and scale 'b'.
         Assumes b > 0. As b increases, the variance of the
@@ -138,7 +131,7 @@ class SafeRandom:
 
         return k
 
-    def truncated_laplace(self, r, b) -> float:
+    def truncated_laplace(self, r: float, b: float) -> float:
         """
         Provide a Laplace random variate with limit 'r' and scale 'b'.
         Assumes r > 0 and b > 0.
@@ -166,15 +159,6 @@ class SafeRandom:
         and does not add any privacy.
         """
         return self._unsafe_rand.random()
-
-    def _unsafe_randint(self, a, b) -> int:
-        """
-        Return random integer in range [a, b], including both end points.
-
-        This merely accesses the underlying SystemRandom number generator,
-        and does not add any privacy.
-        """
-        return self._unsafe_rand.randint(a, b)
 
     def _normal_approx_to_binomial(self, n: int, p: float) -> int:
         """
@@ -272,6 +256,17 @@ class SafeRandom:
 
         return k
 
+    # Deprecated
+    #
+    # def _unsafe_randint(self, a: int, b: int) -> int:
+    #     """
+    #     Return random integer in range [a, b], including both end points.
+    #
+    #     This merely accesses the underlying SystemRandom number generator,
+    #     and does not add any privacy.
+    #     """
+    #     return self._unsafe_rand.randint(a, b)
+    #
     # def _binomial_farach_colton(self, n: int, p: float) -> int:
     #     """
     #     TODO: Farach-Colton & Tsai may provide a better method for

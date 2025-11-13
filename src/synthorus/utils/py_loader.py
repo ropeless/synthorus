@@ -15,8 +15,9 @@ def load(filepath, *, module_name: Optional[str] = None) -> ModuleType:
     a default name will be constructed from filepath.
     The loaded module is returned.
 
-    :param filepath: is a string or path to the Python source.
-    :param module_name: is an optional name for the module (used by SourceFileLoader).
+    Args:
+        filepath: is a string or path to the Python source.
+        module_name: is an optional name for the module (used by SourceFileLoader).
     """
     if module_name is None:
         module_name = _os.path.basename(filepath)
@@ -35,12 +36,15 @@ def load_object(filepath, *, object_type=object, variable: Optional[str] = None,
 
     Will throw RuntimeError if a unique object cannot be found in the loaded module.
 
-    :param filepath: is a string or path to the Python source.
-    :param object_type: a restriction on the expected type of the object in the loaded module.
-    :param variable: a restriction on the expected type of the object in the loaded module.
-        If None, the all variables not starting with underscore (_) are checked.
-    :param module_name: is an optional name for the module (used by SourceFileLoader).
-    :returns: and object of type 'object_type'
+    Args:
+        filepath: is a string or path to the Python source.
+        object_type: a restriction on the expected type of the object in the loaded module.
+        variable: a restriction on the expected type of the object in the loaded module.
+            If None, the all variables not starting with underscore (_) are checked.
+        module_name: is an optional name for the module (used by SourceFileLoader).
+    
+    Returns:
+        an object of type 'object_type'.
     """
     module = load(filepath, module_name=module_name)
     return get_object(module, object_type=object_type, variable=variable)
@@ -53,11 +57,14 @@ def get_object(module: ModuleType, *, object_type=object, variable: Optional[str
 
     Will throw RuntimeError if a unique object cannot be found in the loaded module.
 
-    :param module: is module loaded using py_loader.load(...).
-    :param object_type: a restriction on the expected type of the object in the loaded module.
-    :param variable: a restriction on the expected type of the object in the loaded module.
-        If None, the all variables not starting with underscore (_) are checked.
-    :returns: and object of type 'object_type'
+    Args:
+        module: is module loaded using py_loader.load(...).
+        object_type: a restriction on the expected type of the object in the loaded module.
+        variable: a restriction on the expected type of the object in the loaded module.
+            If None, the all variables not starting with underscore (_) are checked.
+    
+    Returns:
+        an object of type 'object_type'.
     """
     module_vars = vars(module)
 
@@ -87,7 +94,8 @@ def load_dict(filepath, *, module_name: Optional[str] = None) -> dict:
     Load the given Python source file, named filepath,
     and return the loaded objects as a dictionary.
 
-    :param filepath: is a string or path to the Python source.
-    :param module_name: is an optional name for the module (used by SourceFileLoader).
+    Args:
+        filepath: is a string or path to the Python source.
+        module_name: is an optional name for the module (used by SourceFileLoader).
     """
     return vars(load(filepath, module_name=module_name))

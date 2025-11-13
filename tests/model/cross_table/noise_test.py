@@ -67,6 +67,10 @@ class NoiseTest(Fixture):
         noise_result = no_noise(cross_table.copy(), sensitivity, epsilon, min_cell_size)
         noisy_cross_table = noise_result.cross_table
         self.assertEqualCrossTables(noisy_cross_table, cross_table)
+        self.assertEqual(noise_result.rows_original, 8)
+        self.assertEqual(noise_result.rows_added, 0)
+        self.assertEqual(noise_result.rows_lost, 0)
+        self.assertEqual(noise_result.rows_final, 8)
 
     def test_basic_laplace_no_change(self):
         data = OrderedDict()
@@ -85,6 +89,10 @@ class NoiseTest(Fixture):
         noise_result = noiser(cross_table.copy(), sensitivity, epsilon, min_cell_size)
         noisy_cross_table = noise_result.cross_table
         self.assertEqualCrossTables(cross_table, noisy_cross_table)
+        self.assertEqual(noise_result.rows_original, 8)
+        self.assertEqual(noise_result.rows_added, 0)
+        self.assertEqual(noise_result.rows_lost, 0)
+        self.assertEqual(noise_result.rows_final, 8)
 
     def test_basic_laplace_min_cell_size(self):
         data = OrderedDict()
@@ -104,6 +112,10 @@ class NoiseTest(Fixture):
         noisy_cross_table = noise_result.cross_table
 
         self.assertEqual(noisy_cross_table.shape, (4, 4))
+        self.assertEqual(noise_result.rows_original, 8)
+        self.assertEqual(noise_result.rows_added, 0)
+        self.assertEqual(noise_result.rows_lost, 4)
+        self.assertEqual(noise_result.rows_final, 4)
 
         cross_table = self.sort_cross_table(cross_table)
         noisy_cross_table = self.sort_cross_table(noisy_cross_table)
@@ -135,6 +147,10 @@ class NoiseTest(Fixture):
         noisy_cross_table = noise_result.cross_table
 
         self.assertEqual(noisy_cross_table.shape, cross_table.shape)
+        self.assertEqual(noise_result.rows_original, 8)
+        self.assertEqual(noise_result.rows_added, 0)
+        self.assertEqual(noise_result.rows_lost, 0)
+        self.assertEqual(noise_result.rows_final, 8)
 
         cross_table = self.sort_cross_table(cross_table)
         noisy_cross_table = self.sort_cross_table(noisy_cross_table)
@@ -169,6 +185,10 @@ class NoiseTest(Fixture):
         noise_result = noiser(cross_table.copy(), sensitivity, epsilon, min_cell_size)
         noisy_cross_table = noise_result.cross_table
         self.assertEqualCrossTables(noisy_cross_table, cross_table)
+        self.assertEqual(noise_result.rows_original, 8)
+        self.assertEqual(noise_result.rows_added, 0)
+        self.assertEqual(noise_result.rows_lost, 0)
+        self.assertEqual(noise_result.rows_final, 8)
 
     def test_laplace_min_cell_size(self):
         data = OrderedDict()
@@ -189,6 +209,10 @@ class NoiseTest(Fixture):
         noisy_cross_table = noise_result.cross_table
 
         self.assertEqual(noisy_cross_table.shape, (4, 4))
+        self.assertEqual(noise_result.rows_original, 8)
+        self.assertEqual(noise_result.rows_added, 0)
+        self.assertEqual(noise_result.rows_lost, 4)
+        self.assertEqual(noise_result.rows_final, 4)
 
         cross_table = self.sort_cross_table(cross_table)
         noisy_cross_table = self.sort_cross_table(noisy_cross_table)
@@ -224,6 +248,10 @@ class NoiseTest(Fixture):
         noisy_cross_table = noise_result.cross_table
 
         self.assertEqual(noisy_cross_table.shape, cross_table.shape)
+        self.assertEqual(noise_result.rows_original, 8)
+        self.assertEqual(noise_result.rows_added, 0)
+        self.assertEqual(noise_result.rows_lost, 0)
+        self.assertEqual(noise_result.rows_final, 8)
 
         cross_table = self.sort_cross_table(cross_table)
         noisy_cross_table = self.sort_cross_table(noisy_cross_table)
@@ -266,6 +294,17 @@ class NoiseTest(Fixture):
         new_rows = noisy_cross_table.shape[0]
         self.assertIn(new_rows, {orig_rows, orig_rows + 1})
         self.assertEqual(noisy_cross_table.shape[1], cross_table.shape[1])
+
+        if new_rows == 8:
+            self.assertEqual(noise_result.rows_original, 7)
+            self.assertEqual(noise_result.rows_added, 1)
+            self.assertEqual(noise_result.rows_lost, 0)
+            self.assertEqual(noise_result.rows_final, 8)
+        else:
+            self.assertEqual(noise_result.rows_original, 7)
+            self.assertEqual(noise_result.rows_added, 0)
+            self.assertEqual(noise_result.rows_lost, 0)
+            self.assertEqual(noise_result.rows_final, 7)
 
         cross_table = self.sort_cross_table(cross_table)
         noisy_cross_table = self.sort_cross_table(noisy_cross_table)

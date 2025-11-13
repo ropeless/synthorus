@@ -18,8 +18,10 @@ class SafeRandomTest(Fixture):
         distribution = Counter()
         rnd = SafeRandom(n=n)
 
+        self.assertEqual(rnd.n, n)
+
         for _ in range(num_samples):
-            option = rnd.choice_index(num_options)
+            option = rnd.uniform(num_options)
             distribution[option] += 1
 
         self.assertArraySetEqual(list(range(num_options)), distribution.keys())

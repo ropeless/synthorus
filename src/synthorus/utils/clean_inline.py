@@ -14,13 +14,15 @@ def clean_inline(string: str) -> str:
     if len(lines[0].strip()) == 0:
         lines.pop(0)
 
-    if len(lines[-1].strip()) == 0:
-        lines.pop(-1)
+    if len(lines) > 0:
+        if len(lines[-1].strip()) == 0:
+            lines.pop(-1)
 
-    indent = min(len(line) - len(line.lstrip()) for line in lines)
-    lines = [
-        line[indent:].rstrip()
-        for line in lines
-    ]
+        indent = min(len(line) - len(line.lstrip()) for line in lines)
+
+        lines = [
+            line[indent:].rstrip()
+            for line in lines
+        ]
 
     return '\n'.join(lines) + '\n'

@@ -1,3 +1,4 @@
+import shutil
 import tempfile
 from pathlib import Path
 
@@ -60,25 +61,34 @@ class output_directory(Path):
             raise FileNotFoundError(f'the demo output directory does not exist: {demo_out}')
 
         sub_dir: Path = demo_out / demo_name
-        # if sub_dir.name != demo_name:
-        #     raise RuntimeError(f'cannot have nested demo directories: {demo_name!r}')
-        # if sub_dir.exists():
-        #     if not sub_dir.is_dir():
-        #         raise RuntimeError(f'not a directory: {sub_dir}')
-        #     if overwrite:
-        #         shutil.rmtree(sub_dir)
-        #     elif len([f for f in sub_dir.iterdir() if not f.name.startswith('.')]) != 0:
-        #         raise RuntimeError(f'not empty: {sub_dir}')
-        # sub_dir.mkdir(exist_ok=True, parents=False)
+        if sub_dir.name != demo_name:
+            raise RuntimeError(f'cannot have nested demo directories: {demo_name!r}')
+        if sub_dir.exists():
+            if not sub_dir.is_dir():
+                raise RuntimeError(f'not a directory: {sub_dir}')
+            if overwrite:
+                shutil.rmtree(sub_dir)
+            elif len([f for f in sub_dir.iterdir() if not f.name.startswith('.')]) != 0:
+                raise RuntimeError(f'not empty: {sub_dir}')
+        sub_dir.mkdir(exist_ok=True, parents=False)
 
         super().__init__(sub_dir)
 
     def cleanup(self) -> None:
+        """
+        If a temporary directory was created, then delete it.
+
+        Subsequent calls to cleanup() take no further action.
+        """
         if self._tmp_dir is not None:
             self._tmp_dir.cleanup()
             self._tmp_dir = None
 
+    def __del__(self):
+        self.cleanup()
+
     def __enter__(self):
+        # nothing to do - already created at __init__
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

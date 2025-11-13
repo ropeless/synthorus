@@ -52,12 +52,13 @@ class PostgresDataset(Dataset):
         """
         Make a PostgresDataSource.
 
-        :param table_name: The name of the source table (or view).
-        :param connection_params: A dictionary with entries PARAMETER:value for the connection string. If a value
-            is None, then it is replaced with a config entry with the name DB_{PARAMETER}.
-        :param column_names: Optional collection of column names. If provided, the names must be
-            a subset of the table's available columns. If not provided, all available columns are used.
-        :param schema_name: An optional schema name that includes the given table
+        Args:
+            table_name: The name of the source table (or view).
+            connection_params: A dictionary with entries PARAMETER:value for the connection string. If a value
+                is None, then it is replaced with a config entry with the name DB_{PARAMETER}.
+            column_names: Optional collection of column names. If provided, the names must be
+                a subset of the table's available columns. If not provided, all available columns are used.
+            schema_name: An optional schema name that includes the given table
         """
         self._connection = self._get_connection(connection_params)
         if schema_name is None:
@@ -85,7 +86,8 @@ class PostgresDataset(Dataset):
 
     def _query_columns(self) -> pd.Index:
         """
-        :return: the columns (as a Pandas Index object).
+        Returns:
+            the columns (as a Pandas Index object).
         """
         sql = SQL('select * from {} limit 1').format(self._table)
         df = self._query(sql)
@@ -99,8 +101,9 @@ class PostgresDataset(Dataset):
         """
         Query the database and collect the results.
 
-        :param sql: The SQL as a string or Composable.
-        :param variables: As per 'execute(sql, variables)'.
+        Args:
+            sql: The SQL as a string or Composable.
+            variables: As per 'execute(sql, variables)'.
         """
         return query(self._connection, sql, variables)
 
@@ -212,7 +215,6 @@ class PostgresPandasDataset(PandasDataset):
 
     def __init__(
             self,
-            name: str,
             table_name: str,
             *,
             connection_params: Optional[Dict[str, Optional[str]]] = None,
@@ -222,20 +224,19 @@ class PostgresPandasDataset(PandasDataset):
         """
         Make a PostgresPandasDataSource.
 
-        :param name: The dataset name.
-        :param table_name: The name of the source table (or view).
-        :param schema_name: An optional schema name that includes the given table.
-        :param column_names: Optional collection of column names. If provided, the names must be
-            a subset of the table's available columns. If not provided, all available columns are used.
-        :param connection_params: A dictionary with entries PARAMETER:value for the connection string. If a value
-            is None, then it is replaced with a config entry with the name DB_{PARAMETER}.
+        Args:
+            table_name: The name of the source table (or view).
+            schema_name: An optional schema name that includes the given table.
+            column_names: Optional collection of column names. If provided, the names must be
+                a subset of the table's available columns. If not provided, all available columns are used.
+            connection_params: A dictionary with entries PARAMETER:value for the connection string. If a value
+                is None, then it is replaced with a config entry with the name DB_{PARAMETER}.
         """
         datasource = PostgresDataset(
-            name=name,
             table_name=table_name,
             schema_name=schema_name,
             column_names=column_names,
             connection_params=connection_params,
         )
         df = datasource.crosstab(datasource.rvs)
-        super().__init__(name, df, -1)
+        super().__init__(df, -1)

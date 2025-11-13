@@ -48,12 +48,13 @@ class OdbcDataset(Dataset):
         """
         Make an OdbcDataSource.
 
-        :param table_name: The name of the source table (or view).
-        :param connection_params: A dictionary with entries PARAMETER:value for the connection string. If a value
-            is None, then it is replaced with a config entry with the name DB_{PARAMETER}.
-        :param column_names: Optional collection of column names. If provided, the names must be
-            a subset of the table's available columns. If not provided, all available columns are used.
-        :param schema_name: Optional schema name that includes the given table, default is from config.DB_SCHEMA.
+        Args:
+            table_name: The name of the source table (or view).
+            connection_params: A dictionary with entries PARAMETER:value for the connection string. If a value
+                is None, then it is replaced with a config entry with the name DB_{PARAMETER}.
+            column_names: Optional collection of column names. If provided, the names must be
+                a subset of the table's available columns. If not provided, all available columns are used.
+                schema_name: Optional schema name that includes the given table, default is from config.DB_SCHEMA.
         """
         # Resolve default values
         if schema_name is None:
@@ -85,7 +86,8 @@ class OdbcDataset(Dataset):
 
     def _query_columns(self) -> pd.Index:
         """
-        :return: the columns (as a Pandas Index object).
+        Returns:
+            the columns (as a Pandas Index object).
         """
         sql = f'select * from {self._table} limit 1'
         df = self._query(sql)
@@ -99,16 +101,18 @@ class OdbcDataset(Dataset):
         """
         Query the database and collect the results.
 
-        :param sql: The SQL as a string or Composable.
-        :param variables: As per 'execute(sql, variables)'.
+        Args:
+            sql: The SQL as a string or Composable.
+            variables: As per 'execute(sql, variables)'.
         """
         return query(self._connection, sql, variables)
 
     @staticmethod
     def _get_connection(connection_params: Optional[Dict[str, Optional[str]]]):
         """
-        :param connection_params: a dictionary with entries PARAMETER:value for the connection string. If a value
-            is None, then it is replaced with a config entry with the name DB_{PARAMETER}.
+        Args:
+            connection_params: a dictionary with entries PARAMETER:value for the connection string. If a value
+                is None, then it is replaced with a config entry with the name DB_{PARAMETER}.
         """
         conn_str = connection_str(resolve_connection(connection_params))
 
@@ -179,12 +183,13 @@ class OdbcPandasDataset(PandasDataset):
         """
         Make an OdbcPandasDataSource.
 
-        :param table_name: The name of the source table (or view).
-        :param connection_params: A dictionary with entries PARAMETER:value for the connection string. If a value
-            is None, then it is replaced with a config entry with the name DB_{PARAMETER}.
-        :param column_names: Optional collection of column names. If provided, the names must be
-            a subset of the table's available columns. If not provided, all available columns are used.
-        :param schema_name: An optional schema name that includes the given table, the default is from config.DB_SCHEMA.
+        Args:
+            table_name: The name of the source table (or view).
+            connection_params: A dictionary with entries PARAMETER:value for the connection string. If a value
+                is None, then it is replaced with a config entry with the name DB_{PARAMETER}.
+            column_names: Optional collection of column names. If provided, the names must be
+                a subset of the table's available columns. If not provided, all available columns are used.
+            schema_name: An optional schema name that includes the given table, the default is from config.DB_SCHEMA.
         """
         datasource = OdbcDataset(
             table_name=table_name,

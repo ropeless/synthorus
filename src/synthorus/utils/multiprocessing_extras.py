@@ -29,10 +29,13 @@ def num_processes(processes: NumProcesses, assume_cpu_count: Optional[int] = Non
     2. Negative values are converted to os.cpu_count() + processes.
     3. Values <= 1 are converted to 1.
 
-    :param processes: an integer representing number of process,
-        or an expected str value.
-    :param assume_cpu_count: override os.cpu_count().
-    :return: an integer >= 1.
+    Args:
+        processes: an integer representing number of process,
+            or an expected str value.
+        assume_cpu_count: override os.cpu_count().
+    
+    Returns:
+        an integer >= 1.
     """
     the_cpu_count = _os.cpu_count() if assume_cpu_count is None else assume_cpu_count
 
@@ -91,8 +94,9 @@ class TrialLogger(Protocol[_TRIAL_RESULT]):
         it is okay to not end any log message with a new line,
         as that may be performed by log_end() or log_error().
 
-        :param trial_number: current trial number (to indicate progress).
-        :param trial_name: name of the trial, if available.
+        Args:
+            trial_number: current trial number (to indicate progress).
+            trial_name: name of the trial, if available.
         """
         ...
 
@@ -101,8 +105,9 @@ class TrialLogger(Protocol[_TRIAL_RESULT]):
         Send a message to the log to indicate completion of a trial.
         This will be called after log_begin() for the same trial.
 
-        :param result: a return value from running the trial (for custom loggers).
-        :param warning_messages: a list of warning messages from running the trial.
+        Args:
+            result: a return value from running the trial (for custom loggers).
+            warning_messages: a list of warning messages from running the trial.
         """
         ...
 
@@ -111,7 +116,8 @@ class TrialLogger(Protocol[_TRIAL_RESULT]):
         Send a message to the log to indicate failing a run of a trial.
         This will be called after log_begin() for the same trial.
 
-        :param exception: the offending Exception.
+        Args:
+            exception: the offending Exception.
         """
         ...
 
@@ -135,19 +141,22 @@ def run_trial_processes(
 
     This is essentially map-reduce with error management and logging.
 
-    :param trials: an iterable of Trial objects.
-        A Trial object is callable with no arguments, returning a generic TrialResult object.
-        A Trial object may have a property/field called trial_name (for logging).
-    :param collector: takes an iterable of generic TrialResult objects and
-        returns the result for this function.
-    :param trial_logger: an object managing logging the beginning and ending of a trial.
-        The trial logger must conform to the TrialLogger protocol.
-    :param processes: number of processes, as interpretable by num_processes(...)
-        or a process Pool.
-    :param discard_results_with_warning: Normally only results that raise an exception are filtered out
-        before passing to the collector. If this flag is True, then results that issued warnings are also
-        filtered out before passing to the collector.
-    :return: whatever the given collector returns.
+    Args:
+        trials: an iterable of Trial objects.
+            A Trial object is callable with no arguments, returning a generic TrialResult object.
+            A Trial object may have a property/field called trial_name (for logging).
+        collector: takes an iterable of generic TrialResult objects and
+            returns the result for this function.
+        trial_logger: an object managing logging the beginning and ending of a trial.
+            The trial logger must conform to the TrialLogger protocol.
+        processes: number of processes, as interpretable by num_processes(...)
+            or a process Pool.
+        discard_results_with_warning: Normally only results that raise an exception are filtered out
+            before passing to the collector. If this flag is True, then results that issued warnings are also
+            filtered out before passing to the collector.
+    
+    Returns:
+        whatever the given collector returns.
     """
     if isinstance(processes, Pool):
         return _run_multi_process(trials, collector, trial_logger, discard_results_with_warning, processes)
@@ -171,8 +180,9 @@ class DefaultTrialLogger(TrialLogger[_TRIAL_RESULT]):
         """
         Construct a default logger, printing to the given log print function.
 
-        :param log: print function to print to, or None.
-        :param num_trials: total number of trials (to indicate progress), or None.
+        Args:
+            log: print function to print to, or None.
+            num_trials: total number of trials (to indicate progress), or None.
         """
         self.log = log if log is not None else NO_LOG
         self.num_trials = num_trials
@@ -283,9 +293,9 @@ def _run_multi_process(
             (
                 _log_wrapped_result(trial_num, wrapped_result, trial_logger)
                 for trial_num, wrapped_result in enumerate(
-                pool.imap_unordered(_wrap_run, trials),
-                start=1
-            )
+                    pool.imap_unordered(_wrap_run, trials),
+                    start=1,
+                )
             )
         )
     )
@@ -326,8 +336,11 @@ def _wrap_run(
     returned _WrappedResult.
     No logging is performed.
 
-    :param trial: a Callable taking no arguments, returning a trial-result.
-    :return: a _WrappedResult.
+    Args:
+        trial: a Callable taking no arguments, returning a trial-result.
+    
+    Return:
+        a _WrappedResult.
     """
     trial_name = _trial_name(trial)
     try:

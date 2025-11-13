@@ -2,11 +2,11 @@
 Functions for creating and manipulating cross-tables.
 """
 
-from typing import Iterable, Union, Callable, Optional, Tuple, Dict
+from typing import Iterable, Union, Callable, Optional, Tuple, Dict, Sequence, List
 
 import numpy as np
 import pandas as pd
-from pandas._typing import Dtype
+from numpy import dtype as Dtype
 
 from synthorus.error import SynthorusError
 
@@ -81,23 +81,40 @@ def adjust_cross_table(
     Normalise the weight in each group to sum to 1.
     Multiply the weight of each row in the group by the matching entry in cond_cross_table.
 
-    :param cross_table: is the cross-table to be conditioned.
-    :param cond_cross_table: is the conditioning cross-table.
-    :param log: is a print function to receive warning messages.
+    Args:
+        cross_table: is the cross-table to be conditioned.
+        cond_cross_table: is the conditioning cross-table.
+        log: is a print function to receive warning messages.
     """
-    # Check the trivial case, either cross-table is empty
-    if cross_table.shape[0] == 0 or cond_cross_table.shape[0] == 0:
-        return cross_table
+    if cond_cross_table.shape[0] == 0:
+        # zero weight - remove all rows, keeping columns
+        return cross_table[0:0]
 
     cond_rv_names = list(cond_cross_table.columns[:-1])
     weight_col = cross_table.columns[-1]
 
-    # Unfortunately Pandas forces us to treat the singleton case differently.
-    # "FutureWarning: In a future version of pandas, a length 1 tuple will be
-    # returned when iterating over a groupby with a grouper equal to a list
-    # of length 1. Don't supply a list with a single grouper to avoid this
-    # warning."
+    if len(cond_rv_names) == 0:
+        # The trivial case: cond_cross_table has no rvs
+        assert cond_cross_table.shape == (1, 1)
+        target_weight: float = cond_cross_table.iloc[0, 0]
+        if target_weight == 0:
+            # zero weight - remove all rows, keeping columns
+            return cross_table[0:0]
+
+        weights: pd.Series = cross_table.iloc[:, -1]
+        current_weight: float = weights.sum()
+        new_weights = weights * (target_weight / current_weight)
+
+        cross_table[weight_col] = new_weights
+        return cross_table
+
     if len(cond_rv_names) == 1:
+        # Unfortunately Pandas forces us to treat the singleton case differently.
+        # "FutureWarning: In a future version of pandas, a length 1 tuple will be
+        # returned when iterating over a groupby with a grouper equal to a list
+        # of length 1. Don't supply a list with a single grouper to avoid this
+        # warning."
+
         weight_dict = {
             row[0]: row[-1]
             for row in cond_cross_table.itertuples(index=False)
@@ -129,6 +146,7 @@ def adjust_cross_table(
             return _row[weight_col] * weight_dict.get(_key, 0)
 
     else:
+        # General case - more than 1 conditioning random variable
         weight_dict: Dict[Tuple] = {
             row[:-1]: row[-1]
             for row in cond_cross_table.itertuples(index=False)
@@ -168,7 +186,8 @@ def project_crosstab(crosstab: pd.DataFrame, rv_names: Iterable[str]) -> pd.Data
     """
     Get a cross-table, projected onto the given rvs.
 
-    Ensures the column of the returned data frame are exactly rv_names + weight column.
+    Ensures:
+        the column of the returned data frame are exactly rv_names + weight column.
     """
     rv_names = list(rv_names)
     rv_names_set = set(rv_names)
@@ -201,7 +220,7 @@ def project_crosstab(crosstab: pd.DataFrame, rv_names: Iterable[str]) -> pd.Data
 
 def functional_series_from_dataframe(
         dataframe: pd.DataFrame,
-        input_column_names: Union[Iterable[str], str],
+        input_column_names: Iterable[str],
         column_function: Callable,
         dtype: Optional[Dtype] = None
 ) -> pd.Series:
@@ -210,27 +229,72 @@ def functional_series_from_dataframe(
     The passed column_function is called for each row in the dataframe, where the arguments
     passed to column_function(...) are co-indexed with the columns of input_column_names.
 
-    :param dataframe: is a Panda dataframe supplying the function input values.
-    :param input_column_names: indicates columns in 'dataframe' whose values are arguments to column_function.
-    :param column_function: is a function called to generate values for the new column.
-    :param dtype: optional numpy datatype for the new series (generally more efficient if provided).
-    :returns: the series containing computed values.
+    Args:
+        dataframe: is a Panda dataframe supplying the function input values.
+        input_column_names: indicates columns in 'dataframe' whose values are arguments to column_function.
+        column_function: is a function called to generate values for the new column.
+        dtype: optional numpy datatype for the new series (generally more efficient if provided).
+
+    Returns:
+        the series containing computed values.
     """
-    # Pandas really needs a list, so we ensure it!
-    if isinstance(input_column_names, str):
-        input_column_names = [input_column_names]
-    else:
-        input_column_names = list(input_column_names)
+    series_length: int = dataframe.shape[0]
+    input_series: List[pd.Series] = [dataframe[col] for col in input_column_names]
+    return _functional_series(input_series, series_length, column_function, dtype)
 
-    series_length = dataframe.shape[0]
 
-    if len(input_column_names) == 0:
+def functional_series_from_series(
+        series: pd.Series,
+        column_function: Callable,
+        dtype: Optional[Dtype] = None
+) -> pd.Series:
+    """
+    Make a Pandas Series that is a function of other columns.
+    The passed column_function is called for each row in the dataframe, where the arguments
+    passed to column_function(...) are co-indexed with the columns of input_column_names.
+
+    Args:
+        series: is a Pandas series supplying the function input values.
+        column_function: is a function, taking one argument.
+        dtype: optional numpy datatype for the new series (generally more efficient if provided).
+
+    Returns:
+        the series containing computed values.
+    """
+    series_length: int = series.shape[0]
+    input_series: List[pd.Series] = [series]
+    return _functional_series(input_series, series_length, column_function, dtype)
+
+
+def _functional_series(
+        input_series: Sequence[pd.Series],
+        series_length: int,
+        column_function: Callable,
+        dtype: Optional[Dtype] = None
+) -> pd.Series:
+    """
+    Make a Pandas Series that is a function of other columns.
+    The passed column_function is called for each row in the dataframe, where the arguments
+    passed to column_function(...) are co-indexed with the columns of input_column_names.
+
+    Args:
+        input_series: is a sequence of Panda series supplying the function input values.
+        series_length: the length of each input and output series.
+        column_function: is a function called to generate values for the new column.
+        dtype: optional numpy datatype for the new series (generally more efficient if provided).
+
+    Returns:
+        the series containing computed values.
+    """
+    if len(input_series) == 0:
         value = column_function()
         array = np.full(series_length, fill_value=value, dtype=dtype)
         return pd.Series(array)
 
     else:
-        input_series = [dataframe[col] for col in input_column_names]
+        for series in input_series:
+            if len(series) != series_length:
+                raise ValueError(f'expected series length {series_length}, got {len(series)}')
 
         if dtype is not None:
             # Try using np.fromiter.
@@ -252,42 +316,3 @@ def functional_series_from_dataframe(
             [column_function(*args) for args in zip(*input_series)],
             dtype=dtype
         )
-
-
-def functional_series_from_series(
-        series: pd.Series,
-        column_function: Callable,
-        dtype: Optional[Dtype] = None
-) -> pd.Series:
-    """
-    Make a Pandas Series that is a function of other columns.
-    The passed column_function is called for each row in the dataframe, where the arguments
-    passed to column_function(...) are co-indexed with the columns of input_column_names.
-
-    :param series: is a Panda series supplying the function input values.
-    :param column_function: is a function, taking one argument.
-    :param dtype: optional numpy datatype for the new series (generally more efficient if provided).
-    :returns: the series containing computed values.
-    """
-    series_length = series.shape[0]
-
-    if dtype is not None:
-        # Try using np.fromiter.
-        # np.fromiter can be a bit finicky with undocumented assumptions.
-        # If it fails, it fails immediately, but if works it's efficient.
-        try:
-            array = np.fromiter(
-                (column_function(arg) for arg in series),
-                count=series_length,
-                dtype=dtype
-            )
-            return pd.Series(array)
-        # noinspection PyBroadException
-        except Exception:
-            pass
-
-    # General method (of last resort)
-    return pd.Series(
-        [column_function(arg) for arg in series],
-        dtype=dtype
-    )

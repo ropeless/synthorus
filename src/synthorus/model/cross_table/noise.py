@@ -31,7 +31,7 @@ class NoiserResult:
     rows_lost: int
 
     @property
-    def rows_final(self):
+    def rows_final(self) -> int:
         return self.cross_table.shape[0]
 
 
@@ -55,11 +55,14 @@ class Noiser(ABC):
         Privacy (DP) parameters. However, each implementation will make its
         own guarantees and claims.
 
-        :param cross_table: The source cross-table (to have noise added).
-        :param sensitivity: The DP parameter.
-        :param epsilon: The DP parameter.
-        :param min_cell_size: The DP parameter.
-        :return: a NoiserResult that includes the noised cross-table and other statistics.
+        Args:
+            cross_table: The source cross-table (to have noise added).
+            sensitivity: The DP parameter.
+            epsilon: The DP parameter.
+            min_cell_size: The DP parameter.
+        
+        Returns:
+            a NoiserResult that includes the noised cross-table and other statistics.
         """
         ...
 
@@ -93,7 +96,8 @@ class DPNoiser(Noiser):
         """
         Get the possible states for each random variable in rv_names.
 
-        :return: list co-indexed with the given rv names
+        Returns:
+            a list co-indexed with the given rv names.
         """
         ...
 
@@ -128,10 +132,11 @@ class LaplaceNoise(DPNoiser):
         """
         Construct a LaplaceNoise noiser.
 
-        :param safe_random: an instance of SafeRandom, to generate random numbers.
-        :param rvs: all the random variables that this noiser can manage (normally all from a Spec).
-        :param max_add_rows: a limit on the number of rows to add to a cross-table.
-        :param log: optional print function for logging progress messages.
+        Args:
+            safe_random: an instance of SafeRandom, to generate random numbers.
+            rvs: all the random variables that this noiser can manage (normally all from a Spec).
+            max_add_rows: a limit on the number of rows to add to a cross-table.
+            log: optional print function for logging progress messages.
         """
         self._safe_random = safe_random
         self._basic = BasicLaplaceNoise(safe_random)
@@ -207,7 +212,8 @@ class LaplaceNoise(DPNoiser):
         """
         Get the possible states for each random variable in rv_names.
 
-        :return: list co-indexed with the given rv names
+        Returns:
+            s list co-indexed with the given rv names.
         """
         return self._naive.get_states(rv_names)
 
@@ -221,10 +227,11 @@ class LaplaceNoise(DPNoiser):
         """
         Make a noisy cross-table using the decomposition method.
 
-        :param cross_table: clean cross-table.
-        :param sensitivity: DP parameter.
-        :param epsilon: DP parameter.
-        :param min_cell_size: DP parameter.
+        Args:
+            cross_table: clean cross-table.
+            sensitivity: DP parameter.
+            epsilon: DP parameter.
+            min_cell_size: DP parameter.
         """
         weight_col = cross_table.columns[-1]
         rvs = list(cross_table.columns[:-1])
@@ -380,10 +387,11 @@ class NaiveLaplaceNoise(DPNoiser):
         """
         Construct a LaplaceNoise noiser.
 
-        :param safe_random: an instance of SafeRandom, to generate random numbers.
-        :param rvs: all the random variables that this noiser can manage (normally all from a Spec).
-        :param max_add_rows: an optional limit on the number of rows to add to a cross-table.
-            If provided then an exception is raised if this limit is exceeded.
+        Args:
+            safe_random: an instance of SafeRandom, to generate random numbers.
+            rvs: all the random variables that this noiser can manage (normally all from a Spec).
+            max_add_rows: an optional limit on the number of rows to add to a cross-table.
+                If provided then an exception is raised if this limit is exceeded.
         """
         self._safe_random = safe_random
         self._basic = BasicLaplaceNoise(safe_random)
@@ -404,10 +412,11 @@ class NaiveLaplaceNoise(DPNoiser):
         Make a noisy cross-table by constructing a data frame with
         all possible rows, then apply the basic method.
 
-        :param cross_table: clean cross-table.
-        :param sensitivity: DP parameter.
-        :param epsilon: DP parameter.
-        :param min_cell_size: DP parameter.
+        Args:
+            cross_table: clean cross-table.
+            sensitivity: DP parameter.
+            epsilon: DP parameter.
+            min_cell_size: DP parameter.
         """
         weight_col = cross_table.columns[-1]
         rvs = list(cross_table.columns[:-1])
@@ -461,7 +470,8 @@ class NaiveLaplaceNoise(DPNoiser):
         """
         Get the possible states for each random variable in rv_names.
 
-        :return: list co-indexed with the given rv names
+        Returns:
+            a list co-indexed with the given rv names.
         """
         return [
             self._rvs[rv_name]
@@ -493,7 +503,8 @@ class BasicLaplaceNoise(Noiser):
         """
         Construct a BasicLaplaceNoise noiser.
 
-        :param safe_random: an instance of SafeRandom, to generate random numbers.
+        Args:
+            safe_random: an instance of SafeRandom, to generate random numbers.
         """
         self._safe_random = safe_random
 

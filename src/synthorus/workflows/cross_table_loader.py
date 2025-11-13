@@ -52,8 +52,11 @@ class CrossTableLoader:
         """
         Get a cross-table, loading it and caching it if needed.
 
-        :param cross_table_name: name of the cross-table.
-        :return: a cross-table dataframe.
+        Args:
+            cross_table_name: name of the cross-table.
+
+        Returns:
+            a cross-table dataframe.
         """
         crosstab = self.cross_tables.get(cross_table_name)
         if crosstab is None:

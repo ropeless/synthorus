@@ -36,9 +36,10 @@ class MathDataset(PandasDataset):
         This is in keeping with factors where the first random variables
         is the child, and subsequent random variables are the parents.
 
-        :param input_rvs: input random variables
-        :param output_name: name of output random variable
-        :param func: mathematical function to define output.
+        Args:
+            input_rvs: input random variables
+            output_name: name of output random variable
+            func: mathematical function to define output.
         """
         in_names = tuple(rv.name for rv in input_rvs)
         input_rv_state = tuple(rv.states for rv in input_rvs)
@@ -49,7 +50,7 @@ class MathDataset(PandasDataset):
         elif isinstance(func, Callable):
             self._formula = repr(func)
         else:
-            RuntimeError('function is not callable')
+            raise TypeError('`func` is not callable or expression string')
 
         # Run the function over all possible input value combinations
         data = []

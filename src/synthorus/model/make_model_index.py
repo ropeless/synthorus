@@ -173,7 +173,7 @@ def _register_entities(index: ModelIndex, model_spec: ModelSpec) -> None:
             for entity_crosstab in entity_crosstabs
             for rv_name in entity_crosstab.condition_rvs
         }
-        _find_ancestor_conditions(model_spec, entity_spec, condition_rvs, set(), ancestor_conditions)
+        _find_ancestor_conditions(entity_name, model_spec, entity_spec, condition_rvs, set(), ancestor_conditions)
 
         # Register the entity with its rvs
         for rv_name in sampled_fields.values():
@@ -189,6 +189,7 @@ def _register_entities(index: ModelIndex, model_spec: ModelSpec) -> None:
 
 
 def _find_ancestor_conditions(
+        entity_name: str,
         model_spec: ModelSpec,
         entity_spec: ModelEntitySpec,
         condition_rvs: Set[str],
@@ -209,22 +210,22 @@ def _find_ancestor_conditions(
     if parent_name is not None:
         parent_spec: ModelEntitySpec = model_spec.entities[parent_name]
         for field_name, field in parent_spec.sampled_fields():
-            if field_name in condition_rvs:
-                rv: str = field.rv_name
-                if rv in found:
+            rv_name: str = field.rv_name
+            if rv_name in condition_rvs:
+                if rv_name in found:
                     # The random variable appears multiple times in the ancestors.
                     # I.e. two or more fields sampling the same rv.
-                    raise SynthorusError(f'ambiguous conditioning random variable: {rv}')
-                found.add(rv)
+                    raise SynthorusError(f'ambiguous conditioning random variable: {rv_name!r}, for entity: {entity_name!r}')
+                found.add(rv_name)
                 result.append(
                     AncestorConditionsIndex(
                         entity=parent_name,
                         field=field_name,
-                        rv=rv,
+                        rv=rv_name,
                     )
                 )
         # Continue searching up the entity hierarchy
-        _find_ancestor_conditions(model_spec, parent_spec, condition_rvs, found, result)
+        _find_ancestor_conditions(entity_name, model_spec, parent_spec, condition_rvs, found, result)
 
 
 def find_covering_crosstabs(

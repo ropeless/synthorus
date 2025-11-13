@@ -1,6 +1,6 @@
 from importlib.abc import Traversable
 from pathlib import Path
-from typing import Mapping, Optional, Dict, Sequence, Iterable, List
+from typing import Mapping, Optional, Dict, Sequence, Iterable, List, Iterator
 
 from synthorus.dataset import Dataset
 from synthorus.error import SynthorusError
@@ -17,7 +17,7 @@ class DatasetCache(Mapping[str, Dataset]):
         """
         Args:
             model_spec: the model datasources and roots.
-            cwd: The working directory to use for resolving relative roots.
+            cwd: Optional working directory to use for resolving relative roots.
         """
         self._model_spec = model_spec
         self._roots: Sequence[Path | Traversable] = tuple(interpret_roots(model_spec.roots, cwd))
@@ -31,7 +31,7 @@ class DatasetCache(Mapping[str, Dataset]):
         return self._datasets.keys()
 
     def keys(self) -> Iterable[str]:
-        return self._model_spec.data.keys()
+        return self._model_spec.datasources.keys()
 
     def __getitem__(self, key: str, /) -> Dataset:
         got: Optional[Dataset] = self._datasets.get(key)
@@ -43,10 +43,10 @@ class DatasetCache(Mapping[str, Dataset]):
         return dataset
 
     def __len__(self):
-        return len(self._model_spec.data)
+        return len(self._model_spec.datasources)
 
-    def __iter__(self) -> Iterable[str]:
-        return iter(self.keys())
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._model_spec.datasources)
 
 
 def interpret_roots(roots: List[str], cwd: Optional[Path | Traversable]) -> List[Path]:
@@ -71,10 +71,7 @@ def interpret_roots(roots: List[str], cwd: Optional[Path | Traversable]) -> List
         else:
             return [cwd]
 
-    try:
-        roots_paths = [Path(root) for root in roots]
-    except Exception as err:
-        raise SynthorusError(f'cannot interpret roots', err)
+    roots_paths = [Path(root) for root in roots]
 
     # Ensure relative roots are made relative to cwd (if provided)
     if cwd is not None:

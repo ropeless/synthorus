@@ -25,10 +25,11 @@ class redirect_out:
 
     def __init__(self, out=None, and_stderr=False):
         """
-        :param out: output stream to redirect sys.stdout to, or None to send to devnull.
-            Default is None. If a str or pathlib.Path, then it will be opened and closed
-            automatically.
-        :param and_stderr: if True, then sys.stdout is also redirected.
+        Args:
+            out: output stream to redirect sys.stdout to, or None to send to devnull.
+                Default is None. If a str or pathlib.Path, then it will be opened and closed
+                automatically.
+            and_stderr: if True, then sys.stdout is also redirected.
         """
         self._out = out
         self._and_stderr = and_stderr

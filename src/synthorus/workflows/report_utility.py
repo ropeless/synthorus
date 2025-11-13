@@ -184,11 +184,12 @@ def make_utility_report(
 #
 #     Each chart is named: utility_results_directory / f'{entity_name}_{rv.name}.xlsx'
 #
-#     :param entity_name: name of the entity.
-#     :param crosstab: a cross-table covering the random variables of the model (empirical probability).
-#     :param model: a probabilistic model (model probabilities).
-#     :param stats: A dictionary of statistics to include in the chart.
-#     :param utility_results_directory: where to write the results.
+#     Args:
+#         entity_name: name of the entity.
+#         crosstab: a cross-table covering the random variables of the model (empirical probability).
+#         model: a probabilistic model (model probabilities).
+#         stats: A dictionary of statistics to include in the chart.
+#         utility_results_directory: where to write the results.
 #     """
 #     pgm_rvs = model.pgm_rvs
 #     wmc = model.wmc

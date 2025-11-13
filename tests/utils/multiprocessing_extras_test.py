@@ -1,5 +1,7 @@
 import warnings
 from io import StringIO
+from multiprocessing import Pool
+from typing import Sequence, Optional
 
 import numpy as np
 
@@ -8,14 +10,21 @@ from tests.helpers.unittest_fixture import Fixture, test_main
 
 
 class Trial:
-    def __init__(self, result, warning=None, error=None):
+    def __init__(
+            self,
+            result,
+            warning_messages: Sequence[str] = (),
+            error: Exception = None,
+            trial_name: Optional[str] = None,
+    ):
         self.result = result
-        self.warning = warning
+        self.warning_messages = warning_messages
         self.error = error
+        self.trial_name = trial_name
 
     def __call__(self):
-        if self.warning is not None:
-            warnings.warn(self.warning)
+        for warning in self.warning_messages:
+            warnings.warn(warning)
         if self.error is not None:
             raise self.error
         return self.result
@@ -26,6 +35,7 @@ class TestMultiprocessingExtras(Fixture):
     def test_num_processes(self):
         assume_cpu_count = 8
         self.assertEqual(1, num_processes('single'))
+        self.assertEqual(1, num_processes('1'))
         self.assertEqual(assume_cpu_count, num_processes('max', assume_cpu_count))
         self.assertEqual(assume_cpu_count, num_processes('all', assume_cpu_count))
         self.assertEqual(assume_cpu_count / 2, num_processes('half', assume_cpu_count))
@@ -39,14 +49,14 @@ class TestMultiprocessingExtras(Fixture):
         self.assertEqual(assume_cpu_count - 1, num_processes(-1, assume_cpu_count))
 
         np_array = np.array([0, 1, -1], dtype=np.intc)
-        self.assertEqual(1, num_processes(np_array.item(0)))
-        self.assertEqual(1, num_processes(np_array.item(1)))
-        self.assertEqual(assume_cpu_count - 1, num_processes(np_array.item(2), assume_cpu_count))
+        self.assertEqual(1, num_processes(np_array[0]))
+        self.assertEqual(1, num_processes(np_array[1]))
+        self.assertEqual(assume_cpu_count - 1, num_processes(np_array[2], assume_cpu_count))
 
         np_array = np.array([0.5, 0.25, -0.75], dtype=np.single)
-        self.assertEqual(assume_cpu_count / 2, num_processes(np_array.item(0), assume_cpu_count))
-        self.assertEqual(assume_cpu_count / 4, num_processes(np_array.item(1), assume_cpu_count))
-        self.assertEqual(assume_cpu_count / 4, num_processes(np_array.item(2), assume_cpu_count))
+        self.assertEqual(assume_cpu_count / 2, num_processes(np_array[0], assume_cpu_count))
+        self.assertEqual(assume_cpu_count / 4, num_processes(np_array[1], assume_cpu_count))
+        self.assertEqual(assume_cpu_count / 4, num_processes(np_array[2], assume_cpu_count))
 
         with self.assertRaises(ValueError):
             num_processes('some rubbish')
@@ -63,6 +73,18 @@ class TestMultiprocessingExtras(Fixture):
         result = run_trial_processes(trials, collector, logger, 1)
         self.assertEqual(6, result)
 
+    def test_run_trial_processes_multi_named(self):
+        trials = [
+            Trial(1, trial_name='trial 1'),
+            Trial(2, trial_name='trial 2'),
+            Trial(3, trial_name='trial 3'),
+        ]
+        collector = sum
+        logger = DefaultTrialLogger(log=None)
+
+        result = run_trial_processes(trials, collector, logger, 2)
+        self.assertEqual(6, result)
+
     def test_run_trial_processes_multi(self):
         trials = [
             Trial(1),
@@ -73,6 +95,20 @@ class TestMultiprocessingExtras(Fixture):
         logger = DefaultTrialLogger(log=None)
 
         result = run_trial_processes(trials, collector, logger, 2)
+        self.assertEqual(6, result)
+
+    def test_run_trial_processes_pool(self):
+        trials = [
+            Trial(1),
+            Trial(2),
+            Trial(3),
+        ]
+        collector = sum
+        logger = DefaultTrialLogger(log=None)
+
+        with Pool(2) as pool:
+            result = run_trial_processes(trials, collector, logger, pool)
+
         self.assertEqual(6, result)
 
     def test_run_trial_processes_with_known_length(self):
@@ -87,10 +123,34 @@ class TestMultiprocessingExtras(Fixture):
         result = run_trial_processes(trials, collector, logger, 1)
         self.assertEqual(6, result)
 
-    def test_run_trial_processes_with_warnings(self):
+    def test_run_trial_processes_with_1_warning(self):
         trials = [
             Trial(1),
-            Trial(2, warning='trial 2 warning'),
+            Trial(2, warning_messages=['trial 2 warning']),
+            Trial(3),
+        ]
+        collector = sum
+        logger = DefaultTrialLogger(log=None)
+
+        result = run_trial_processes(trials, collector, logger, 1)
+        self.assertEqual(6, result)
+
+    def test_run_trial_processes_with_1_warning_multiple_lines(self):
+        trials = [
+            Trial(1),
+            Trial(2, warning_messages=['trial 2 warning - line 1\nline 2\nline 3']),
+            Trial(3),
+        ]
+        collector = sum
+        logger = DefaultTrialLogger(log=None)
+
+        result = run_trial_processes(trials, collector, logger, 1)
+        self.assertEqual(6, result)
+
+    def test_run_trial_processes_with_2_warnings(self):
+        trials = [
+            Trial(1),
+            Trial(2, warning_messages=['trial 2 warning 1', 'trial 2 warning 2']),
             Trial(3),
         ]
         collector = sum
@@ -102,7 +162,7 @@ class TestMultiprocessingExtras(Fixture):
     def test_run_trial_processes_with_warnings_filtered(self):
         trials = [
             Trial(1),
-            Trial(2, warning='trial 2 warning'),
+            Trial(2, warning_messages=['trial 2 warning']),
             Trial(3),
         ]
         collector = sum

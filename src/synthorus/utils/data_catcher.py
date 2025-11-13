@@ -64,9 +64,12 @@ class DataCatcher(ABC):
         """
         Construct a list of column values from the records.
 
-        :param column: is the name of the column to construct.
-        :param default: is a default value to use when not defined in a record.
-        :return: a list of values.
+        Args:
+            column: is the name of the column to construct.
+            default: is a default value to use when not defined in a record.
+        
+        Returns:
+            a list of values.
         """
         return [
             record.get(column, default)
@@ -77,30 +80,39 @@ class DataCatcher(ABC):
         """
         Construct a numpy array from the records.
 
-        :param column: is the name of the column to construct.
-        :param default: is a default value to use when not defined in a record.
-        :param dtype: is a numpy dtype to use.
-        :return: a numpy array.
+        Args:
+            column: is the name of the column to construct.
+            default: is a default value to use when not defined in a record.
+            dtype: is a numpy dtype to use.
+        
+        Returns:
+            a numpy array.
         """
-        # Too fragile :-(
-        # return np.fromiter(
-        #     (
-        #         record.get(column, default)
-        #         for record in self
-        #     ),
-        #     count=len(self),
-        #     dtype=dtype
-        # )
-        return np.array(self.get_column_list(column, default), dtype=dtype)
+        try:
+            # Fragile but efficient if it works :-(
+            return np.fromiter(
+                (
+                    record.get(column, default)
+                    for record in self
+                ),
+                count=len(self),
+                dtype=dtype
+            )
+        # noinspection PyBroadException
+        except Exception:
+            return np.array(self.get_column_list(column, default), dtype=dtype)
 
     def get_column_series(self, column: str, default=None, dtype=None) -> pd.Series:
         """
         Construct a Pandas Series from the records.
 
-        :param column: is the name of the column to construct.
-        :param default: is a default value to use when not defined in a record.
-        :param dtype: is a numpy dtype to use.
-        :return: a Pandas Series.
+        Args:
+            column: is the name of the column to construct.
+            default: is a default value to use when not defined in a record.
+            dtype: is a numpy dtype to use.
+        
+        Returns:
+            a Pandas Series.
         """
         return pd.Series(
             data=self.get_column_array(column, default, dtype),
@@ -112,11 +124,14 @@ class DataCatcher(ABC):
         """
         Construct a Pandas DataFrame from the records.
 
-        :param default: is a default value to use when not defined in a record, or
-            is a dictionary mapping a column name to a default value.
-        :param dtype: is a numpy dtype to use, or is a dictionary mapping a column
-            name to a dtype.
-        :return: a Pandas DataFrame.
+        Args:
+            default: is a default value to use when not defined in a record, or
+                is a dictionary mapping a column name to a default value.
+            dtype: is a numpy dtype to use, or is a dictionary mapping a column
+                name to a dtype.
+        
+        Returns:
+            a Pandas DataFrame.
         """
         if len(self) == 0:
             return pd.DataFrame(data=[], columns=self.columns)
@@ -149,15 +164,16 @@ class DataCatcher(ABC):
         """
         Write to CSV file, using Pandas.
 
-        :param path_or_buff: Where to write to.
-        :param default: is a default value to use when not defined in a record, or
-            is a dictionary mapping a column name to a default value.
-        :param dtype: is a numpy dtype to use, or is a dictionary mapping a column
-            name to a dtype.
-        :param index: whether to include Pandas index or not, passed to Pandas to_csv.
-        :param lineterminator: passed to Pandas to_csv. The newline character or character
-            sequence to use in the output file.
-        :param kwargs: other arguments passed to Pandas to_csv.
+        Args:
+            path_or_buff: Where to write to.
+            default: is a default value to use when not defined in a record, or
+                is a dictionary mapping a column name to a default value.
+            dtype: is a numpy dtype to use, or is a dictionary mapping a column
+                name to a dtype.
+            index: whether to include Pandas index or not, passed to Pandas to_csv.
+            lineterminator: passed to Pandas to_csv. The newline character or character
+                sequence to use in the output file.
+            kwargs: other arguments passed to Pandas to_csv.
         """
         df = self.as_dataframe(default, dtype)
         df.to_csv(

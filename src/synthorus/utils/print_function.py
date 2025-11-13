@@ -49,11 +49,12 @@ class PrintFunction(Callable):
             * a PrintFunction object,
             * a file-like object with a 'write' method,
             * a callable object accepting arguments like print (excluding 'file' parameter).
-
-        :param destination: when to send print output to, multiple destinations may be provided.
-        :param default: destination to use if destination=None. If default=None,
-            it means /dev/null.
-        :param encoding: pass to builtin open() method.
+        
+        Args:
+            destination: when to send print output to, multiple destinations may be provided.
+            default: destination to use if destination=None. If default=None,
+                it means /dev/null.
+            encoding: pass to builtin open() method.
         """
         self._destinations = []
         self._destinations.extend(

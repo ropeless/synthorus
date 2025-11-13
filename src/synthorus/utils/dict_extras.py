@@ -66,14 +66,15 @@ def pretty_print_dict(
     """
     Render the given dict as pretty-printed Python code.
 
-    :param the_dict: Python dict to render.
-    :param assign_var: if not None, then assign the dict to a variable in the render.
-    :param indent: number of spaces for indentation.
-    :param keys: is vars(keys_module) where 'keys_module' is an imported module.
-    :param keys_module_name: is the name to import the 'keys' module.
-    :param keys_import_name: a name to import keys as, or '*'.
-    :param print_import: if true, and import_keys_as is not None, then render the import line.
-    :param file: the output file to write to or None for std out (passed to print).
+    Args:
+        the_dict: Python dict to render.
+        assign_var: if not None, then assign the dict to a variable in the render.
+        indent: number of spaces for indentation.
+        keys: is vars(keys_module) where 'keys_module' is an imported module.
+        keys_module_name: is the name to import the 'keys' module.
+        keys_import_name: a name to import keys as, or '*'.
+        print_import: if true, and import_keys_as is not None, then render the import line.
+        file: the output file to write to or None for std out (passed to print).
     """
     assert (keys is None) == (keys_module_name is None)
 
