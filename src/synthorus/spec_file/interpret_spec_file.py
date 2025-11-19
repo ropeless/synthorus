@@ -59,7 +59,6 @@ def load_spec_file(
         variable: Optional[str] = None,
         defaults: Mapping[str, Any] = DEFAULTS,
         cwd: Optional[PathLike | Traversable] = None,
-        print_warnings: bool = DEFAULT_PRINT_WARNINGS,
 ) -> ModelSpec:
     """
     Read a spec dictionary from a file then interpret it as a ModelSpec.
@@ -71,7 +70,6 @@ def load_spec_file(
             should only have one such variable.
         cwd: file path for current working directory for resolving datasource filenames.
         defaults: an optional dictionary of default values.
-        print_warnings: if True, then any warning messages will be printed after loading.
     """
     module = py_loader.load(filepath)
     spec: Mapping[str, Any] = py_loader.get_object(module, object_type=dict, variable=variable)
@@ -95,34 +93,32 @@ def load_spec_file(
     _check_module_default(key.author, module_vars.get('__author__'), DEFAULT_AUTHOR)
     _check_module_default(key.comment, module_vars.get('__doc__'), DEFAULT_COMMENT)
 
-    return interpret_spec_file(spec, defaults=defaults, print_warnings=print_warnings, cwd=cwd)
+    return interpret_spec_file(spec, defaults=defaults, cwd=cwd)
 
 
 def interpret_spec_file(
-        spec: Mapping[str, Any],
+        spec_file_dict: Mapping[str, Any],
         *,
         defaults: Mapping[str, Any] = DEFAULTS,
         cwd: Optional[PathLike | Traversable] = None,
-        print_warnings: bool = DEFAULT_PRINT_WARNINGS,
 ) -> ModelSpec:
     """
-    Create a ModelSpec object, using the given spec dictionary.
+    Create a ModelSpec object, using the given spec file dictionary.
 
     Args:
-        spec: is a dict conforming to the format defined in `synthorus.model_spec.keys`.
+        spec_file_dict: is a dict conforming to the spec file format.
         defaults: an optional dictionary of default values.
         cwd: file path for current working directory for resolving datasource filenames.
-        print_warnings: if True, then any warning messages will be printed after loading.
     """
     # Start a SpecDict, including a hierarchy of default values.
-    if key.name in spec.keys():
-        root_name = str(spec[key.name])
+    if key.name in spec_file_dict.keys():
+        root_name = str(spec_file_dict[key.name])
     elif defaults is not None and key.name in defaults.keys():
         root_name = str(defaults[key.name])
     else:
         root_name = ''
 
-    spec_dict: SpecDict = _wrap_with_spec_dict(root_name, spec, defaults, DEFAULTS)
+    spec_dict: SpecDict = _wrap_with_spec_dict(root_name, spec_file_dict, defaults, DEFAULTS)
 
     name: str = spec_dict.get_string(key.name, DEFAULT_NAME)
     author: str = spec_dict.get_string(key.author, DEFAULT_AUTHOR)
@@ -148,10 +144,6 @@ def interpret_spec_file(
         entities=entities,
         parameters=parameters,
     )
-
-    if print_warnings:
-        for warning in spec_dict.warnings:
-            print('Warning:', warning)
 
     return model_spec
 

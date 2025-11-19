@@ -1,4 +1,5 @@
 from importlib.abc import Traversable
+from os import PathLike
 from pathlib import Path
 
 
@@ -18,7 +19,7 @@ def head(file: Path | Traversable, number_of_lines: int = 5) -> None:
             print(line.rstrip())
 
 
-def cat(file: Path | Traversable) -> None:
+def cat(file: PathLike | Traversable) -> None:
     """
     Print all lines of a text file.
 
@@ -30,7 +31,8 @@ def cat(file: Path | Traversable) -> None:
             print(line.rstrip())
 
 
-def print_file_tree(start: Path | Traversable, indent: str = '  ', prefix: str = '') -> None:
+def print_file_tree(start: PathLike | Traversable, indent: str = '  ', prefix: str = '') -> None:
+    start = Path(start)
     if start.exists():
         if start.is_dir():
             print(f'{prefix}{start.name}/')

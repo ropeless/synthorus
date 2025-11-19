@@ -1,10 +1,9 @@
-"""
-Module to easily capture experiment data.
-"""
 from __future__ import annotations
 
+import json
 from abc import abstractmethod, ABC
-from typing import Tuple, MutableMapping, Iterator, Dict, Iterable, List, Mapping
+from io import StringIO
+from typing import MutableMapping, Iterator, Dict, Iterable, List, Mapping, Sequence, Tuple, Set
 
 import numpy as np
 import pandas as pd
@@ -14,10 +13,15 @@ ValueType = object
 
 
 class DataCatcher(ABC):
+    """
+    A data catcher is an object to easily capture ad-hoc data records.
+
+    Records and columns can be added at any time. In general, columns are added as needed.
+    """
 
     def __init__(self, columns: Iterable[str] = ()):
-        self._columns = ()
-        self._column_set = set()
+        self._columns: Tuple[str, ...] = ()
+        self._column_set: Set[str] = set()
         self.new_column(*columns)
 
     def new_column(self, *column: str) -> None:
@@ -37,7 +41,7 @@ class DataCatcher(ABC):
         return column in self._column_set
 
     @property
-    def columns(self) -> Tuple[str, ...]:
+    def columns(self) -> Sequence[str]:
         return self._columns
 
     @abstractmethod
@@ -120,6 +124,30 @@ class DataCatcher(ABC):
             dtype=dtype
         )
 
+    def as_json(self, indent: int = 4) -> str:
+        dent: str = ' ' * indent
+        string_io = StringIO()
+
+        def _print(*args) -> None:
+            print(*args, file=string_io)
+
+        _print('{')
+        field_names: str = ', '.join(json.dumps(column) for column in self.columns)
+        columns_name: str = json.dumps('columns')
+        records_name: str = json.dumps('records')
+        _print(f'{dent}{columns_name}: [{field_names}],')
+        _print(f'{dent}{records_name}: [')
+
+        last_i: int = len(self) - 1
+        for i, record in enumerate(self):
+            sep = ',' if i < last_i else ''
+            record_str: str = ', '.join(json.dumps(record.get(column)) for column in self.columns)
+            _print(f'{dent}{dent}[{record_str}]{sep}')
+        _print(f'{dent}]')
+        _print('}')
+
+        return string_io.getvalue()
+
     def as_dataframe(self, default=None, dtype=None) -> pd.DataFrame:
         """
         Construct a Pandas DataFrame from the records.
@@ -134,7 +162,7 @@ class DataCatcher(ABC):
             a Pandas DataFrame.
         """
         if len(self) == 0:
-            return pd.DataFrame(data=[], columns=self.columns)
+            return pd.DataFrame(data=[], columns=tuple(self.columns))
 
         if isinstance(default, dict):
             _default = lambda col: default.get(col)
@@ -243,14 +271,14 @@ class Record(MutableMapping[str, ValueType]):
         for col, val in zip(self.columns, values):
             self[col] = val
 
-    def get_column_values(self) -> Tuple[ValueType, ...]:
+    def get_column_values(self) -> Sequence[ValueType]:
         return tuple(
             self.get(col)
             for col in self.columns
         )
 
     @property
-    def columns(self) -> Tuple[str, ...]:
+    def columns(self) -> Sequence[str]:
         return self._catcher.columns
 
     def __getattr__(self, column: str) -> ValueType:
@@ -265,12 +293,12 @@ class Record(MutableMapping[str, ValueType]):
 class RamDataCatcher(DataCatcher):
     """
     A DataCatcher that just keeps data in RAM.
-    This is a reference implementation.
+    This is a reference implementation of `DataCatcher`.
     """
 
     def __init__(self, columns: Iterable[str] = ()):
         super().__init__(columns)
-        self._records = []
+        self._records: List[Record] = []
 
     def append(self) -> Record:
         record = RamRecord(self)

@@ -14,7 +14,7 @@ from synthorus.dataset import Dataset, PandasDataset, MathDataset, MathRV, OdbcD
     PostgresDataset, read_table_builder
 from synthorus.error import SynthorusError
 from synthorus.utils import dataframe_extras
-from synthorus.utils.clean_inline import clean_inline
+from synthorus.utils.string_extras import unindent
 from synthorus.utils.config_help import config
 from synthorus.utils.parse_formula import parse_formula
 from synthorus.utils.validate_inputs import validate_inputs
@@ -242,7 +242,7 @@ def _make_dataset_text(
         file_path: Path = _find_file(input_spec.location, roots)
         return _make_dataset_text_from_io(data_source_spec, file_path)
     elif isinstance(input_spec, TextInputSpecInline):
-        io = StringIO(clean_inline(input_spec.inline))
+        io = StringIO(unindent(input_spec.inline))
         return _make_dataset_text_from_io(data_source_spec, io)
     else:
         raise SynthorusError(f'unsupported dataset input spec: {type(input_spec)}')

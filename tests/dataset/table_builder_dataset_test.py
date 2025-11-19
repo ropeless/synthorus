@@ -3,14 +3,14 @@ from io import StringIO
 import pandas as pd
 
 from synthorus.dataset import read_table_builder
-from synthorus.utils.clean_inline import clean_inline
+from synthorus.utils.string_extras import unindent
 from tests.helpers.unittest_fixture import Fixture, test_main
 
 
 class TableBuilderDatasetTest(Fixture):
 
     def test_it(self):
-        source = StringIO(clean_inline("""
+        source = StringIO(unindent("""
             Australian Bureau of Statistics
             
             "2021 Census - employment, income and education"

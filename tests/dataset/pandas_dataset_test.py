@@ -3,14 +3,14 @@ from io import StringIO
 import pandas as pd
 
 from synthorus.dataset import PandasDataset
-from synthorus.utils.clean_inline import clean_inline
+from synthorus.utils.string_extras import unindent
 from tests.helpers.unittest_fixture import Fixture, test_main
 
 
 class PandasDatasetTest(Fixture):
 
     def test_with_weights_as_series(self):
-        source = StringIO(clean_inline("""
+        source = StringIO(unindent("""
             "Age","Sex",
             "0","Male",47069
             "0","Female",44443
@@ -47,7 +47,7 @@ class PandasDatasetTest(Fixture):
         self.assertEqual(list(crosstab_sex.iloc[1, :]), ['Male', 47069 + 47785 + 48413])
 
     def test_with_weights_as_str(self):
-        source = StringIO(clean_inline("""
+        source = StringIO(unindent("""
             "Age","Sex","weights"
             "0","Male",47069
             "0","Female",44443
@@ -84,7 +84,7 @@ class PandasDatasetTest(Fixture):
         self.assertEqual(list(crosstab_sex.iloc[1, :]), ['Male', 47069 + 47785 + 48413])
 
     def test_with_weights_as_int(self):
-        source = StringIO(clean_inline("""
+        source = StringIO(unindent("""
             "Age","Sex", "weights"
             "0","Male",47069
             "0","Female",44443

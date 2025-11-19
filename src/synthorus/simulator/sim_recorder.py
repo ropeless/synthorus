@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
+from io import TextIOWrapper
 from os import PathLike
 from pathlib import Path
-from typing import Sequence, Iterator, Dict, Optional, Iterable, Tuple, Mapping
+from typing import Sequence, Iterator, Dict, Iterable, Tuple, Mapping, List
 
 from ck.pgm import State
 
@@ -28,7 +29,7 @@ class SimRecorder(ABC):
         """
 
     @abstractmethod
-    def write_record(self, entity_name: str, record: SimRecord):
+    def write_record(self, entity_name: str, record: SimRecord) -> None:
         """
         Record one record for the given named entity.
         This will only be called between self.start_entity(entity_name, field_names)
@@ -37,7 +38,7 @@ class SimRecorder(ABC):
         """
 
     @abstractmethod
-    def finish(self):
+    def finish(self) -> None:
         """
         Called when the simulation finished, even if an exception is thrown.
         """
@@ -89,14 +90,14 @@ class CompositeRecorder(SimRecorder):
             result = max(result, start_id)
         return result
 
-    def finish(self):
+    def finish(self) -> None:
         """
         Passes 'finish' to all delegates.
         """
         for recorder in self.recorders:
             recorder.finish()
 
-    def write_record(self, entity_name: str, record: SimRecord):
+    def write_record(self, entity_name: str, record: SimRecord) -> None:
         """
         Passes 'write_record' to all delegates.
         """
@@ -107,13 +108,19 @@ class CompositeRecorder(SimRecorder):
 class CSVRecorder(SimRecorder):
     """
     A SimRecorder that writes records to a CSV file for each entity.
+    There is one file per entity in a nominated directory.
+
+    The recorder saves each record to file as the record is provided.
+    Thus, if the simulator fails to complete for some reason, the
+    records are still available.
     """
 
-    def __init__(self, directory: PathLike, sep: str = ','):
-        self._directory = Path(directory)
-        self._files = {}
-        self._sep = sep
-        self._field_names = None
+    def __init__(self, directory: PathLike, sep: str = ',', start_id: int = 1) -> None:
+        self._directory: Path = Path(directory)
+        self._files: Dict[str, TextIOWrapper] = {}
+        self._field_names: Dict[str, List[str]] = {}
+        self._sep: str = sep
+        self._start_id: int = start_id
 
     def start_entity(self, entity_name: str, field_names: Sequence[str]) -> int:
         assert entity_name not in self._files.keys()
@@ -123,12 +130,11 @@ class CSVRecorder(SimRecorder):
         path = self._directory / (entity_name + '.csv')
         file = open(path, 'w')
         self._files[entity_name] = file
-
-        self._field_names = field_names
+        self._field_names[entity_name] = list(field_names)
         self._write(file, field_names)
-        return 1
+        return self._start_id
 
-    def finish(self):
+    def finish(self) -> None:
         exception = None
         for file in self._files.values():
             try:
@@ -140,13 +146,15 @@ class CSVRecorder(SimRecorder):
         if exception is not None:
             raise exception
 
-    def write_record(self, entity_name: str, record: SimRecord):
+    def write_record(self, entity_name: str, record: SimRecord) -> None:
         file = self._files[entity_name]
-        self._write(file, [record.get(field) for field in self._field_names])
+        fields = self._field_names[entity_name]
+        self._write(file, [record.get(field) for field in fields])
 
-    def _write(self, file, values: Sequence[State]):
+    def _write(self, file, values: Sequence[State]) -> None:
         file.write(self._sep.join(self._clean_val(val) for val in values))
         file.write('\n')
+        file.flush()
 
     @staticmethod
     def _clean_val(val: State) -> str:
@@ -174,30 +182,47 @@ class MemoryRecorder(SimRecorder):
     """
     A SimRecorder that records to memory.
 
-    Access the records using the `frames` property.
-    Each entity is stored as a RamDataCatcher.
+    Access the records using the `records` property.
+    The records of each entity is stored as a `RamDataCatcher`.
     """
 
     def __init__(self):
-        self._frames: Dict[str, RamDataCatcher] = {}
-        self._cur_frame: Optional[RamDataCatcher] = None
+        self._records: Dict[str, RamDataCatcher] = {}
 
     @property
-    def frames(self) -> Dict[str, RamDataCatcher]:
-        return self._frames
+    def records(self) -> Mapping[str, RamDataCatcher]:
+        """
+        Get the records as a mapping from entity name to `RamDataCatcher`.
+
+        Examples usage:
+        ```
+        simulator: Simulator = ...
+
+        recoder = MemoryRecorder()
+        simulator.run(recorder)
+
+        my_entity_records: RamDataCatcher = recorder.records['my_entity']
+        for record in my_entity_records:
+            print(record)
+        ```
+
+        Returns:
+            A mapping from entity name to `RamDataCatcher`.
+        """
+        return self._records
 
     def start_entity(self, entity_name: str, field_names: Iterable[str]) -> int:
-        self._cur_frame = self._frames.get(entity_name)
-        if self._cur_frame is None:
-            self._frames[entity_name] = self._cur_frame = RamDataCatcher()
-        return len(self._cur_frame) + 1
+        records = self._records.get(entity_name)
+        if records is None:
+            self._records[entity_name] = records = RamDataCatcher()
+        return len(records) + 1
 
-    def finish(self):
-        self._cur_frame = None
+    def finish(self) -> None:
+        pass
 
-    def write_record(self, entity_name: str, record: SimRecord):
-        mem_record = self._cur_frame.append()
-        for col, val in record:
+    def write_record(self, entity_name: str, record: SimRecord) -> None:
+        mem_record = self._records[entity_name].append()
+        for col, val in record.items():
             mem_record[col] = val
 
 
@@ -239,7 +264,7 @@ class DebugRecorder(SimRecorder):
         # Return the starting id number
         return self._entity_start_ids.get(entity_name, 1)
 
-    def write_record(self, entity_name: str, record: SimRecord):
+    def write_record(self, entity_name: str, record: SimRecord) -> None:
         """
         Print the record.
         """
@@ -257,7 +282,7 @@ class DebugRecorder(SimRecorder):
         values = ', '.join(repr(val) for val in record.items())
         print(f'{entity_name} [{values}]', file=self._file)
 
-    def finish(self):
+    def finish(self) -> None:
         """
         Print a blank line then "Finished".
         """
