@@ -4,14 +4,6 @@ synthorus.utils package
 Submodules
 ----------
 
-synthorus.utils.clean\_inline module
-------------------------------------
-
-.. automodule:: synthorus.utils.clean_inline
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 synthorus.utils.clean\_num module
 ---------------------------------
 
