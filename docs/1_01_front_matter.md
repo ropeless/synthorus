@@ -1,6 +1,6 @@
 # _front matter_
 
-Synthorus version 0.0.0a9, built 2025-11-19 20:28:49 (AUS Eastern Summer Time).
+Synthorus version 0.0.0a10, built 2025-11-20 08:35:07 (AUS Eastern Summer Time).
 A pre-release version.
 
 These pages form a reference for the software known as Synthorus.
@@ -9,7 +9,7 @@ They are intended for users and developers of the software to help orient them
 to key design points and functionality of the software.
 
 Not all sections of this documentation will be relevant for all readers. As well as covering top-level
-organization and usage of Synthorus, these notebooks also covers some important implementation details.
+organization and usage of Synthorus, these notebooks also cover some important implementation details.
 
 This documentation is available online at
 [synthorus.readthedocs.io](https://synthorus.readthedocs.io/).

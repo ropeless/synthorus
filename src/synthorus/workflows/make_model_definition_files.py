@@ -219,8 +219,8 @@ def _extract_cross_table(
         crosstab_name: str,
         model_spec: ModelSpec,
         model_index: ModelIndex,
-        data_source_cache: DatasetCache,
-        data_specs: Dict[str, DatasourceSpec],
+        dataset_cache: DatasetCache,
+        datasource_specs: Dict[str, DatasourceSpec],
         crosstab_report: DataCatcher,
         random: SafeRandom,
         clean_path: Optional[Path],
@@ -233,7 +233,7 @@ def _extract_cross_table(
     rvs_names: List[str] = crosstab_index.rvs  # must use the index rvs as may include extras
     crosstab_rvs: Sequence[RVIndex] = [model_index.rvs[rv_name] for rv_name in rvs_names]
     datasource_name: str = crosstab_index.datasource
-    dataset: Dataset = data_source_cache[datasource_name]
+    dataset: Dataset = dataset_cache[datasource_name]
 
     crosstab_record = crosstab_report.append()
     crosstab_record['Cross-table'] = crosstab_name
@@ -264,8 +264,8 @@ def _extract_cross_table(
     max_weight = weights.max()
     num_states = crosstab_index.number_of_states
     num_suppressed = num_states - num_rows
-    data_source_sensitivity: float = data_specs[datasource_name].sensitivity
-    epsilon = 0.0 if data_source_sensitivity == 0 else crosstab_spec.epsilon
+    datasource_sensitivity: float = datasource_specs[datasource_name].sensitivity
+    epsilon = 0.0 if datasource_sensitivity == 0 else crosstab_spec.epsilon
 
     _track('State space size', num_states)
     _track('Number of rows', num_rows)
@@ -281,7 +281,7 @@ def _extract_cross_table(
         log()
         log(f'making noisy cross-table {crosstab_name!r}')
 
-        _track('Sensitivity', data_source_sensitivity)
+        _track('Sensitivity', datasource_sensitivity)
         _track('Epsilon', epsilon)
         _track('Min cell size', crosstab_spec.min_cell_size)
         _track('Max add rows', crosstab_spec.max_add_rows)
@@ -294,7 +294,7 @@ def _extract_cross_table(
         )
         noiser_result: NoiserResult = noiser(
             crosstab,
-            data_source_sensitivity,
+            datasource_sensitivity,
             epsilon,
             crosstab_spec.min_cell_size
         )

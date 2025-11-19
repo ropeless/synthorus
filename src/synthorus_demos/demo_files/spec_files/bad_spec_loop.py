@@ -1,5 +1,5 @@
 """
-This is a bad model that includes a data source loop.
+This is a bad model that includes a datasource loop.
 """
 __author__ = 'Barry Drake'
 

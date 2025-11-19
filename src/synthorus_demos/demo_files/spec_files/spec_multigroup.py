@@ -8,7 +8,7 @@ __author__ = 'Barry Drake'
 from synthorus.spec_file.keys import *
 
 spec = {
-    sensitivity: 0,             # all data_sources
+    sensitivity: 0,             # all datasources
     states: infer_distinct,     # all rvs
 
     datasources: {

@@ -307,13 +307,13 @@ def find_covering_crosstabs(
 def _resolve_rvs_states(
         model_index: ModelIndex,
         rvs_specs: Dict[str, ModelRVSpec],
-        data_source_cache: DatasetCache,
+        dataset_cache: DatasetCache,
 ) -> None:
     for rv_index in model_index.rvs.values():
         rv_index.states = _resolve_rv_states(
             rvs_specs[rv_index.name],
             rv_index,
-            data_source_cache
+            dataset_cache
         )
 
 
@@ -346,8 +346,8 @@ def _resolve_rv_states(
     else:
         # Remaining options require access to datasources
         datasets: List[Dataset] = [
-            data_source_cache[data_source_name]
-            for data_source_name in rv_index.all_datasources
+            data_source_cache[datasource_name]
+            for datasource_name in rv_index.all_datasources
         ]
         if not need_none:
             need_none = any(datasource.value_maybe_none(rv_name) for datasource in datasets)

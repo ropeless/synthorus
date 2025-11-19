@@ -41,9 +41,9 @@ DEFAULTS: Mapping[str, Any] = MappingProxyType({
 })
 
 # These are the top-level section names in a spec dictionary.
-# These are not inherited across each other, i.e.,
-# a need for 'entities' within 'rvs' does not inherit
-# from the top-level.
+# Specifically, these names merely introduce sub-dictionaries.
+# These names are not inherited across each other. E.g., there
+# is no need for the 'rvs' section to inherit the 'entities' section.
 SECTIONS: List[str] = [
     key.datasources,
     key.rvs,
@@ -445,7 +445,7 @@ def _interpret_crosstab(
     rvs: List[str]
 
     if isinstance(crosstab_spec, str):
-        # The crosstab_spec is a string - assume it is a data_source id
+        # The crosstab_spec is a string - assume it is a datasource id
         datasource = crosstab_spec
         crosstab_spec_dict = parent.sub_dict(crosstab_name)
         datasource_spec: Optional[DatasourceSpec] = datasources.get(datasource)

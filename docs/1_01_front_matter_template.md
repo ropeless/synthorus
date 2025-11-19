@@ -9,7 +9,7 @@ They are intended for users and developers of the software to help orient them
 to key design points and functionality of the software.
 
 Not all sections of this documentation will be relevant for all readers. As well as covering top-level
-organization and usage of Synthorus, these notebooks also covers some important implementation details.
+organization and usage of Synthorus, these notebooks also cover some important implementation details.
 
 This documentation is available online at
 [synthorus.readthedocs.io](https://synthorus.readthedocs.io/).

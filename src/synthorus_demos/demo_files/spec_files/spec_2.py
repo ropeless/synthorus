@@ -105,14 +105,14 @@ spec = {
         'q': {states: 20},                  # = range(20) = 0, 1, 2, ..., 18, 19
         'double_q': {states: {stop: 40}},   # = range(0, 40) = 0, 1, 2, ..., 38, 39
         'square_q': {states: infer_range},  # min, min+1, min+2, ..., max-2, max-1, max
-        'r': {datasource: 'double_r'},     # use default, i.e., infer_range, using explicit data source
+        'r': {datasource: 'double_r'},     # use default, i.e., infer_range, using explicit datasource
         'double_r': {},                     # use default, i.e., infer_range
         'square_r': {},                     # use default, i.e., infer_range
     },
 
     crosstabs: [
-        'xyz',    # use the rvs as defined in data source 'xyx'
-        'abc',    # use the rvs as defined in data source 'abc'
+        'xyz',    # use the rvs as defined in data ource 'xyx'
+        'abc',    # use the rvs as defined in datasource 'abc'
         {rvs: ['A', 'X']},
         {rvs: ['q', 'double_q']},
         {rvs: ['q', 'square_q']},

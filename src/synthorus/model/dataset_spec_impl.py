@@ -234,67 +234,67 @@ class DatasetSpecDBMS(BaseModel):
 
 
 def _make_dataset_text(
-        data_source_spec: DatasetSpecCsv | DatasetSpecTableBuilder,
+        dataset_spec: DatasetSpecCsv | DatasetSpecTableBuilder,
         roots: Sequence[Path | Traversable],
 ) -> Dataset:
-    input_spec: TextInputSpec = data_source_spec.input
+    input_spec: TextInputSpec = dataset_spec.input
     if isinstance(input_spec, TextInputSpecLocation):
         file_path: Path = _find_file(input_spec.location, roots)
-        return _make_dataset_text_from_io(data_source_spec, file_path)
+        return _make_dataset_text_from_io(dataset_spec, file_path)
     elif isinstance(input_spec, TextInputSpecInline):
         io = StringIO(unindent(input_spec.inline))
-        return _make_dataset_text_from_io(data_source_spec, io)
+        return _make_dataset_text_from_io(dataset_spec, io)
     else:
         raise SynthorusError(f'unsupported dataset input spec: {type(input_spec)}')
 
 
-def _make_dataset_pickle(data_source_spec: DatasetSpecPickle, roots: Sequence[Path | Traversable]) -> Dataset:
-    file_path: Path = _find_file(data_source_spec.location, roots)
+def _make_dataset_pickle(dataset_spec: DatasetSpecPickle, roots: Sequence[Path | Traversable]) -> Dataset:
+    file_path: Path = _find_file(dataset_spec.location, roots)
 
     with open(file_path, 'rb') as file:
         dataframe: pd.DataFrame = pickle.load(file)
 
     datasource: PandasDataset = _finish_make_dataframe(
         dataframe,
-        data_source_spec.weight,
-        data_source_spec.rv_map,
-        data_source_spec.rv_define,
+        dataset_spec.weight,
+        dataset_spec.rv_map,
+        dataset_spec.rv_define,
     )
     return datasource
 
 
-def _make_dataset_parquet(data_source_spec: DatasetSpecParquet, roots: Sequence[Path | Traversable]) -> Dataset:
-    file_path: Path = _find_file(data_source_spec.location, roots)
+def _make_dataset_parquet(dataset_spec: DatasetSpecParquet, roots: Sequence[Path | Traversable]) -> Dataset:
+    file_path: Path = _find_file(dataset_spec.location, roots)
 
     dataframe: pd.DataFrame = pd.read_parquet(file_path)
 
     datasource: PandasDataset = _finish_make_dataframe(
         dataframe,
-        data_source_spec.weight,
-        data_source_spec.rv_map,
-        data_source_spec.rv_define,
+        dataset_spec.weight,
+        dataset_spec.rv_map,
+        dataset_spec.rv_define,
     )
     return datasource
 
 
-def _make_dataset_feather(data_source_spec: DatasetSpecFeather, roots: Sequence[Path | Traversable]) -> Dataset:
-    file_path: Path = _find_file(data_source_spec.location, roots)
+def _make_dataset_feather(dataset_spec: DatasetSpecFeather, roots: Sequence[Path | Traversable]) -> Dataset:
+    file_path: Path = _find_file(dataset_spec.location, roots)
 
     dataframe: pd.DataFrame = pd.read_feather(file_path)
 
     datasource: PandasDataset = _finish_make_dataframe(
         dataframe,
-        data_source_spec.weight,
-        data_source_spec.rv_map,
-        data_source_spec.rv_define,
+        dataset_spec.weight,
+        dataset_spec.rv_map,
+        dataset_spec.rv_define,
     )
     return datasource
 
 
-def _make_dataset_function(data_source_spec: DatasetSpecFunction) -> Dataset:
-    func: str = data_source_spec.function
-    rv_states: Dict[str, int | List[State]] = data_source_spec.rvs
-    output_rv: str = data_source_spec.output_rv
+def _make_dataset_function(dataset_spec: DatasetSpecFunction) -> Dataset:
+    func: str = dataset_spec.function
+    rv_states: Dict[str, int | List[State]] = dataset_spec.rvs
+    output_rv: str = dataset_spec.output_rv
 
     if output_rv in rv_states.keys():
         raise SynthorusError(f'output rv included in input rvs: {output_rv!r}')
@@ -314,13 +314,13 @@ def _make_dataset_function(data_source_spec: DatasetSpecFunction) -> Dataset:
     )
 
 
-def _make_dataset_dbms(data_source_spec: DatasetSpecDBMS) -> Dataset:
-    api: Literal['odbc', 'postgres'] = data_source_spec.type
+def _make_dataset_dbms(dataset_spec: DatasetSpecDBMS) -> Dataset:
+    api: Literal['odbc', 'postgres'] = dataset_spec.type
 
-    schema_name: Optional[str] = data_source_spec.schema_name
-    table_name: str = data_source_spec.table_name
-    column_names: Optional[List[str]] = data_source_spec.rvs
-    connection: Optional[Dict[str, Optional[str | int]]] = data_source_spec.connection
+    schema_name: Optional[str] = dataset_spec.schema_name
+    table_name: str = dataset_spec.table_name
+    column_names: Optional[List[str]] = dataset_spec.rvs
+    connection: Optional[Dict[str, Optional[str | int]]] = dataset_spec.connection
 
     # Resolve the schema name
     if schema_name is None:
@@ -398,19 +398,19 @@ def _find_file(location: str, roots: Sequence[Path | Traversable]) -> Path:
 
 
 def _make_dataset_text_from_io(
-        data_source_spec: DatasetSpecCsv | DatasetSpecTableBuilder,
+        dataset_spec: DatasetSpecCsv | DatasetSpecTableBuilder,
         io: Path | StringIO,
 ) -> Dataset:
-    data_format: Literal['csv', 'table_builder'] = data_source_spec.type
+    data_format: Literal['csv', 'table_builder'] = dataset_spec.type
 
     dataframe: pd.DataFrame
     weight: Optional[ColumnSpec]
     try:
         if data_format == 'csv':
-            sep = data_source_spec.sep
-            header = data_source_spec.header
-            skip_blank_lines = data_source_spec.skip_blank_lines
-            skip_initial_space = data_source_spec.skip_initial_space
+            sep = dataset_spec.sep
+            header = dataset_spec.header
+            skip_blank_lines = dataset_spec.skip_blank_lines
+            skip_initial_space = dataset_spec.skip_initial_space
 
             # Pass low_memory=False to ensure consistent type inference.
             dataframe = pd.read_csv(
@@ -421,7 +421,7 @@ def _make_dataset_text_from_io(
                 skipinitialspace=skip_initial_space,
                 low_memory=False
             )
-            weight = data_source_spec.weight
+            weight = dataset_spec.weight
         elif data_format == 'table_builder':
             dataframe = read_table_builder(io)
             weight = -1
@@ -436,8 +436,8 @@ def _make_dataset_text_from_io(
     datasource: PandasDataset = _finish_make_dataframe(
         dataframe,
         weight,
-        data_source_spec.rv_map,
-        data_source_spec.rv_define,
+        dataset_spec.rv_map,
+        dataset_spec.rv_define,
     )
     return datasource
 

@@ -27,7 +27,7 @@ spec = {
         },
         'bmi': {
             data_format: function,
-            condition: [],  # allow data source to provide a distribution for weight and height
+            condition: [],  # allow the datasource to provide a distribution for weight and height
             function:
             """
             int(weight / height / height * 10000 + 0.5) / 10

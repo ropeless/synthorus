@@ -103,23 +103,23 @@ def report_privacy(
         _print()
 
         # Get the datasources in a stable order, and identify those with zero sensitivity
-        sorted_data_sources: List[str] = sorted(model_spec.datasources.keys())
-        zero_sensitivity_data_sources: List[str] = [
+        sorted_datasources: List[str] = sorted(model_spec.datasources.keys())
+        zero_sensitivity_datasources: List[str] = [
             datasource_name
-            for datasource_name in sorted_data_sources
+            for datasource_name in sorted_datasources
             if model_spec.datasources[datasource_name].sensitivity <= 0
         ]
 
-        if len(zero_sensitivity_data_sources) > 0:
+        if len(zero_sensitivity_datasources) > 0:
             _print(
-                f'{prefix}Datasources with zero sensitivity ({len(zero_sensitivity_data_sources)} of {len(sorted_data_sources)}):')
-            for data_source_name in zero_sensitivity_data_sources:
+                f'{prefix}Datasources with zero sensitivity ({len(zero_sensitivity_datasources)} of {len(sorted_datasources)}):')
+            for data_source_name in zero_sensitivity_datasources:
                 _print(f'{next_prefix}{data_source_name}')
             _print()
 
-        _print(f'{prefix}Datasources ({len(sorted_data_sources)}):')
-        for datasource_name in sorted_data_sources:
-            _privacy_report_data_source(
+        _print(f'{prefix}Datasources ({len(sorted_datasources)}):')
+        for datasource_name in sorted_datasources:
+            _privacy_report_datasource(
                 datasource_name,
                 model_spec.datasources[datasource_name],
                 dataset_cache[datasource_name],
@@ -198,7 +198,7 @@ def _privacy_report_rv(
         _print(f'{prefix}Distribution: {min_val:.4} to {max_val:.4} (range)')
 
 
-def _privacy_report_data_source(
+def _privacy_report_datasource(
         datasource_name: str,
         datasource_spec: DatasourceSpec,
         dataset: Dataset,
