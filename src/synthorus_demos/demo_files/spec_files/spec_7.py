@@ -8,6 +8,7 @@ from synthorus.spec_file.keys import *
 
 spec = {
     sensitivity: 0,
+    min_cell_size: 0,
 
     roots: './datasets',
 

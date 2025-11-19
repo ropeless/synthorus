@@ -200,7 +200,7 @@ def _get_sim_field(sim: Simulator, entity: SimEntity, field: FieldRef | str) -> 
         field_name = field
     else:
         _find_sim_field_ref(sim, entity, field, found)
-        field_name = field.name
+        field_name = field.field
 
     if len(found) == 0:
         raise SynthorusError(f'field not found: {field_name!r}')
@@ -220,14 +220,14 @@ def _find_sim_field_str(sim: Simulator, entity: SimEntity, field: str, found: Li
         entity = entity.parent
 
 
-def _find_sim_field_ref(sim: Simulator, entity: SimEntity, field: FieldRef, found: List[SimField]) -> None:
-    if field.entity == '':
-        _find_sim_field_param(sim, field.name, found)
+def _find_sim_field_ref(sim: Simulator, entity: SimEntity, field_ref: FieldRef, found: List[SimField]) -> None:
+    if field_ref.entity == '':
+        _find_sim_field_param(sim, field_ref.field, found)
         return
 
     while True:
-        if field.entity == entity.name:
-            got: Optional[SimField] = entity.get(field.name)
+        if field_ref.entity == entity.name:
+            got: Optional[SimField] = entity.get(field_ref.field)
             if got is not None:
                 found.append(got)
             return
@@ -252,17 +252,17 @@ def _add_cardinality(sim: Simulator, entity: SimEntity, cardinality: List[Condit
 
 
 def _add_stopping_condition(sim: Simulator, entity: SimEntity, condition) -> None:
+    test_field_ref = FieldRef(entity=entity.name, field=condition.field)
+    test_field: SimField = _get_sim_field(sim, entity, test_field_ref)
+
     if isinstance(condition, ConditionSpecFixedLimit):
-        test_field: SimField = _get_sim_field(sim, entity, condition.field)
         entity.add_cardinality_fixed_limit(test_field, condition.limit, condition.op)
 
     elif isinstance(condition, ConditionSpecVariableLimit):
-        test_field: SimField = _get_sim_field(sim, entity, condition.field)
         limit_field: SimField = _get_sim_field(sim, entity, condition.limit_field)
         entity.add_cardinality_variable_limit(test_field, limit_field, condition.op)
 
     elif isinstance(condition, ConditionSpecStates):
-        test_field: SimField = _get_sim_field(sim, entity, condition.field)
         entity.add_cardinality_field_state(test_field, *condition.states)
 
     else:

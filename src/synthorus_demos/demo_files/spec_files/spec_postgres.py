@@ -8,10 +8,12 @@ __author__ = 'Barry Drake'
 from synthorus.spec_file.keys import *
 
 spec = {
+    sensitivity: 0,
+    min_cell_size: 0,
+
     datasources: {
         'home_rentals': {
             data_format: postgres,
-            sensitivity: 0,
             table: 'home_rentals',
             schema: 'demo',
             connection: {

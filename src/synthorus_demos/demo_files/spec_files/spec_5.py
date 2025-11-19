@@ -8,6 +8,7 @@ from synthorus.spec_file.keys import *
 
 spec = {
     sensitivity: 0,          # for all datasources
+    min_cell_size: 0,         # for all cross-tables
     states: infer_distinct,  # for all rvs
 
     datasources: {

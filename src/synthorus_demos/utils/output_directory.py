@@ -23,12 +23,17 @@ class output_directory(Path):
 
     def __init__(self, demo_name: str, overwrite: bool = True, allow_tmp: bool = True):
         """
-        Preparing an output directory for output files of a demo script.
+        Prepare an output directory for output files of a demo script.
 
         This will create an empty directory called DEMO_OUT/demo_name, where
         DEMO_OUT is the value of:
             config.DEMO_OUT (i.e., config.py or OS environment),
             or a temporary directory if config.DEMO_OUT is not configured and allow_tmp is true.
+
+        Ensures:
+            `self.name == demo_name`
+            `self.is_dir()`
+            the directory is empty, i.e., `any(self.iterdir())` is False.
 
         Args:
             demo_name:  The name of the demo session, used to create a subdirectory in the configured
@@ -68,7 +73,7 @@ class output_directory(Path):
                 raise RuntimeError(f'not a directory: {sub_dir}')
             if overwrite:
                 shutil.rmtree(sub_dir)
-            elif len([f for f in sub_dir.iterdir() if not f.name.startswith('.')]) != 0:
+            elif any(sub_dir.iterdir()):
                 raise RuntimeError(f'not empty: {sub_dir}')
         sub_dir.mkdir(exist_ok=True, parents=False)
 

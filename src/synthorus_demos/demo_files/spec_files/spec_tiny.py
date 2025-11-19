@@ -1,16 +1,17 @@
 """
-This is an example minimal Synthorus spec file.
+This is an example simple Synthorus spec file.
 """
 from synthorus.spec_file.keys import *
 
 spec = {
-    # default for all random variables
-    states: infer_distinct,
+    sensitivity: 0,  # no data is sensitive data
+    min_cell_size: 0,  # no data will be redacted
+
+    states: infer_distinct,  # default for all random variables
 
     datasources: {
         'xyz': {
             data_format: csv,
-            sensitivity: 0,
             inline: """
                 X,Y,Z
                 y,y,y

@@ -14,6 +14,7 @@ from ck.pgm import PGM, RandomVariable
 from synthorus.error import SynthorusError
 from synthorus.model.make_model_index import find_covering_crosstabs
 from synthorus.model.model_index import ModelIndex, EntityIndex, EntityCrosstabIndex
+from synthorus.utils.clean_state import clean_state
 from synthorus.workflows.cross_table_loader import CrossTableLoader
 
 _Factor: TypeAlias = List[str]  # A collection of random variable names.
@@ -108,6 +109,11 @@ def _make_entity_pgm(
     # Add factors to the PGM (using CK).
     model_from_cross_tables(pgm, cross_tables)
 
+    # Check that no potential function is zero as that implies the PGM cannot be sampled.
+    # If so, it's probably an empty cross-tables.
+    if any(factor.is_zero for factor in pgm.factors):
+        raise SynthorusError(f'could not make a valid PGM for entity {entity_name} (probably an empty cross-table)')
+
     log(f'finished making PGM for entity: {entity_name}')
     return pgm
 
@@ -191,7 +197,7 @@ class EntityCrossTableMaker:
         ck_crosstab: CrossTable = CrossTable(
             rvs,
             update=(
-                (tuple(rv.state_idx(state) for rv, state in zip(rvs, row[:-1])), row[-1])
+                (tuple(rv.state_idx(clean_state(state)) for rv, state in zip(rvs, row[:-1])), row[-1])
                 for row in dataframe.itertuples(index=False)
             )
         )

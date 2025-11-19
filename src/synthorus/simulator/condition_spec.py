@@ -21,7 +21,7 @@ class ConditionSpecFixedLimit(BaseModel):
     A stopping condition: stop if "{field} {op} {limit}".
     """
     type: Literal['fixed'] = 'fixed'  # for JSON round trip
-    field: str
+    field: str  # name of a field in the current entity
     op: OpSpec = DEFAULT_OP
     limit: State
 
@@ -31,7 +31,7 @@ class ConditionSpecVariableLimit(BaseModel):
     A stopping condition: stop if "{field} {op} {limit_field}".
     """
     type: Literal['variable'] = 'variable'  # for JSON round trip
-    field: str
+    field: str  # name of a field in the current entity
     op: OpSpec = DEFAULT_OP
     limit_field: FieldRef | str  # limit is the value of the field.
 

@@ -8,7 +8,7 @@ import pandas as pd
 
 from synthorus.dataset import Dataset
 from synthorus.error import SynthorusError
-from synthorus.model.cross_table.noise import LaplaceNoise
+from synthorus.model.cross_table.noise import LaplaceNoise, NoiserResult
 from synthorus.model.cross_table.safe_random import SafeRandom
 from synthorus.model.dataset_cache import DatasetCache
 from synthorus.model.datasource_spec import DatasourceSpec
@@ -231,10 +231,9 @@ def _extract_cross_table(
     crosstab_index: CrosstabIndex = model_index.crosstabs[crosstab_name]
 
     rvs_names: List[str] = crosstab_index.rvs  # must use the index rvs as may include extras
-
     crosstab_rvs: Sequence[RVIndex] = [model_index.rvs[rv_name] for rv_name in rvs_names]
-    data_source_name: str = crosstab_index.datasource
-    datasource: Dataset = data_source_cache[data_source_name]
+    datasource_name: str = crosstab_index.datasource
+    dataset: Dataset = data_source_cache[datasource_name]
 
     crosstab_record = crosstab_report.append()
     crosstab_record['Cross-table'] = crosstab_name
@@ -252,13 +251,12 @@ def _extract_cross_table(
 
     log()
     log(f'making clean cross-table {crosstab_name!r}')
-    log(f'Random variables: {", ".join(rvs_names)}')
 
-    _track('Data-source', data_source_name)
+    _track('Random variables', ' '.join(repr(rv) for rv in rvs_names))
     _track('Number-of-rvs', len(rvs_names))
-    _track('RVs', ' '.join(repr(rv) for rv in rvs_names))
+    _track('Datasource', datasource_name)
 
-    crosstab: pd.DataFrame = datasource.crosstab(rvs_names)
+    crosstab: pd.DataFrame = dataset.crosstab(rvs_names)
     weights = crosstab.iloc[:, -1]
     num_rows = crosstab.shape[0]
     total_weight = weights.sum()
@@ -266,15 +264,15 @@ def _extract_cross_table(
     max_weight = weights.max()
     num_states = crosstab_index.number_of_states
     num_suppressed = num_states - num_rows
-    data_source_sensitivity: float = data_specs[data_source_name].sensitivity
+    data_source_sensitivity: float = data_specs[datasource_name].sensitivity
     epsilon = 0.0 if data_source_sensitivity == 0 else crosstab_spec.epsilon
 
-    _track('State-space-size', num_states)
-    _track('Number-of-rows', num_rows)
-    _track('Number-of-suppressed-rows', num_suppressed)
-    _track('Min-weight', min_weight)
-    _track('Max-weight', max_weight)
-    _track('Total-weight', total_weight)
+    _track('State space size', num_states)
+    _track('Number of rows', num_rows)
+    _track('Number of suppressed rows', num_suppressed)
+    _track('Min weight', min_weight)
+    _track('Max weight', max_weight)
+    _track('Total weight', total_weight)
 
     if clean_path is not None:
         save_cross_table(crosstab, clean_path, crosstab_name)
@@ -285,8 +283,8 @@ def _extract_cross_table(
 
         _track('Sensitivity', data_source_sensitivity)
         _track('Epsilon', epsilon)
-        _track('Min-cell-size', crosstab_spec.min_cell_size)
-        _track('Max-add-rows', crosstab_spec.max_add_rows)
+        _track('Min cell size', crosstab_spec.min_cell_size)
+        _track('Max add rows', crosstab_spec.max_add_rows)
 
         noiser = LaplaceNoise(
             random,
@@ -294,7 +292,7 @@ def _extract_cross_table(
             crosstab_spec.max_add_rows,
             log
         )
-        noiser_result = noiser(
+        noiser_result: NoiserResult = noiser(
             crosstab,
             data_source_sensitivity,
             epsilon,
@@ -306,9 +304,9 @@ def _extract_cross_table(
         rows_added = noiser_result.rows_added
         rows_final = noiser_result.rows_final
 
-        _track('Orig-rows', rows_original)
-        _track('Lost-rows', rows_lost, rows_original)
-        _track('Added-rows', rows_added, rows_original)
-        _track('Final-rows', rows_final, rows_original)
+        _track('Orig rows', rows_original)
+        _track('Lost rows', rows_lost, rows_original)
+        _track('Added rows', rows_added, rows_original)
+        _track('Final rows', rows_final, rows_original)
 
         save_cross_table(noiser_result.cross_table, noisy_path, crosstab_name)
