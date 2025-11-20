@@ -20,7 +20,7 @@ from synthorus.model.defaults import DEFAULT_ENTITY_NAME
 from synthorus.model.model_index import ModelIndex
 from synthorus.model.model_spec import ModelSpec
 from synthorus.utils.multiprocessing_extras import run_trial_processes, NumProcesses, DefaultTrialLogger, WarningMessage
-from synthorus.utils.print_function import PrintFunction, Destination, Printable
+from synthorus.utils.print_function import PrintFunction, Print
 from synthorus.utils.time_extras import timestamp
 from synthorus.workflows.cross_table_loader import CrossTableLoader
 from synthorus.workflows.file_names import MODEL_SPEC_NAME, MODEL_INDEX_NAME, REPORTS, UTILITY_REPORT_FILE_NAME, \
@@ -28,6 +28,7 @@ from synthorus.workflows.file_names import MODEL_SPEC_NAME, MODEL_INDEX_NAME, RE
 from synthorus.workflows.load_entity_pgm import load_entity_pgm
 from synthorus.workflows.make_pgms import EntityCrossTableMaker
 from synthorus.workflows.utility_measures import Measure
+from synthorus.utils.config_help import config
 
 DEFAULT_EVAL_LIMIT = 10
 DEFAULT_MEASURE_CROSSTABS = True
@@ -36,10 +37,13 @@ CHART_MAX_X_SIZE = 50
 CHART_SOURCE_COLOUR = '#008000'
 CHART_MODEL_COLOUR = '#800000'
 
-DEFAULT_PROCESSES = 1
-
 DEFAULT_MEASURES: Collection[Measure] = (Measure.HI, Measure.KL)
-CACHE_LOADED_CROSSTABS: bool = True
+
+# How many concurrent processes to use during evaluation
+DEFAULT_PROCESSES: NumProcesses = config.get('DEFAULT_PROCESSES', 1)
+
+# Keep cross-tables loaded while making PGMs
+CACHE_LOADED_CROSSTABS: bool = config.get('CACHE_LOADED_CROSSTABS', True)
 
 
 def make_utility_report(
@@ -53,7 +57,7 @@ def make_utility_report(
         processes: NumProcesses = DEFAULT_PROCESSES,
         prefix: str = '',
         indent: str = DEFAULT_INDENT,
-        log: Destination = print
+        log: PrintFunction = print
 ) -> None:
     """
     Analyse and report on model utility.
@@ -104,7 +108,7 @@ def make_utility_report(
     if limit_variable_combinations is not None and limit_variable_combinations < 1:
         raise ValueError('limit_variable_combinations must be > 1')
 
-    with PrintFunction(report_path) as _print:
+    with Print(report_path) as _print:
         log('generating report on utility')
 
         next_prefix = prefix + indent
@@ -174,7 +178,7 @@ def make_utility_report(
 # def make_chart(
 #         entity_name: str,
 #         crosstab: pd.DataFrame,
-#         model: ModelProjection,
+#         model: PGM,
 #         stats: Mapping[str, float],
 #         utility_results_directory: Path
 # ) -> None:
@@ -610,7 +614,7 @@ class Analysis:
     def __iter__(self) -> Iterator[EntityAnalysis]:
         return iter(self._entities.values())
 
-    def print_results(self, _print: Printable = print) -> None:
+    def print_results(self, _print: PrintFunction = print) -> None:
         entity: EntityAnalysis
         entity_record: EntityAnalysisRecord
 

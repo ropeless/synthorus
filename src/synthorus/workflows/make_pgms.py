@@ -15,6 +15,7 @@ from synthorus.error import SynthorusError
 from synthorus.model.make_model_index import find_covering_crosstabs
 from synthorus.model.model_index import ModelIndex, EntityIndex, EntityCrosstabIndex
 from synthorus.utils.clean_state import clean_state
+from synthorus.utils.print_function import PrintFunction
 from synthorus.workflows.cross_table_loader import CrossTableLoader
 
 _Factor: TypeAlias = List[str]  # A collection of random variable names.
@@ -24,7 +25,8 @@ def make_entity_pgms(
         model_index: ModelIndex,
         crosstab_loader: CrossTableLoader,
         save_directory_path: Path,
-        log=print,
+        *,
+        log: PrintFunction = print,
 ) -> None:
     """
     Make a PGM model for each entity needing a sampler.

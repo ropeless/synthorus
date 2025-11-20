@@ -11,8 +11,8 @@ spec = {
     comment: 'a simple demo model',
     author: 'B. Drake',
 
-    min_cell_size: 0,
     rng_n: 6,
+    min_cell_size: 0,
     epsilon: 0.1,
 
     datasources: {

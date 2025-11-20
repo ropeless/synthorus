@@ -13,7 +13,6 @@ spec = {
     weight: -1,              # for all datasources
     states: infer_distinct,  # for all rvs
     min_cell_size: 0,        # for all cross-tables
-    epsilon: 0.1,            # for all cross-tables
 
     datasources: {
         'patient_age__event_type': {

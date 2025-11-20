@@ -2,12 +2,12 @@ import shutil
 from importlib.abc import Traversable
 from os import PathLike
 from pathlib import Path
-from typing import Optional, Sequence, List, Dict, Literal
+from typing import Optional, Sequence, List, Dict
 
 import pandas as pd
 
 from synthorus.dataset import Dataset
-from synthorus.error import SynthorusError
+from synthorus.error import SynthorusError, NotReached
 from synthorus.model.cross_table.noise import LaplaceNoise, NoiserResult
 from synthorus.model.cross_table.safe_random import SafeRandom
 from synthorus.model.dataset_cache import DatasetCache
@@ -18,6 +18,7 @@ from synthorus.model.model_spec import ModelSpec, ModelCrosstabSpec
 from synthorus.simulator.make_simulator_spec_from_model_spec import make_simulator_spec_from_model_spec
 from synthorus.simulator.simulator_spec import SimulatorSpec
 from synthorus.utils.data_catcher import RamDataCatcher, DataCatcher
+from synthorus.utils.print_function import PrintFunction
 from synthorus.workflows.cross_table_loader import save_cross_table, CrossTableLoader
 from synthorus.workflows.file_names import CLEAN_CROSS_TABLES, NOISY_CROSS_TABLES, REPORTS, \
     MODEL_SPEC_NAME, SIMULATOR_SPEC_NAME, CROSSTAB_REPORT_FILE_NAME, MODEL_INDEX_NAME, ENTITY_MODELS, \
@@ -25,8 +26,10 @@ from synthorus.workflows.file_names import CLEAN_CROSS_TABLES, NOISY_CROSS_TABLE
 from synthorus.workflows.make_pgms import make_entity_pgms
 from synthorus.workflows.report_privacy import report_privacy
 from synthorus.workflows.report_spec import report_model_spec
+from synthorus.utils.config_help import config
 
-CACHE_LOADED_CROSSTABS: bool = True  # Keep crosstables loaded while making PGMs
+# Keep cross-tables loaded while making PGMs
+CACHE_LOADED_CROSSTABS: bool = config.get('CACHE_LOADED_CROSSTABS', True)
 
 
 def make_model_definition_files(
@@ -40,8 +43,8 @@ def make_model_definition_files(
         make_privacy_report: bool = True,
         make_crosstab_report: bool = True,
         make_model_spec_report: bool = True,
-        entity_pgms: Optional[Literal['clean', 'noisy']] = 'noisy',
-        log=print
+        make_pgms: bool = True,
+        log: PrintFunction = print
 ) -> None:
     """
     Given a model spec, create all model definition files, saving them to `model_definition_directory`.
@@ -75,7 +78,7 @@ def make_model_definition_files(
         make_privacy_report: flag whether to save a privacy report or not.
         make_crosstab_report: flag whether to save a cross-tables report or not.
         make_model_spec_report: flag whether to save a model spec report or not.
-        entity_pgms: flag for what PGM models should be created.
+        make_pgms: flag whether to create the PGMs or not.
         log: print function for log messages.
 
     Raises:
@@ -115,21 +118,21 @@ def make_model_definition_files(
     _extract_cross_tables(model_spec, model_index, dataset_cache, clean_path, noisy_path, crosstab_report, log)
 
     # Make PGM models if requested
-    if entity_pgms is not None:
-        log(f'creating entity PGMs: {entity_pgms}')
-        if entity_pgms == 'clean':
+    if make_pgms:
+        log(f'creating entity PGMs: {model_spec.pgm_crosstabs}')
+        if model_spec.pgm_crosstabs == 'clean':
             if clean_path is None:
                 raise ValueError('clean pgm models requested but clean cross-tables not saved.')
             crosstab_loader = CrossTableLoader(clean_path, CACHE_LOADED_CROSSTABS)
-        elif entity_pgms == 'noisy':
+        elif model_spec.pgm_crosstabs == 'noisy':
             if noisy_path is None:
                 raise ValueError('noisy pgm models requested but noisy cross-tables not saved.')
             crosstab_loader = CrossTableLoader(noisy_path, CACHE_LOADED_CROSSTABS)
         else:
-            raise SynthorusError(f'invalid make_entity_pgms: {entity_pgms!r}')
+            raise NotReached()
         entity_models_directory: Path = model_directory_path / ENTITY_MODELS
         entity_models_directory.mkdir()
-        make_entity_pgms(model_index, crosstab_loader, entity_models_directory, log)
+        make_entity_pgms(model_index, crosstab_loader, entity_models_directory, log=log)
 
     # Save initial reports
     if make_crosstab_report:

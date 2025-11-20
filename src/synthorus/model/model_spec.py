@@ -47,6 +47,13 @@ class ModelSpec(BaseModel):
     In European Symposium on Research in Computer Security (pp. 523-542). Springer, Cham.
     """
 
+    pgm_crosstabs: Literal['clean', 'noisy'] = 'noisy'
+    """
+    `pgm_crosstabs` specifies whether entity PGMs are constructed from clean or noisy
+    cross-tables. Normally this would be 'noisy', but 'clean' can be used for debug
+    or demonstration purposes.
+    """
+
     datasources: Dict[str, DatasourceSpec]  # All datasources available to this model.
     rvs: Dict[str, ModelRVSpec]  # All random variables of this model.
     crosstabs: Dict[str, ModelCrosstabSpec]  # All cross-tables.

@@ -14,7 +14,7 @@ from synthorus.model.dataset_cache import DatasetCache
 from synthorus.model.model_index import ModelIndex, CrosstabIndex
 from synthorus.model.model_spec import ModelSpec, ModelCrosstabSpec
 from synthorus.utils.clean_num import clean_num
-from synthorus.utils.print_function import PrintFunction, Destination
+from synthorus.utils.print_function import PrintFunction, Destination, Print
 from synthorus.utils.time_extras import timestamp
 from synthorus.workflows.file_names import REPORTS, MODEL_SPEC_REPORT_FILE_NAME, MODEL_SPEC_NAME, MODEL_INDEX_NAME
 
@@ -80,13 +80,13 @@ def report_model_spec(
         model_spec: The synthetic data model specification.
         model_index: The cached relationships between model components.
         dataset_cache: Object to access to model datasets.
-        destination: Where to write the report, as per PrintFunction.
+        destination: Where to write the report, as per `Print`.
         report_author: Optional name of the report author (default is system username).
         prefix: A prefix for each report line.
         indent: The additional prefix for indentation.
 
     """
-    with PrintFunction(destination) as _print:
+    with Print(destination) as _print:
         if report_author is None:
             report_author = f'user "{getpass.getuser()}"'
 
@@ -119,8 +119,10 @@ def report_model_spec(
             _print()
 
         _print(f'{prefix}Summary:')
-        num_issues: int = sum(len(issues) for issues in crosstab_issues.values())
-        if num_issues == 0:
+        if model_spec.pgm_crosstabs != 'noisy':
+            _print(f'{next_prefix}WARNING PGM cross-tables: {model_spec.pgm_crosstabs!r}')
+        num_crosstab_issues: int = sum(len(issues) for issues in crosstab_issues.values())
+        if num_crosstab_issues == 0:
             _print(f'{next_prefix}No cross-table issues.')
         else:
             for crosstab_name, issues in crosstab_issues.items():

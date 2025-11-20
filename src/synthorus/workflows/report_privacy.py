@@ -8,10 +8,10 @@ from synthorus.dataset import Dataset
 from synthorus.model.dataset_cache import DatasetCache
 from synthorus.model.datasource_spec import DatasourceSpec
 from synthorus.model.model_index import ModelIndex, CrosstabIndex, RVIndex
-from synthorus.model.model_spec import ModelSpec, ModelRVSpec, ModelCrosstabSpec
+from synthorus.model.model_spec import ModelSpec, ModelCrosstabSpec
 from synthorus.utils.clean_num import clean_num
 from synthorus.utils.math_extras import p_log_p
-from synthorus.utils.print_function import PrintFunction, Destination
+from synthorus.utils.print_function import PrintFunction, Destination, Print
 from synthorus.utils.time_extras import timestamp
 from synthorus.workflows.file_names import REPORTS, PRIVACY_REPORT_FILE_NAME, MODEL_SPEC_NAME, MODEL_INDEX_NAME
 
@@ -76,12 +76,12 @@ def report_privacy(
         model_spec: The synthetic data model specification.
         model_index: The cached relationships between model components.
         dataset_cache: Object to access to model datasets.
-        destination: Where to write the report, as per PrintFunction.
+        destination: Where to write the report, as per `Print`.
         report_author: Optional name of the report author (default is system username).
         prefix: A prefix for each report line.
         indent: The additional prefix for indentation.
     """
-    with PrintFunction(destination) as _print:
+    with Print(destination) as _print:
         next_prefix = prefix + indent
 
         if report_author is None:
@@ -96,6 +96,7 @@ def report_privacy(
         _print(f'{prefix}Model name: {model_spec.name}')
         _print(f'{prefix}Model author: {model_spec.author}')
         _print()
+        _print(f'{prefix}PGM cross-tables: {model_spec.pgm_crosstabs}')
         _print(f'{prefix}Random number generator security level: {model_spec.rng_n} ({_rng_n_str(model_spec.rng_n)})')
 
         privacy_budget: float = _calculate_privacy_budget(model_spec, model_index)
@@ -141,11 +142,10 @@ def report_privacy(
             _print()
 
         rv_names: List[str] = sorted(model_spec.rvs.keys())
-        _print(f'{prefix}Random variables ({len(rv_names)}:')
+        _print(f'{prefix}Random variables ({len(rv_names)}):')
         for rv_name in rv_names:
-            rv_spec: ModelRVSpec = model_spec.rvs[rv_name]
             rv_index: RVIndex = model_index.rvs[rv_name]
-            _privacy_report_rv(rv_name, rv_spec, rv_index, dataset_cache, _print, next_prefix, state_limit=5)
+            _privacy_report_rv(rv_name, rv_index, dataset_cache, _print, next_prefix, state_limit=5)
             _print()
 
         _print(f'{prefix}{"-" * 80}')
@@ -153,7 +153,6 @@ def report_privacy(
 
 def _privacy_report_rv(
         rv_name: str,
-        rv_spec: ModelRVSpec,
         rv_index: RVIndex,
         dataset_cache: DatasetCache,
         _print: PrintFunction,
@@ -241,7 +240,7 @@ def _privacy_report_crosstab(
     _print(f'{prefix}State space size: {crosstab_index.number_of_states:,}')
     _print(f'{prefix}Datasource: {crosstab_index.datasource}')
     _print(f'{prefix}Sensitivity: {clean_num(sensitivity)}')
-    _print(f'{prefix}Epsilon: {clean_num(crosstab_spec.epsilon)}')
+    _print(f'{prefix}Epsilon: {clean_num(epsilon)}')
     _print(f'{prefix}Min cell size: {clean_num(crosstab_spec.min_cell_size)}')
 
     distribution, total_weight, entropy = _analyse_crosstab_data(dataset)

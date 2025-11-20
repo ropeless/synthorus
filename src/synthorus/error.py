@@ -15,3 +15,12 @@ class SpecFileError(SynthorusError):
         if details is not None:
             error += f': {details}'
         super().__init__(error)
+
+
+class NotReached(AssertionError):
+    """
+    This exception is raised in code that is not expected to be reached.
+    """
+
+    def __init__(self):
+        super().__init__('not reached')

@@ -7,7 +7,7 @@ Example usage:
 
     # Assuming config.py contains:
     #    X = 2
-    #    Y = "yes"
+    #    Y = 'yes'
     #
     # And the OS environment contains:
     #    X=1
@@ -21,10 +21,10 @@ Example usage:
     'A' not in config
 
     config.X == 2
-    config['Z'] == 'abc'
-    config.get('Y') == 'yes'
-    config.get('Z') is None
-    config.get('Z', 'no') == 'no'
+    config['Y'] == 'yes'
+    config.get('Z') == 'abc'
+    config.get('A') is None
+    config.get('A', 'no') == 'no'
 
     len(config) == 3
 ```

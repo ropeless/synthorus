@@ -1,27 +1,19 @@
-"""
-This module defines class PrintFunction for
-simplifying redirection of print output.
-
-A PrintFunction operates just like the Python builtin
-print but does not accept a 'file' parameter.
-
-Example usage:
-
-    with PrintFunction(destination) as _print:
-        _print('value of x', x, sep=' is ')
-
-See comment on PrintFunction constructor for details on kinds of
-destinations.
-"""
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable, Union, Protocol
+from typing import Callable, Union, Protocol, TypeAlias
 
+PrintFunction: TypeAlias = Callable[..., None]
+"""
+A PrintFunction operates just like the Python builtin `print`
+but does not use a `file` parameter as the destinations
+are defined by the print function.
 
-# A print function that does nothing
-def NO_LOG(*_, **__) -> None:
-    pass
+The function signature used by Synthorus is actually:
+```
+(self, *args, sep: str = ' ', end: str = '\n') -> None
+```
+"""
 
 
 class Writable(Protocol):
@@ -29,12 +21,25 @@ class Writable(Protocol):
         ...
 
 
-Printable = Callable[..., None]
-Destination = Union[Path, str, Printable, Writable, None]
+Destination = Union[Path, str, PrintFunction, Writable, None]
 
 
-class PrintFunction(Callable):
-    __slots__ = ('_destinations',)
+def NO_LOG(*_, **__) -> None:
+    """
+    A print function that does nothing.
+    """
+    pass
+
+
+class Print(PrintFunction, Writable):
+    """
+    A print function to send printed text to multiple destinations.
+    Example usage:
+    ```
+    with Print(destination) as _print:
+        _print('value of x', x, sep=' is ')
+    ```
+    """
 
     def __init__(
             self,
@@ -85,17 +90,13 @@ class PrintFunction(Callable):
         if len(errors) > 0:
             raise errors[0]
 
-    def __enter__(self) -> PrintFunction:
+    def __enter__(self) -> Print:
         # All the work done in the constructor
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
         return exc_val is None
-
-
-# Use the constant NO_PRINT to print to nowhere.
-NO_PRINT = PrintFunction()
 
 
 class _Destination:
@@ -114,7 +115,7 @@ class _Destination:
         self.to_close = None
 
         if destination is None:
-            self.call = NO_PRINT
+            self.call = NO_LOG
         elif isinstance(destination, (Path, str)):  # Openable
             self.call = self._print_to_file
             self.file = open(destination, 'w', encoding=encoding)
@@ -137,6 +138,6 @@ class _Destination:
         to_close = self.to_close
         self.to_close = None
         self.file = None
-        self.call = NO_PRINT
+        self.call = NO_LOG
         if to_close is not None:
             to_close.close()

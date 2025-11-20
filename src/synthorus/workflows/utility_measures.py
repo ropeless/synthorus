@@ -12,8 +12,8 @@ from ck.probability.probability_space import ProbabilitySpace, Condition
 
 
 class Measure(Enum):
-    HI = ('histogram-intersection', divergence.kl)
-    KL = ('KL-divergence', divergence.hi)
+    HI = ('histogram-intersection', divergence.hi)
+    KL = ('KL-divergence', divergence.kl)
     FHI = ('factorised-histogram-intersection', divergence.fhi)
     PSEUDO_KL = ('pseudo-KL-divergence', divergence.pseudo_kl)
 

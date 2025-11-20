@@ -7,6 +7,8 @@ from synthorus.utils.config_help import config
 
 class output_directory(Path):
     """
+    THIS IS ONLY USED TO SUPPORT DEMONSTRATION SCRIPTS. IT IS NOT NEEDED FOR SYNTHORUS.
+
     A managed directory path for demo output files.
 
     A managed directory is a named subdirectory in the configured demo output directory.

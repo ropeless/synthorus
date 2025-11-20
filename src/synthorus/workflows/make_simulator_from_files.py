@@ -13,7 +13,7 @@ from synthorus.simulator.pgm_sim_sampler import PGMSimSampler
 from synthorus.simulator.sim_entity import SimSampler
 from synthorus.simulator.simulator import Simulator
 from synthorus.simulator.simulator_spec import SimulatorSpec, SimEntitySpec
-from synthorus.utils.print_function import PrintFunction, Destination
+from synthorus.utils.print_function import PrintFunction
 from synthorus.utils.stop_watch import timer
 from synthorus.workflows.file_names import SIMULATOR_SPEC_NAME, ENTITY_MODELS, MODEL_INDEX_NAME
 from synthorus.workflows.load_entity_pgm import load_entity_pgm
@@ -21,7 +21,8 @@ from synthorus.workflows.load_entity_pgm import load_entity_pgm
 
 def make_simulator_from_files(
         model_definition_directory: PathLike,
-        log: Destination = print,
+        *,
+        log: PrintFunction = print,
 ) -> Simulator:
     """
     Construct an instance of Simulator from the given model definition directory.
@@ -30,25 +31,24 @@ def make_simulator_from_files(
         model_definition_directory: where to read files.
         log: a destination for log messages
     """
-    with PrintFunction(log, default=None) as log:
-        log(f'make_simulator_from_files started')
+    log(f'make_simulator_from_files started')
 
-        model_definition_directory: Path = Path(model_definition_directory)
+    model_definition_directory: Path = Path(model_definition_directory)
 
-        with open(model_definition_directory / SIMULATOR_SPEC_NAME) as f:
-            sim_spec: SimulatorSpec = SimulatorSpec.model_validate_json(f.read())
+    with open(model_definition_directory / SIMULATOR_SPEC_NAME) as f:
+        sim_spec: SimulatorSpec = SimulatorSpec.model_validate_json(f.read())
 
-        with open(model_definition_directory / MODEL_INDEX_NAME) as f:
-            model_index: ModelIndex = ModelIndex.model_validate_json(f.read())
+    with open(model_definition_directory / MODEL_INDEX_NAME) as f:
+        model_index: ModelIndex = ModelIndex.model_validate_json(f.read())
 
-        with timer('make samplers', logger=log):
-            samplers = _make_samplers(sim_spec, model_index, model_definition_directory / ENTITY_MODELS, log)
+    with timer('make samplers', logger=log):
+        samplers = _make_samplers(sim_spec, model_index, model_definition_directory / ENTITY_MODELS, log)
 
-        log('make simulator')
-        simulator = make_simulator_from_simulator_spec(sim_spec, samplers)
+    log('make simulator')
+    simulator = make_simulator_from_simulator_spec(sim_spec, samplers)
 
-        log('make_simulator_from_files completed')
-        return simulator
+    log('make_simulator_from_files completed')
+    return simulator
 
 
 def _make_samplers(

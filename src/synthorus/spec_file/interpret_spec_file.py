@@ -11,6 +11,7 @@ from ck.pgm import State
 
 import synthorus.spec_file.keys as key
 from synthorus.dataset import Dataset
+from synthorus.error import NotReached
 from synthorus.model.dataset_cache import interpret_roots
 from synthorus.model.dataset_spec import DatasetSpec
 from synthorus.model.dataset_spec_impl import DatasetSpecCsv, TextInputSpec, TextInputSpecLocation, TextInputSpecInline, \
@@ -380,7 +381,7 @@ def _interpret_field(field_dict: SpecDict) -> ModelFieldSpec:
             inputs=inputs,
         )
     else:
-        raise RuntimeError('not reached')
+        raise NotReached()
 
 
 def _interpret_crosstabs(spec_dict: SpecDict, datasources: Dict[str, DatasourceSpec]) -> Dict[str, ModelCrosstabSpec]:
@@ -551,7 +552,7 @@ def _make_unique_id(base_name: str, seen_names) -> str:
         check_name = f'{base_name}({i})'
         if check_name not in seen_names:
             return check_name
-    raise RuntimeError('not reached')
+    raise NotReached()
 
 
 def _all_datasource_rvs(datasources: Iterable[DatasourceSpec]) -> Set[str]:
