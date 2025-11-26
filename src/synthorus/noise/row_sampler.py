@@ -1,12 +1,7 @@
-"""
-This module provides techniques for sampling a space of possible "rows"
-defined by the Cartesian product of random variable state spaces.
-"""
 from __future__ import annotations
 
-import math
 import random
-from typing import Tuple, List, Dict, Iterable, Set, Any
+from typing import Tuple, List, Dict, Iterable, Any
 
 from synthorus.utils.const import Const
 
@@ -195,7 +190,6 @@ def calc_state_space(states: List[Tuple]) -> List[int]:
         state_space.append(len(ss) * state_space[-1])
     state_space.reverse()
     return state_space
-
 
 # Deprecated
 #

@@ -1,4 +1,4 @@
-from synthorus.model.cross_table.row_sampler import SmartRowSampler, calc_state_space, SamplerRVIndex
+from synthorus.noise.row_sampler import SmartRowSampler, calc_state_space, SamplerRVIndex
 from tests.helpers.unittest_fixture import Fixture, test_main
 
 

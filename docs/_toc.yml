@@ -2,14 +2,14 @@
 # Learn more at https://jupyterbook.org/customize/toc.html
 
 format: jb-book
-root: 1_01_exec_summary
+root: 0_00_exec_summary
 parts:
   - caption: Getting Started
     chapters:
-    - file: 1_02_front_matter
-    - file: 1_03_introduction
-    - file: 1_04_installation
-    - file: 1_05_developer_community
+    - file: 1_01_front_matter
+    - file: 1_02_introduction
+    - file: 1_03_installation
+    - file: 1_04_developer_community
   - caption: Tutorial
     chapters:
     - file: 2_01_background
@@ -19,6 +19,7 @@ parts:
     - file: 2_05_model_spec
     - file: 2_06_reports
     - file: 2_07_spec_file
+    - file: 2_08_randomness
   - caption: API
     chapters:
     - file: api/modules

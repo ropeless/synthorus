@@ -9,7 +9,7 @@ from typing import List, Optional
 
 import pandas as pd
 
-from synthorus.model.cross_table.noise import LaplaceNoise
+from synthorus.noise.noiser import LaplaceNoise
 from synthorus.model.dataset_cache import DatasetCache
 from synthorus.model.model_index import ModelIndex, CrosstabIndex
 from synthorus.model.model_spec import ModelSpec, ModelCrosstabSpec

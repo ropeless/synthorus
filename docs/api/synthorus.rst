@@ -9,6 +9,7 @@ Subpackages
 
    synthorus.dataset
    synthorus.model
+   synthorus.noise
    synthorus.simulator
    synthorus.spec_file
    synthorus.utils

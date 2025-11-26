@@ -5,18 +5,20 @@ from pathlib import Path
 from typing import Optional, Sequence, List, Dict
 
 import pandas as pd
+from ck.pgm import State
 
 from synthorus.dataset import Dataset
 from synthorus.error import SynthorusError, NotReached
-from synthorus.model.cross_table.noise import LaplaceNoise, NoiserResult
-from synthorus.model.cross_table.safe_random import SafeRandom
 from synthorus.model.dataset_cache import DatasetCache
 from synthorus.model.datasource_spec import DatasourceSpec
 from synthorus.model.make_model_index import make_model_index
-from synthorus.model.model_index import ModelIndex, CrosstabIndex, RVIndex
+from synthorus.model.model_index import ModelIndex, CrosstabIndex
 from synthorus.model.model_spec import ModelSpec, ModelCrosstabSpec
+from synthorus.noise.noiser import LaplaceNoise, NoiserResult
+from synthorus.noise.safe_random import SafeRandom
 from synthorus.simulator.make_simulator_spec_from_model_spec import make_simulator_spec_from_model_spec
 from synthorus.simulator.simulator_spec import SimulatorSpec
+from synthorus.utils.config_help import config
 from synthorus.utils.data_catcher import RamDataCatcher, DataCatcher
 from synthorus.utils.print_function import PrintFunction
 from synthorus.workflows.cross_table_loader import save_cross_table, CrossTableLoader
@@ -26,7 +28,6 @@ from synthorus.workflows.file_names import CLEAN_CROSS_TABLES, NOISY_CROSS_TABLE
 from synthorus.workflows.make_pgms import make_entity_pgms
 from synthorus.workflows.report_privacy import report_privacy
 from synthorus.workflows.report_spec import report_model_spec
-from synthorus.utils.config_help import config
 
 # Keep cross-tables loaded while making PGMs
 CACHE_LOADED_CROSSTABS: bool = config.get('CACHE_LOADED_CROSSTABS', True)
@@ -234,7 +235,7 @@ def _extract_cross_table(
     crosstab_index: CrosstabIndex = model_index.crosstabs[crosstab_name]
 
     rvs_names: List[str] = crosstab_index.rvs  # must use the index rvs as may include extras
-    crosstab_rvs: Sequence[RVIndex] = [model_index.rvs[rv_name] for rv_name in rvs_names]
+    crosstab_rvs: Dict[str, Sequence[State]] = {rv_name: model_index.rvs[rv_name].states for rv_name in rvs_names}
     datasource_name: str = crosstab_index.datasource
     dataset: Dataset = dataset_cache[datasource_name]
 

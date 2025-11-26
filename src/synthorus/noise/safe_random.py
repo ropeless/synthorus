@@ -1,7 +1,3 @@
-"""
-This module supports secure random noise for Differential Privacy.
-"""
-
 import math
 from random import SystemRandom
 
@@ -21,6 +17,7 @@ class SafeRandom:
     For details of random variate production, see:
     Holohan, N., & Braghin, S. (2021, October). Secure random sampling in differential privacy.
     In European Symposium on Research in Computer Security (pp. 523-542). Springer, Cham.
+    https://doi.org/10.1007/978-3-030-88428-4_26.
     """
     __slots__ = ('_n', '_sqrt_n')
 
@@ -70,7 +67,7 @@ class SafeRandom:
 
     def uniform(self, n: int) -> int:
         """
-        Return a safe uniform random integer in [0, n],
+        Return a safe uniform random integer in [0, n),
         suitable for small-medium values of n.
         Method:
           1. generate a safe Gaussian random variate from N(0, 1)

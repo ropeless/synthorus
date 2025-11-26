@@ -18,13 +18,16 @@ from ck.pgm import State
 from ck.utils.iter_extras import combos, multiply
 
 from synthorus.error import SynthorusError
-from synthorus.model.cross_table.row_sampler import SmartRowSampler
-from synthorus.model.cross_table.safe_random import SafeRandom
-from synthorus.model.model_index import RVIndex
+from synthorus.utils.print_function import PrintFunction
+from .row_sampler import SmartRowSampler
+from .safe_random import SafeRandom
 
 
 @dataclass
 class NoiserResult:
+    """
+    The result of adding noise to a cross-table.
+    """
     cross_table: pd.DataFrame
     rows_original: int
     rows_added: int
@@ -39,6 +42,15 @@ class Noiser(ABC):
     """
     A function to add noise to a cross-table.
     """
+
+    def __init__(self, rvs: Dict[str, Sequence[State]]):
+        """
+        Construct a Noiser that can manage cross-tables including the given random variables.
+
+        Args:
+            rvs: all the random variables that this noiser can manage.
+        """
+        self.rvs: Dict[str, Sequence[State]] = rvs
 
     @abstractmethod
     def __call__(
@@ -66,32 +78,6 @@ class Noiser(ABC):
         """
         ...
 
-
-class NoNoise(Noiser):
-    """
-    A noiser that adds no noise.
-    """
-
-    def __call__(self, cross_table: pd.DataFrame, _sensitivity, _epsilon, _min_cell_size) -> NoiserResult:
-        return NoiserResult(cross_table, cross_table.shape[0], 0, 0)
-
-
-class DPNoiser(Noiser):
-    """
-    This is a partial implementation of a Noiser that provided full DP capabilities.
-    """
-
-    @abstractmethod
-    def __call__(
-            self,
-            cross_table: pd.DataFrame,
-            sensitivity: float,
-            epsilon: float,
-            min_cell_size: float
-    ) -> NoiserResult:
-        ...
-
-    @abstractmethod
     def get_states(self, rv_names: Iterable[str]) -> List[Sequence[State]]:
         """
         Get the possible states for each random variable in rv_names.
@@ -99,7 +85,10 @@ class DPNoiser(Noiser):
         Returns:
             a list co-indexed with the given rv names.
         """
-        ...
+        return [
+            self.rvs[rv_name]
+            for rv_name in rv_names
+        ]
 
     def state_space_size(self, rv_names: Iterable[str]) -> int:
         """
@@ -110,7 +99,7 @@ class DPNoiser(Noiser):
         return multiply(len(ss) for ss in states)
 
 
-class LaplaceNoise(DPNoiser):
+class LaplaceNoise(Noiser):
     """
     This noiser adds Laplace noise to cross-table weights where noise
     is drawn from safe_random.laplace(0, b), where
@@ -125,21 +114,22 @@ class LaplaceNoise(DPNoiser):
     def __init__(
             self,
             safe_random: SafeRandom,
-            rvs: Iterable[RVIndex],
+            rvs: Dict[str, Sequence[State]],
             max_add_rows: int,
-            log
+            log: PrintFunction,
     ):
         """
         Construct a LaplaceNoise noiser.
 
         Args:
             safe_random: an instance of SafeRandom, to generate random numbers.
-            rvs: all the random variables that this noiser can manage (normally all from a Spec).
+            rvs: all the random variables that this noiser can manage.
             max_add_rows: a limit on the number of rows to add to a cross-table.
             log: optional print function for logging progress messages.
         """
+        super().__init__(rvs)
         self._safe_random = safe_random
-        self._basic = BasicLaplaceNoise(safe_random)
+        self._basic = BasicLaplaceNoise(safe_random, rvs)
         self._naive = NaiveLaplaceNoise(safe_random, rvs, max_add_rows)
         self._max_add_rows = max_add_rows
         self._log = log
@@ -207,15 +197,6 @@ class LaplaceNoise(DPNoiser):
     @property
     def max_add_rows(self) -> int:
         return self._max_add_rows
-
-    def get_states(self, rv_names: Iterable[str]) -> List[Sequence[State]]:
-        """
-        Get the possible states for each random variable in rv_names.
-
-        Returns:
-            s list co-indexed with the given rv names.
-        """
-        return self._naive.get_states(rv_names)
 
     def decomposition_method(
             self,
@@ -364,7 +345,7 @@ class LaplaceNoise(DPNoiser):
         return recommendation
 
 
-class NaiveLaplaceNoise(DPNoiser):
+class NaiveLaplaceNoise(Noiser):
     """
     This noiser adds Laplace noise to cross-table weights where noise
     is drawn from safe_random.laplace(0, b), where
@@ -379,26 +360,22 @@ class NaiveLaplaceNoise(DPNoiser):
     """
 
     def __init__(
-            self,
-            safe_random: SafeRandom,
-            rvs: Iterable[RVIndex],
-            max_add_rows: Optional[int] = None
+            self, safe_random: SafeRandom,
+            rvs: Dict[str, Sequence[State]],
+            max_add_rows: Optional[int] = None,
     ):
         """
         Construct a LaplaceNoise noiser.
 
         Args:
             safe_random: an instance of SafeRandom, to generate random numbers.
-            rvs: all the random variables that this noiser can manage (normally all from a Spec).
+            rvs: all the random variables that this noiser can manage.
             max_add_rows: an optional limit on the number of rows to add to a cross-table.
                 If provided then an exception is raised if this limit is exceeded.
         """
+        super().__init__(rvs)
         self._safe_random = safe_random
-        self._basic = BasicLaplaceNoise(safe_random)
-        self._rvs: Dict[str, Sequence[State]] = {
-            rv.name: tuple(rv.states)
-            for rv in rvs
-        }
+        self._basic = BasicLaplaceNoise(safe_random, rvs)
         self._max_add_rows = max_add_rows
 
     def __call__(
@@ -466,18 +443,6 @@ class NaiveLaplaceNoise(DPNoiser):
     def max_add_rows(self) -> Optional[int]:
         return self._max_add_rows
 
-    def get_states(self, rv_names: Iterable[str]) -> List[Sequence[State]]:
-        """
-        Get the possible states for each random variable in rv_names.
-
-        Returns:
-            a list co-indexed with the given rv names.
-        """
-        return [
-            self._rvs[rv_name]
-            for rv_name in rv_names
-        ]
-
 
 class BasicLaplaceNoise(Noiser):
     """
@@ -496,16 +461,15 @@ class BasicLaplaceNoise(Noiser):
     This noiser will never add new rows.
     """
 
-    def __init__(
-            self,
-            safe_random: SafeRandom
-    ):
+    def __init__(self, safe_random: SafeRandom, rvs: Dict[str, Sequence[State]]):
         """
         Construct a BasicLaplaceNoise noiser.
 
         Args:
             safe_random: an instance of SafeRandom, to generate random numbers.
+            rvs: all the random variables that this noiser can manage.
         """
+        super().__init__(rvs)
         self._safe_random = safe_random
 
     def __call__(

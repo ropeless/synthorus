@@ -1,4 +1,6 @@
-# Synthorus - executive summary #
+# Synthorus #
+
+_reliable synthetic data for complex systems_
 
 ## What it is ##
 
@@ -14,7 +16,7 @@ Synthetic data can be applied to many use cases that require safe and realistic 
 
 Synthetic data is particularly valuable when real-world data is rare, expensive or confidential.
 
-Synthorus is provided as a Python package that [is easily installed](https://pypi.org/project/synthorus/) and
+Synthorus is provided as a Python package that is [easily installed](https://pypi.org/project/synthorus/) and
 comes with [comprehensive documentation](https://synthorus.readthedocs.io/) to support creating simple
 or advanced synthetic data.
 

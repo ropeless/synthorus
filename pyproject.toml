@@ -1,6 +1,6 @@
 [project]
 name = "synthorus"
-version = "0.0.0a11"
+version = "0.0.0a12"
 description = "A Python package for synthetic data generation."
 readme = "README.md"
 license = "MIT"
@@ -26,7 +26,7 @@ dependencies = [
 ]
 
 [doc_extra]
-version_note = "A pre-release version."
+version_note = "This is a public pre-release version. The API is not guaranteed stable."
 
 [project.urls]
 Homepage = "https://github.com/ropeless/synthorus"

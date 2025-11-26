@@ -4,7 +4,7 @@ from itertools import chain
 
 import numpy as np
 
-from synthorus.model.cross_table.safe_random import SafeRandom
+from synthorus.noise.safe_random import SafeRandom
 from tests.helpers.unittest_fixture import test_main, Fixture
 
 

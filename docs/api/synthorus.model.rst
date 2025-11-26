@@ -1,14 +1,6 @@
 synthorus.model package
 =======================
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   synthorus.model.cross_table
-
 Submodules
 ----------
 
