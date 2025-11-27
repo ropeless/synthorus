@@ -1,7 +1,7 @@
 # _front matter_
 
-Synthorus version 0.0.0a11, built 2025-11-27 09:09:31 (AUS Eastern Summer Time).
-A pre-release version.
+Synthorus version 0.0.0a12, built 2025-11-27 11:28:22 (AUS Eastern Summer Time).
+This is a public pre-release version. The API is not guaranteed stable.
 
 These pages form a reference for the software known as Synthorus.
 

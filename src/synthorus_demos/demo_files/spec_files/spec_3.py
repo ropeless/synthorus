@@ -7,7 +7,7 @@ __author__ = 'Barry Drake'
 from synthorus.spec_file.keys import *
 
 spec = {
-    min_cell_size: 0.1,
+    min_cell_size: 0,
     rng_n: 6,
     epsilon: 0.1,
     sensitivity: 1,
