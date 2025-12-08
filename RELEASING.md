@@ -21,12 +21,13 @@ Prepare for a Release
 ---------------------
 
 1. Check out the "main" branch.
-2. Merge any new features and fixes for the release.
-3. Run `tests/all_tests.py` for unit testing, confirming all unit tests pass.
-4. Run `synthorus_demos/all_demos.py` for smoke testing, confirming no errors are reported.
-5. Edit `pyproject.toml` to update the project version number (must do before building documentation).
-6. Run `python build_docs.py` and confirm the documentation builds okay.
-7. View the documentation build to confirm it: [`docs/_build/html/index.html`](docs/_build/html/index.html).
+2. Update dependencies, using `poetry update`.
+3. Merge any new features and fixes for the release.
+4. Run `tests/all_tests.py` for unit testing, confirming all unit tests pass.
+5. Run `synthorus_demos/all_demos.py` for smoke testing, confirming no errors are reported.
+6. Edit `pyproject.toml` to update the project version number (must do before building documentation).
+7. Run `python build_docs.py` and confirm the documentation builds okay.
+8. View the documentation build to confirm it: [`docs/_build/html/index.html`](docs/_build/html/index.html).
 
 Only proceed if the "main" branch is ready for release.
 
