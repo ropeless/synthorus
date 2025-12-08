@@ -26,7 +26,10 @@ Synthorus allows a synthetic data engineer to build a Synthorus simulator using 
 (a.k.a. training data) and mathematical background knowledge, depending on your project.
 
 The process of building a simulator from reference
-data is integrated with privacy protection using Differential Privacy and cryptographically secure random numbers.
+data is integrated with privacy protection using
+[Differential Privacy](https://en.wikipedia.org/wiki/Differential_privacy)
+and
+[cryptographically secure random numbers](https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator).
 
 Synthorus supports the evaluation of the statistical properties of a simulator, for verifying synthetic data utility.
 At its core, Synthorus uses [Probabilistic Graphical Models](https://en.wikipedia.org/wiki/Graphical_model)
