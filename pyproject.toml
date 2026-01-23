@@ -1,6 +1,6 @@
 [project]
 name = "synthorus"
-version = "0.0.0a13"
+version = "0.0.0a14"
 description = "A Python package for synthetic data generation."
 readme = "README.md"
 license = "MIT"
