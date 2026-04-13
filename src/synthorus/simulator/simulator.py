@@ -10,6 +10,7 @@ from synthorus.simulator.no_sim_sampler import NO_SIM_SAMPLER
 from synthorus.simulator.sim_entity import SimEntity, SimSampler
 from synthorus.simulator.sim_field import SimField
 from synthorus.simulator.sim_field_updaters import NO_UPDATE
+from synthorus.simulator.sim_record import SimRecord
 from synthorus.simulator.sim_recorder import SimRecorder
 
 
@@ -88,7 +89,7 @@ class Simulator:
         """
         return MappingProxyType(self._parameters)
 
-    def run(self, recorder: SimRecorder, iterations: int = 1) -> None:
+    def run(self, recorder: SimRecorder, iterations: int = 1, parameters_name: Optional[str] = None) -> None:
         """
         Run the simulation.
 
@@ -101,6 +102,13 @@ class Simulator:
 
         If iterations <= 0, then the entities will be initialised
         but not run, i.e., no records will be generated.
+
+        Args:
+            recorder: a SimRecorder instance for recording generated records.
+            iterations: number of times to run the simulation. Default is 1.
+            parameters_name: an optional entity name for emitting the special "parameters" record.
+                If None (the default), then the parameters record will not be sent to the recorder.
+                The parameters_name must be different to all simulator entity names.
 
         Ensures:
             `recorder.finish()` is called, even if an exception is raised
@@ -117,11 +125,25 @@ class Simulator:
             # Infer an entity tree
             roots: Sequence[_SimNode] = self._form_tree()
 
+            # Record the special parameters entity, if requested
+            if parameters_name is not None:
+                if parameters_name in self._entities.keys():
+                    raise SynthorusError(f'parameters entity name must be unique: {parameters_name!r}')
+                recorder.start_entity(parameters_name, list(self._parameters.keys()))
+
             # Initialise entities and recorder
             for entity in self._entities.values():
                 field_names: Sequence[str] = tuple(iter(entity))
                 start_id: int = recorder.start_entity(entity.name, field_names)
                 entity.initialise(start_id - 1)
+
+            # Emit the special parameters record, if requested
+            if parameters_name is not None:
+                parameters_as_record: SimRecord = {
+                    param: param_field.value
+                    for param, param_field in self._parameters.items()
+                }
+                recorder.write_record(parameters_name, parameters_as_record)
 
             # Run the simulation
             for _ in range(iterations):
