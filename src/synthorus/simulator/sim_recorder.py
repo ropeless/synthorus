@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-from io import TextIOWrapper
+from io import TextIOWrapper, StringIO
 from os import PathLike
 from pathlib import Path
 from typing import Sequence, Iterator, Dict, Iterable, Tuple, Mapping, List
 
 from ck.pgm import State
+import json
 
 from synthorus.error import SynthorusError
 from synthorus.simulator.sim_record import SimRecord
@@ -210,6 +211,33 @@ class MemoryRecorder(SimRecorder):
             A mapping from entity name to `RamDataCatcher`.
         """
         return self._records
+
+    def as_json(self, indent: int = 4, prefix: str = '') -> str:
+        """
+        Show all records as JSON.
+        This calls `data_catcher.as_json(...)` for each `data_catcher` of
+        `self.records`. Each `data_catcher` is an entry in a JSON dictionary.
+        """
+        dent: str = ' ' * indent
+        string_io = StringIO()
+
+        def _print(*args) -> None:
+            print(prefix, *args, file=string_io)
+
+        _print('{')
+        next_prefix = prefix + dent + dent
+        entity_names: List[str] = list(self.records.keys())
+        for entity_name in entity_names:
+            _print(dent, json.dumps(entity_name), ':')
+            entity_json: str = self.records[entity_name].as_json(indent=indent, prefix=next_prefix)[:-1]
+            if entity_name != entity_names[-1]:
+                # not the last entity so insert trailing comma
+                print(entity_json, file=string_io, end=',\n')
+            else:
+                print(entity_json, file=string_io)
+        _print('}')
+
+        return string_io.getvalue()
 
     def start_entity(self, entity_name: str, field_names: Iterable[str]) -> int:
         records = self._records.get(entity_name)

@@ -124,12 +124,12 @@ class DataCatcher(ABC):
             dtype=dtype
         )
 
-    def as_json(self, indent: int = 4) -> str:
+    def as_json(self, indent: int = 4, prefix: str = '') -> str:
         dent: str = ' ' * indent
         string_io = StringIO()
 
         def _print(*args) -> None:
-            print(*args, file=string_io)
+            print(prefix, *args, file=string_io)
 
         _print('{')
         field_names: str = ', '.join(json.dumps(column) for column in self.columns)
