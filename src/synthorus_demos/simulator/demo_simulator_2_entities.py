@@ -74,7 +74,7 @@ def main() -> None:
     by manually creating a Simulator object with two related entities.
     """
     sim: Simulator = make_simulator()
-    sim.run(DebugRecorder())
+    sim.run(DebugRecorder(), parameters_name='parameters')
 
 
 if __name__ == '__main__':

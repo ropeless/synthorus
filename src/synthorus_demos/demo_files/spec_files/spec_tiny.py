@@ -7,7 +7,7 @@ spec = {
     sensitivity: 0,  # no data is sensitive data
     min_cell_size: 0,  # no data will be redacted
 
-    states: infer_distinct,  # default for all random variables
+    states: infer_distinct,  # all random variable states are inferred from the datasource.
 
     datasources: {
         'xyz': {

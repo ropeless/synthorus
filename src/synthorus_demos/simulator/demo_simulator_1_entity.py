@@ -13,7 +13,7 @@ def make_simulator() -> Simulator:
     # ===================================
     pgm = PGM()
 
-    patient_age = pgm.new_rv('patient_age', ('young', 'middle_aged', 'old'))
+    patient_age = pgm.new_rv('age', ('young', 'middle_aged', 'old'))
 
     pgm.new_factor(patient_age).set_dense().set_uniform()
 
@@ -35,7 +35,7 @@ def make_simulator() -> Simulator:
 
     # Entity - patient
     patient = sim.add_entity('patient', sampler=patient_sampler)
-    patient.add_field_sampled(field_name='age', rv_name='patient_age')
+    patient.add_field_sampled(field_name='age')
     patient.add_cardinality_variable_count(number_of_patients)
 
     return sim

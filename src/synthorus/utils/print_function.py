@@ -44,7 +44,7 @@ class Print(PrintFunction, Writable):
     def __init__(
             self,
             *destination: Destination,
-            default=None,
+            default: Destination = None,
             encoding=None
     ):
         """
@@ -57,8 +57,7 @@ class Print(PrintFunction, Writable):
         
         Args:
             destination: when to send print output to, multiple destinations may be provided.
-            default: destination to use if destination=None. If default=None,
-                it means /dev/null.
+            default: destination to use if destination=None. If default=None, it means /dev/null.
             encoding: pass to builtin open() method.
         """
         self._destinations = []
