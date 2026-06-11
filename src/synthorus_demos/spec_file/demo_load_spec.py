@@ -2,7 +2,7 @@ from synthorus.model.model_spec import ModelSpec
 from synthorus.spec_file.interpret_spec_file import load_spec_file
 from synthorus_demos.demo_files import SPEC_FILES, ROOT_DIR
 
-DEMO_SPEC_FILE_NAME: str = 'spec_7.py'
+DEMO_SPEC_FILE_NAME: str = 'spec_8.py'
 
 
 def main() -> None:

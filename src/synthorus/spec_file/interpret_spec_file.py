@@ -21,6 +21,8 @@ from synthorus.model.datasource_spec import DatasourceSpec
 from synthorus.model.defaults import *
 from synthorus.model.model_spec import ModelSpec, ModelRVSpec, ModelCrosstabSpec, ModelEntitySpec, ModelFieldSpecSample, \
     ModelFieldSpec, ModelFieldSpecFunction, ModelFieldSpecSum
+from synthorus.model.noiser_spec import NoiserSpecLaplace, NoiserSpec, NoiserSpecBasicLaplace, NoiserSpecNaiveLaplace, \
+    NoiserSpecDecompositionLaplace
 from synthorus.simulator.condition_spec import ConditionSpec, ConditionSpecFixedLimit, ConditionSpecVariableLimit, \
     ConditionSpecStates
 from synthorus.spec_file.spec_dict import SpecDict
@@ -34,11 +36,12 @@ DEFAULTS: Mapping[str, Any] = MappingProxyType({
     key.author: DEFAULT_AUTHOR,
     key.comment: DEFAULT_COMMENT,
     key.rng_n: DEFAULT_RNG_N,
-    key.min_cell_size: DEFAULT_MIN_CELL_SIZE,
     key.epsilon: DEFAULT_EPSILON,
+    key.min_cell_size: DEFAULT_MIN_CELL_SIZE,
+    key.noise: key.laplace,
+    key.max_add_rows: DEFAULT_MAX_ADD_ROWS,
     key.id_field: DEFAULT_ID_FIELD,
     key.count_field: DEFAULT_COUNT_FIELD,
-    key.max_add_rows: DEFAULT_MAX_ADD_ROWS
 })
 
 # These are the top-level section names in a spec dictionary.
@@ -76,25 +79,25 @@ def load_spec_file(
     spec: Mapping[str, Any] = py_loader.get_object(module, object_type=dict, variable=variable)
     module_vars = vars(module)
 
-    defaults: Dict[str, Any] = dict(defaults)
+    defaults_copy: Dict[str, Any] = dict(defaults)
 
     def _check_module_default(_key: str, _value: Any, _alt_override: Any) -> None:
         """
-        Add _key = _value to the `defaults` dictionary, if
+        Add _key = _value to the `defaults_copy` dictionary, if
         _value is not None and _key is not already present.
         """
-        nonlocal defaults
-        _cur_value = defaults.get(_key)
+        nonlocal defaults_copy
+        _cur_value = defaults_copy.get(_key)
         if _cur_value in (None, _alt_override) and _value is not None:
             if isinstance(_value, str):
                 _value = _value.strip('\n\r')
-            defaults[_key] = _value
+            defaults_copy[_key] = _value
 
     _check_module_default(key.name, Path(filepath).stem, DEFAULT_NAME)
     _check_module_default(key.author, module_vars.get('__author__'), DEFAULT_AUTHOR)
     _check_module_default(key.comment, module_vars.get('__doc__'), DEFAULT_COMMENT)
 
-    return interpret_spec_file(spec, defaults=defaults, cwd=cwd)
+    return interpret_spec_file(spec, defaults=defaults_copy, cwd=cwd)
 
 
 def interpret_spec_file(
@@ -108,13 +111,13 @@ def interpret_spec_file(
 
     Args:
         spec_file_dict: is a dict conforming to the spec file format.
-        defaults: an optional dictionary of default values.
+        defaults: a dictionary of default values.
         cwd: file path for current working directory for resolving datasource filenames.
     """
     # Start a SpecDict, including a hierarchy of default values.
     if key.name in spec_file_dict.keys():
         root_name = str(spec_file_dict[key.name])
-    elif defaults is not None and key.name in defaults.keys():
+    elif key.name in defaults.keys():
         root_name = str(defaults[key.name])
     else:
         root_name = ''
@@ -155,7 +158,7 @@ def _interpret_parameters(spec_dict: SpecDict) -> Dict[str, State]:
     if parameters_spec is not None:
         for field_id, value in parameters_spec.items():
             parameters_spec.check_is_id(field_id)
-            parameters_spec.check_is_state(value)
+            value = parameters_spec.check_is_state(value)
             result[field_id] = value
     return result
 
@@ -307,18 +310,21 @@ def _interpret_fields(entity_dict: SpecDict, reserved_fields: Set[str]) -> Dict[
         for rv_name in rvs
     }
 
+    error_context: SpecDict = entity_dict  # may be refined below
+
     # Get other specified fields.
     fields_dict: Optional[SpecDict] = entity_dict.get_dict_optional(key.fields)
     if fields_dict is not None:
+        error_context = fields_dict
         duplicated_fields: Set[str] = set(fields.keys()).intersection(fields_dict.keys())
         if len(duplicated_fields) > 0:
-            raise fields_dict.error('fields overlap with sampled random variables', repr(sorted(duplicated_fields)))
+            raise error_context.error('fields overlap with sampled random variables', repr(sorted(duplicated_fields)))
         for field_name in fields_dict.keys():
             fields[field_name] = _interpret_field(fields_dict.get_dict(field_name))
 
     clash_fields: Set[str] = reserved_fields.intersection(fields.keys())
     if len(clash_fields) > 0:
-        raise fields_dict.error('field names overlap with special fields', repr(sorted(clash_fields)))
+        raise error_context.error('field names overlap with special fields', repr(sorted(clash_fields)))
 
     return fields
 
@@ -420,7 +426,6 @@ def _interpret_crosstabs(spec_dict: SpecDict, datasources: Dict[str, DatasourceS
     singleton_rvs: Set[str] = all_datasource_rvs.difference(covered_rvs)
     epsilon: float = spec_dict.get_positive(key.epsilon)
     min_cell_size: float = spec_dict.get_non_neg(key.min_cell_size)
-    max_add_rows: int = spec_dict.get_positive_int(key.max_add_rows)
     for rv_name in singleton_rvs:
         crosstab_name = _make_unique_id('_' + rv_name, crosstabs.keys())
         rvs = [rv_name]
@@ -429,10 +434,40 @@ def _interpret_crosstabs(spec_dict: SpecDict, datasources: Dict[str, DatasourceS
             datasource=_find_datasource(spec_dict, rvs, datasources),
             epsilon=epsilon,
             min_cell_size=min_cell_size,
-            max_add_rows=max_add_rows,
+            noiser=_interpret_noiser(spec_dict),
         )
 
     return crosstabs
+
+
+def _interpret_noiser(parent: SpecDict) -> NoiserSpec:
+    noise: Any = parent.find(key.noise)
+
+    if isinstance(noise, str):
+        return _make_noise_spec(noise, parent)
+
+    elif isinstance(noise, dict):
+        noise_spec_dict = parent.get_dict(key.noise)
+        noise_type: str = noise_spec_dict.get_string(key.noise)
+        return _make_noise_spec(noise_type, noise_spec_dict)
+
+    else:
+        raise parent.error(f'cannot find or interpret {key.noise}: {noise!r}')
+
+
+def _make_noise_spec(noise_type: str, context: SpecDict) -> NoiserSpec:
+    if noise_type == key.basic_laplace:
+        return NoiserSpecBasicLaplace()
+    elif noise_type == key.laplace:
+        max_add_rows: int = context.get_positive_int(key.max_add_rows)
+        return NoiserSpecLaplace(max_add_rows=max_add_rows)
+    elif noise_type == key.naive_laplace:
+        max_add_rows: int = context.get_positive_int(key.max_add_rows)
+        return NoiserSpecNaiveLaplace(max_add_rows=max_add_rows)
+    elif noise_type == key.decomposition_laplace:
+        max_add_rows: int = context.get_positive_int(key.max_add_rows)
+        return NoiserSpecDecompositionLaplace(max_add_rows=max_add_rows)
+    raise context.error('cannot understand noise type', repr(noise_type))
 
 
 def _interpret_crosstab(
@@ -480,14 +515,14 @@ def _interpret_crosstab(
 
     epsilon: float = crosstab_spec_dict.get_positive(key.epsilon)
     min_cell_size: float = crosstab_spec_dict.get_non_neg(key.min_cell_size)
-    max_add_rows: int = crosstab_spec_dict.get_positive_int(key.max_add_rows)
+    noiser: NoiserSpec = _interpret_noiser(crosstab_spec_dict)
 
     return ModelCrosstabSpec(
         rvs=rvs,
         datasource=datasource,
         epsilon=epsilon,
         min_cell_size=min_cell_size,
-        max_add_rows=max_add_rows,
+        noiser=noiser,
     )
 
 
@@ -636,7 +671,7 @@ def _interpret_datasource(datasource_name: str, datasource_dict: SpecDict, roots
     elif key.location in datasource_dict.keys():
         # It looks like a file datasource.
         # Infer default data format from the filename extension.
-        location = datasource_dict.get_string_optional(key.location)
+        location: str = datasource_dict.get_string(key.location)
         parts = location.split('.')
         if len(parts) > 1:
             default_format = parts[-1].lower()
@@ -894,10 +929,10 @@ def _make_datasource_dbms(
     if key.rvs in datasource_dict.keys():
         rvs = datasource_dict.get_string_list(key.rvs)
 
-    connection: Optional[str | Dict[str, Optional[str]]] = None
+    connection: Optional[Dict[str, Optional[str | int]]] = None
     if key.connection in datasource_dict.keys():
         connection_dict: SpecDict = datasource_dict.get_dict(key.connection)
-        connection = {}
+        connection: Dict[str, Optional[str | int]] = {}
         for conx_key, conx_value in connection_dict.items():
             if not isinstance(conx_key, str):
                 raise connection_dict.error('invalid connection key', repr(conx_key))
@@ -914,7 +949,7 @@ def _make_datasource_dbms(
     )
 
     if rvs is None:
-        rvs = _get_rvs_from_dataset(datasource_dict, dataset_spec, ())
+        rvs: List[str] = _get_rvs_from_dataset(datasource_dict, dataset_spec, ())
 
     sensitivity = datasource_dict.get_non_neg(key.sensitivity)
     non_distribution_rvs = datasource_dict.get_string_list(key.condition, [])
@@ -979,11 +1014,12 @@ def _get_rvs_from_dataset(
     with warnings.catch_warnings(record=True) as the_warnings:
         warnings.simplefilter('always')
         dataset: Dataset = dataset_spec.dataset(roots)
-    for w in the_warnings:
-        datasource_dict.warn(
-            f'datasource {datasource_dict.dict_id!r} load warning',
-            w.message
-        )
+    if the_warnings is not None:
+        for w in the_warnings:
+            datasource_dict.warn(
+                f'datasource {datasource_dict.dict_id!r} load warning',
+                w.message
+            )
     return list(dataset.rvs)
 
 
@@ -1106,5 +1142,5 @@ def _wrap_with_spec_dict(root_name: str, update: Mapping[str, Any], *defaults: M
         update: A Mappings to initialise the new SpecDict.
         defaults: zero or more Mappings of default values.
     """
-    defaults = [d for d in defaults if d is not None]
+    defaults = tuple(d for d in defaults if d is not None)
     return SpecDict(root_name, root_name, *defaults, update=update)

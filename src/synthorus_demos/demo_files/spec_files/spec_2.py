@@ -38,7 +38,7 @@ spec = {
         },
         'acx': {  # Contains columns A, C and X
             location: 'acx.tsv',
-            sensitivity: 2,
+            sensitivity: 0.5,  # non-integer sensitivity is allowed
         },
         'double_q': {
             function: 'q * 2',       # This column will be called double_q

@@ -16,7 +16,7 @@ spec = {
 
     datasources: {
         'xyz': {
-            data_format: pickle,
+            location: 'xyz_weight.pkl',
             weight: -1,
             condition: 'X',
         },

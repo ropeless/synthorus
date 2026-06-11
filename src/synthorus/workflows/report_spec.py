@@ -9,7 +9,7 @@ from typing import List, Optional
 
 import pandas as pd
 
-from synthorus.noise.noiser import LaplaceNoise
+from synthorus.noise.noiser import recommended_min_cell_size
 from synthorus.model.dataset_cache import DatasetCache
 from synthorus.model.model_index import ModelIndex, CrosstabIndex
 from synthorus.model.model_spec import ModelSpec, ModelCrosstabSpec
@@ -234,7 +234,7 @@ def _report_on_crosstab(
             expected_new_rows = min(expected_new_rows, num_suppressed)
 
             if num_rows > 0 and num_suppressed > 0:
-                recommended_min_cell_size_add_rows = LaplaceNoise.recommended_min_cell_size(
+                recommended_min_cell_size_add_rows = recommended_min_cell_size(
                     epsilon,
                     sensitivity,
                     num_suppressed,

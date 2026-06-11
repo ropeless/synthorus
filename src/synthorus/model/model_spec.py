@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, field_validator, PositiveInt, model_valid
 from synthorus.model.datasource_spec import DatasourceSpec
 from synthorus.model.defaults import DEFAULT_ID_FIELD, DEFAULT_COUNT_FIELD, DEFAULT_NAME, DEFAULT_AUTHOR, \
     DEFAULT_COMMENT, DEFAULT_RNG_N, DEFAULT_EPSILON, DEFAULT_MIN_CELL_SIZE, DEFAULT_MAX_ADD_ROWS
+from synthorus.model.noiser_spec import NoiserSpec, NoiserSpecLaplace
 from synthorus.simulator.condition_spec import ConditionSpec
 from synthorus.utils.validate_inputs import validate_inputs
 
@@ -107,7 +108,7 @@ class ModelSpec(BaseModel):
             parent: Optional[str] = entity_spec.parent
             while parent is not None:
                 if parent == entity_name:
-                    raise ValueError(f'entity loop detected: {entity_spec.name}')
+                    raise ValueError(f'entity loop detected: {entity_name}')
                 parent = self.entities.get(parent).parent
 
         return self
@@ -126,7 +127,7 @@ class ModelCrosstabSpec(BaseModel):
     datasource: str  # The datasource to used to create this cross-table
     epsilon: PositiveFloat = DEFAULT_EPSILON
     min_cell_size: NonNegativeFloat = DEFAULT_MIN_CELL_SIZE
-    max_add_rows: PositiveInt = DEFAULT_MAX_ADD_ROWS
+    noiser: NoiserSpec = NoiserSpecLaplace(max_add_rows=DEFAULT_MAX_ADD_ROWS)
 
     @model_validator(mode='after')
     def validate_crosstab_spec(self) -> Self:

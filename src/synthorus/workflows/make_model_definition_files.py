@@ -14,7 +14,7 @@ from synthorus.model.datasource_spec import DatasourceSpec
 from synthorus.model.make_model_index import make_model_index
 from synthorus.model.model_index import ModelIndex, CrosstabIndex
 from synthorus.model.model_spec import ModelSpec, ModelCrosstabSpec
-from synthorus.noise.noiser import LaplaceNoise, NoiserResult
+from synthorus.noise.noiser import NoiserResult, Noiser
 from synthorus.noise.safe_random import SafeRandom
 from synthorus.simulator.make_simulator_spec_from_model_spec import make_simulator_spec_from_model_spec
 from synthorus.simulator.simulator_spec import SimulatorSpec
@@ -288,19 +288,17 @@ def _extract_cross_table(
         _track('Sensitivity', datasource_sensitivity)
         _track('Epsilon', epsilon)
         _track('Min cell size', crosstab_spec.min_cell_size)
-        _track('Max add rows', crosstab_spec.max_add_rows)
+        _track('Noiser', crosstab_spec.noiser.model_dump_json())
 
-        noiser = LaplaceNoise(
-            random,
-            crosstab_rvs,
-            crosstab_spec.max_add_rows,
-            log
-        )
+        noiser: Noiser = crosstab_spec.noiser.noiser()
         noiser_result: NoiserResult = noiser(
             crosstab,
+            crosstab_rvs,
+            random,
             datasource_sensitivity,
             epsilon,
-            crosstab_spec.min_cell_size
+            crosstab_spec.min_cell_size,
+            log
         )
 
         rows_original = noiser_result.rows_original

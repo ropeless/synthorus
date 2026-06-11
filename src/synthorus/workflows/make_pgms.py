@@ -113,8 +113,12 @@ def _make_entity_pgm(
 
     # Check that no potential function is zero as that implies the PGM cannot be sampled.
     # If so, it's probably an empty cross-tables.
-    if any(factor.is_zero for factor in pgm.factors):
-        raise SynthorusError(f'could not make a valid PGM for entity {entity_name} (probably an empty cross-table)')
+    zero_factors = [factor for factor in pgm.factors if factor.is_zero]
+    if len(zero_factors) > 0:
+        raise SynthorusError(
+            f'could not make a valid PGM for entity {entity_name}, empty factors: ' +
+            ','.join(str(factor) for factor in zero_factors)
+        )
 
     log(f'finished making PGM for entity: {entity_name}')
     return pgm

@@ -1,0 +1,9 @@
+A,B,C,weight
+n,n,n,3
+n,n,y,1
+n,y,n,5
+n,y,y,2
+y,n,n,14
+y,n,y,1
+y,y,n,6
+y,y,y,10

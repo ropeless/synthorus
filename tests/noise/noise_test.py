@@ -4,7 +4,7 @@ from typing import Dict, Sequence
 import pandas as pd
 from ck.pgm import State
 
-from synthorus.noise.noiser import BasicLaplaceNoise, LaplaceNoise
+from synthorus.noise.noiser import BasicLaplaceNoise, LaplaceNoise, DecompositionLaplaceNoise
 from synthorus.noise.safe_random import SafeRandom
 from synthorus.utils.print_function import NO_LOG
 from tests.helpers.unittest_fixture import Fixture, test_main
@@ -60,9 +60,17 @@ class NoiseTest(Fixture):
         sensitivity = 0
 
         rvs = self.rvs_from_crosstab(cross_table)
-        noiser = BasicLaplaceNoise(SafeRandom(n=4), rvs)
+        noiser = BasicLaplaceNoise()
 
-        noise_result = noiser(cross_table.copy(), sensitivity, epsilon, min_cell_size)
+        noise_result = noiser(
+            cross_table.copy(),
+            rvs,
+            SafeRandom(n=4),
+            sensitivity,
+            epsilon,
+            min_cell_size,
+            log=NO_LOG,
+        )
         noisy_cross_table = noise_result.cross_table
         self.assertEqualCrossTables(cross_table, noisy_cross_table)
         self.assertEqual(noise_result.rows_original, 8)
@@ -83,9 +91,17 @@ class NoiseTest(Fixture):
         sensitivity = 0
 
         rvs = self.rvs_from_crosstab(cross_table)
-        noiser = BasicLaplaceNoise(SafeRandom(n=4), rvs)
+        noiser = BasicLaplaceNoise()
 
-        noise_result = noiser(cross_table.copy(), sensitivity, epsilon, min_cell_size)
+        noise_result = noiser(
+            cross_table.copy(),
+            rvs,
+            SafeRandom(n=4),
+            sensitivity,
+            epsilon,
+            min_cell_size,
+            log=NO_LOG,
+        )
         noisy_cross_table = noise_result.cross_table
 
         self.assertEqual(noisy_cross_table.shape, (4, 4))
@@ -119,9 +135,17 @@ class NoiseTest(Fixture):
         sensitivity = 1
 
         rvs = self.rvs_from_crosstab(cross_table)
-        noiser = BasicLaplaceNoise(SafeRandom(n=4), rvs)
+        noiser = BasicLaplaceNoise()
 
-        noise_result = noiser(cross_table.copy(), sensitivity, epsilon, min_cell_size)
+        noise_result = noiser(
+            cross_table.copy(),
+            rvs,
+            SafeRandom(n=4),
+            sensitivity,
+            epsilon,
+            min_cell_size,
+            log=NO_LOG,
+        )
         noisy_cross_table = noise_result.cross_table
 
         self.assertEqual(noisy_cross_table.shape, cross_table.shape)
@@ -158,9 +182,16 @@ class NoiseTest(Fixture):
         sensitivity = 0
 
         rvs = self.rvs_from_crosstab(cross_table)
-        noiser = LaplaceNoise(safe_random=SafeRandom(n=4), rvs=rvs, max_add_rows=1000, log=NO_LOG)
+        noiser = LaplaceNoise(max_add_rows=1000)
 
-        noise_result = noiser(cross_table.copy(), sensitivity, epsilon, min_cell_size)
+        noise_result = noiser(
+            cross_table.copy(),
+            rvs, SafeRandom(n=4),
+            sensitivity,
+            epsilon,
+            min_cell_size,
+            log=NO_LOG,
+        )
         noisy_cross_table = noise_result.cross_table
         self.assertEqualCrossTables(noisy_cross_table, cross_table)
         self.assertEqual(noise_result.rows_original, 8)
@@ -181,9 +212,17 @@ class NoiseTest(Fixture):
         sensitivity = 0
 
         rvs = self.rvs_from_crosstab(cross_table)
-        noiser = LaplaceNoise(safe_random=SafeRandom(n=4), rvs=rvs, max_add_rows=1000, log=NO_LOG)
+        noiser = LaplaceNoise(max_add_rows=1000)
 
-        noise_result = noiser(cross_table.copy(), sensitivity, epsilon, min_cell_size)
+        noise_result = noiser(
+            cross_table.copy(),
+            rvs,
+            SafeRandom(n=4),
+            sensitivity,
+            epsilon,
+            min_cell_size,
+            log=NO_LOG,
+        )
         noisy_cross_table = noise_result.cross_table
 
         self.assertEqual(noisy_cross_table.shape, (4, 4))
@@ -220,9 +259,17 @@ class NoiseTest(Fixture):
         sensitivity = 1
 
         rvs = self.rvs_from_crosstab(cross_table)
-        noiser = LaplaceNoise(safe_random=SafeRandom(n=4), rvs=rvs, max_add_rows=1000, log=NO_LOG)
+        noiser = LaplaceNoise(max_add_rows=1000)
 
-        noise_result = noiser(cross_table.copy(), sensitivity, epsilon, min_cell_size)
+        noise_result = noiser(
+            cross_table.copy(),
+            rvs,
+            SafeRandom(n=4),
+            sensitivity,
+            epsilon,
+            min_cell_size,
+            log=NO_LOG,
+        )
         noisy_cross_table = noise_result.cross_table
 
         self.assertEqual(noisy_cross_table.shape, cross_table.shape)
@@ -262,9 +309,17 @@ class NoiseTest(Fixture):
         sensitivity = 1
 
         rvs = self.rvs_from_crosstab(cross_table)
-        noiser = LaplaceNoise(safe_random=SafeRandom(n=4), rvs=rvs, max_add_rows=1000, log=NO_LOG)
+        noiser = LaplaceNoise(max_add_rows=1000)
 
-        noise_result = noiser(cross_table.copy(), sensitivity, epsilon, min_cell_size)
+        noise_result = noiser(
+            cross_table.copy(),
+            rvs,
+            SafeRandom(n=4),
+            sensitivity,
+            epsilon,
+            min_cell_size,
+            log=NO_LOG,
+        )
         noisy_cross_table = noise_result.cross_table
 
         # One new row may be added
@@ -320,9 +375,17 @@ class NoiseTest(Fixture):
         sensitivity = 1
 
         rvs = self.rvs_from_crosstab(cross_table)
-        noiser = LaplaceNoise(safe_random=SafeRandom(n=4), rvs=rvs, max_add_rows=1000, log=print)
+        noiser = DecompositionLaplaceNoise(max_add_rows=1000)
 
-        noise_result = noiser.decomposition_method(cross_table.copy(), sensitivity, epsilon, min_cell_size)
+        noise_result = noiser(
+            cross_table.copy(),
+            rvs,
+            SafeRandom(n=4),
+            sensitivity,
+            epsilon,
+            min_cell_size,
+            log=NO_LOG,
+        )
         noisy_cross_table = noise_result.cross_table
 
         # Rows should be added

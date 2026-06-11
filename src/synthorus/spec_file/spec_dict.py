@@ -108,7 +108,7 @@ class SpecDict(MutableMapping[str, SpecValue]):
             self,
             the_key,
             update: Optional[Mapping] = None,
-            dont_inherit: Optional[Iterable] = None
+            dont_inherit: Iterable[str] = (),
     ) -> SpecDict:
         """
         Get the sub-dict, identified by the given key.
@@ -319,7 +319,7 @@ class SpecDict(MutableMapping[str, SpecValue]):
             self,
             the_key,
             *,
-            dont_inherit: Optional[Iterable] = None,
+            dont_inherit: Iterable[str] = (),
             default: Optional[Dict[str, Any]] = None,
     ) -> SpecDict:
         """
@@ -333,7 +333,7 @@ class SpecDict(MutableMapping[str, SpecValue]):
             raise self.error('invalid value', f'{the_key} must be a dictionary')
         return self.sub_dict(the_key, update=the_val, dont_inherit=dont_inherit)
 
-    def get_dict_optional(self, the_key, *, dont_inherit: Optional[Iterable] = None) -> Optional[SpecDict]:
+    def get_dict_optional(self, the_key, *, dont_inherit: Iterable[str] = ()) -> Optional[SpecDict]:
         """
         Args:
             the_key: key in this model dict that identifies the sub-dict.
@@ -499,7 +499,7 @@ class SpecDict(MutableMapping[str, SpecValue]):
             if not location_as_path.exists():
                 raise self.error(f'absolute file location but file not found', location)
             return location_as_path
-        found = None
+        found: Optional[Path] = None
         for root in roots:
             location_as_path = root / location
             if location_as_path.exists():

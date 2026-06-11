@@ -1,4 +1,4 @@
-from synthorus.dataset import Dataset
+from synthorus.dataset import Dataset, PandasDataset
 from synthorus.model.dataset_spec_impl import DatasetSpecPickle
 from synthorus_demos.demo_files import DATASET_ROOTS
 
@@ -8,8 +8,10 @@ def main() -> None:
 
     dataset: Dataset = spec.dataset(roots=DATASET_ROOTS)
 
-    print()
-    print(dataset)
+    if isinstance(dataset, PandasDataset):
+        print()
+        print(dataset.dataframe)
+
     print()
     print(dataset.crosstab(dataset.rvs))
 
