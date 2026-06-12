@@ -1,11 +1,14 @@
+import json
 from abc import ABC, abstractmethod
+from collections.abc import KeysView
 from io import TextIOWrapper, StringIO
 from os import PathLike
 from pathlib import Path
-from typing import Sequence, Iterator, Dict, Iterable, Tuple, Mapping, List
+from typing import Sequence, Iterator, Dict, Iterable, Tuple, Mapping, List, Any
 
+import numpy as np
+import pandas as pd
 from ck.pgm import State
-import json
 
 from synthorus.error import SynthorusError
 from synthorus.simulator.sim_record import SimRecord
@@ -212,11 +215,24 @@ class MemoryRecorder(SimRecorder):
         """
         return self._records
 
+    def as_dataframes(self) -> Dict[str, pd.DataFrame]:
+        """
+        Convert all the records to a dictionary of Pandas DataFrames.
+
+        Returns:
+            A dictionary where a key is an entity name and the corresponding
+            value is a Pandas DataFrame for that entity.
+        """
+        return {
+            entity_name: catcher.as_dataframe()
+            for entity_name, catcher in self.records.items()
+        }
+
     def as_json(self, indent: int = 4, prefix: str = '') -> str:
         """
-        Show all records as JSON.
-        This calls `data_catcher.as_json(...)` for each `data_catcher` of
-        `self.records`. Each `data_catcher` is an entry in a JSON dictionary.
+        Show all records as JSON. The returned JSON is a dictionary
+        with one entry per entity, the key is the entity name and the value
+        is the result of `self.records.entity.as_json(...)`.
         """
         dent: str = ' ' * indent
         string_io = StringIO()
@@ -254,6 +270,65 @@ class MemoryRecorder(SimRecorder):
             mem_record[col] = val
 
 
+class PandasRecorder(SimRecorder, Mapping[str, pd.DataFrame]):
+    """
+    A SimRecorder that records to Pandas DataFrames.
+
+    Use a PandasRecorder when running a simulator, as normal.
+
+    The resulting records are made available as a Pandas DataFrame for each entity.
+    A PandasRecorder object is a read-only dictionary where a key is
+    an entity name and the corresponding value is a Pandas DataFrame for that entity.
+
+    WARNING:
+        A Pandas DataFrame cannot be incrementally extended as needed by a SimRecorder
+        so a PandasRecorder needs to keep an in-memory copy of the data, in addition
+        to the dataframes. The dataframes are created and cached as needed. As an alternative
+        use `MemoryRecorder.as_dataframes`.
+    """
+
+    def __init__(self):
+        self._memory: MemoryRecorder = MemoryRecorder()
+        self._cache: Dict[str, pd.DataFrame] = {}
+
+    def __getitem__(self, key: str, /) -> pd.DataFrame:
+        got = self._cache.get(key)
+        if got is not None:
+            return got
+        catcher: RamDataCatcher = self._memory.records[key]
+        got = catcher.as_dataframe()
+        self._cache[key] = got
+        return got
+
+    def __len__(self):
+        return len(self._memory.records)
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._memory.records)
+
+    def keys(self) -> KeysView[str]:
+        return self._memory.records.keys()
+
+    def values(self) -> Iterator[pd.DataFrame]:
+        return (self[key] for key in self.keys())
+
+    def items(self) -> Iterator[Tuple[str, pd.DataFrame]]:
+        return ((key, self[key]) for key in self.keys())
+
+    def __contains__(self, key: Any) -> bool:
+        return key in self._cache
+
+    def start_entity(self, entity_name: str, field_names: Sequence[str]) -> int:
+        return self._memory.start_entity(entity_name, field_names)
+
+    def write_record(self, entity_name: str, record: SimRecord) -> None:
+        self._memory.write_record(entity_name, record)
+        self._cache.clear()
+
+    def finish(self) -> None:
+        self._memory.finish()
+
+
 class DebugRecorder(SimRecorder):
     """
     A SimRecorder that prints records (for debugging and demonstrations).
@@ -275,7 +350,7 @@ class DebugRecorder(SimRecorder):
         """
         self._file = file
         self._blank_line_between_entities = blank_line_between_entities
-        self._entity_start_ids: Dict[str, int] = dict(entity_start_ids)
+        self._entity_start_ids: Dict[str, int] = dict[str, int](entity_start_ids)
 
         self._writing: bool = False
         self._last_entity: str = ''

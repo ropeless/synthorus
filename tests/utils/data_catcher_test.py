@@ -49,11 +49,10 @@ class DataCatcherTest(Fixture):
 
         df: pd.DataFrame = data.as_dataframe()
 
-        NAN = float('nan')
         self.assertEqual(list(df.columns), ['a', 'b', 'c'])
         self.assertEqual(len(df), 2)
-        self.assertArrayEqual(df.iloc[0, :], [2, 5, NAN], nan_equality=True)
-        self.assertArrayEqual(df.iloc[1, :], [3, NAN, 6], nan_equality=True)
+        self.assertArrayEqual(df.iloc[0, :], [2, 5, None])
+        self.assertArrayEqual(df.iloc[1, :], [3, None, 6])
 
 
 if __name__ == '__main__':

@@ -92,19 +92,21 @@ class DataCatcher(ABC):
         Returns:
             a numpy array.
         """
-        try:
-            # Fragile but efficient if it works :-(
-            return np.fromiter(
-                (
-                    record.get(column, default)
-                    for record in self
-                ),
-                count=len(self),
-                dtype=dtype
-            )
-        # noinspection PyBroadException
-        except Exception:
-            return np.array(self.get_column_list(column, default), dtype=dtype)
+        if dtype is not None:
+            try:
+                # Fragile but efficient if it works :-(
+                return np.fromiter(
+                    (
+                        record.get(column, default)
+                        for record in self
+                    ),
+                    count=len(self),
+                    dtype=dtype
+                )
+            # noinspection PyBroadException
+            except Exception:
+                pass
+        return np.array(self.get_column_list(column, default), dtype=dtype)
 
     def get_column_series(self, column: str, default=None, dtype=None) -> pd.Series:
         """
