@@ -1,0 +1,27 @@
+{
+  "parameters": {},
+  "entities": {
+    "_default_entity_": {
+      "parent": null,
+      "sampler": "_default_entity_",
+      "id_field_name": "_id_",
+      "count_field_name": "_count_",
+      "foreign_field_name": null,
+      "fields": {
+        "X": {
+          "type": "sample",
+          "rv_name": "X"
+        },
+        "Z": {
+          "type": "sample",
+          "rv_name": "Z"
+        },
+        "Y": {
+          "type": "sample",
+          "rv_name": "Y"
+        }
+      },
+      "cardinality": []
+    }
+  }
+}

@@ -1,0 +1,119 @@
+Privacy Report
+==============
+
+Report date: 2026-07-23 14:45:21 (AUS Eastern Standard Time)
+Report author: barry
+
+Model name: spec_simple_pjm
+Model author: Barry Drake
+
+PGM cross-tables: noisy
+Random number generator security level: 4 (equivalent to AES128 - adequate security)
+Privacy budget used: 0 (no privacy risk)
+
+Datasources with zero sensitivity (3 of 3):
+    event_duration
+    event_duration_since_last
+    patient_age__event_type
+
+Datasources (3):
+    Datasource name: event_duration
+    Sensitivity: 0
+    Random variables: event_duration
+    Distinct rows: 9
+    Total weight: 5.11
+    Entropy: 1.9795669564757818
+
+    Datasource name: event_duration_since_last
+    Sensitivity: 0
+    Random variables: event_duration_since_last
+    Distinct rows: 9
+    Total weight: 5.11
+    Entropy: 1.979566956475782
+
+    Datasource name: patient_age__event_type
+    Sensitivity: 0
+    Random variables: patient_age, event_type
+    Distinct rows: 7
+    Total weight: 108
+    Entropy: 2.5175932387933115
+
+Cross-tables (4):
+    Random variables: event_duration
+    State space size: 9
+    Datasource: event_duration
+    Sensitivity: 0
+    Epsilon: 0
+    Min cell size: 0
+    Distinct rows: 9
+    Total weight: 5.11
+    Entropy: 1.9795669564757818
+
+    Random variables: event_duration_since_last
+    State space size: 9
+    Datasource: event_duration_since_last
+    Sensitivity: 0
+    Epsilon: 0
+    Min cell size: 0
+    Distinct rows: 9
+    Total weight: 5.11
+    Entropy: 1.979566956475782
+
+    Random variables: event_type
+    State space size: 4
+    Datasource: patient_age__event_type
+    Sensitivity: 0
+    Epsilon: 0
+    Min cell size: 0
+    Distinct rows: 7
+    Total weight: 108
+    Entropy: 2.5175932387933115
+
+    Random variables: patient_age
+    State space size: 3
+    Datasource: patient_age__event_type
+    Sensitivity: 0
+    Epsilon: 0
+    Min cell size: 0
+    Distinct rows: 7
+    Total weight: 108
+    Entropy: 2.5175932387933115
+
+Random variables (4):
+    Random variable name: 'event_duration'
+    Primary datasource: 'event_duration'
+    Number of values: 9
+    Number of support values: 9
+    Values: 1, 2, 3, 4, 5, 6, 7, 8, 9
+    Total weight: 5.109999999999999
+    Entropy: 1.9795669564757818
+    Distribution: 1 = 0.501, 2 = 0.2505, 3 = 0.1252, 4 = 0.06262, 5 = 0.03131, 6 = 0.01566, 7 = 0.007828, 8 = 0.003914, 9 = 0.001957
+
+    Random variable name: 'event_duration_since_last'
+    Primary datasource: 'event_duration_since_last'
+    Number of values: 9
+    Number of support values: 9
+    Values: 1, 2, 3, 4, 5, 6, 7, 8, 9
+    Total weight: 5.109999999999999
+    Entropy: 1.979566956475782
+    Distribution: 1 = 0.001957, 2 = 0.003914, 3 = 0.007828, 4 = 0.01566, 5 = 0.03131, 6 = 0.06262, 7 = 0.1252, 8 = 0.2505, 9 = 0.501
+
+    Random variable name: 'event_type'
+    Primary datasource: 'patient_age__event_type'
+    Number of values: 4
+    Number of support values: 4
+    Values: AP, DEATH, ED, GP
+    Total weight: 108
+    Entropy: 1.4186110796220983
+    Distribution: AP = 0.08333, DEATH = 0.02778, ED = 0.3056, GP = 0.5833
+
+    Random variable name: 'patient_age'
+    Primary datasource: 'patient_age__event_type'
+    Number of values: 3
+    Number of support values: 3
+    Values: middle_aged, old, young
+    Total weight: 108
+    Entropy: 1.5466316153937778
+    Distribution: middle_aged = 0.4444, old = 0.2778, young = 0.2778
+
+--------------------------------------------------------------------------------

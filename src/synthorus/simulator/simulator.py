@@ -49,7 +49,7 @@ class Simulator:
             raise SynthorusError(f'entity name must be unique: {name!r}')
 
         if parent is None:
-            foreign_field_name = None  # not needed - ignore it
+            foreign_field_name = '_none_'  # not needed - ignore it
         else:
             if self._entities[parent.name] is not parent:
                 raise SynthorusError(f'parent entity must be in this simulator: {parent.name!r}')
@@ -93,12 +93,12 @@ class Simulator:
         """
         Run the simulation.
 
-        If iterations is 1 (the default) then each root entity
+        If the number of iterations is 1 (the default), then each root entity
         is run once, and the number of records for the entity is
         determined by the entity's cardinality conditions.
 
-        If iterations > 1 then the root entities will be run
-        that multiple of times.
+        If iterations > 1, the root entities will be run
+        that multiple number of times.
 
         If iterations <= 0, then the entities will be initialised
         but not run, i.e., no records will be generated.
@@ -107,7 +107,7 @@ class Simulator:
             recorder: a SimRecorder instance for recording generated records.
             iterations: number of times to run the simulation. Default is 1.
             parameters_name: an optional entity name for emitting the special "parameters" record.
-                If None (the default), then the parameters record will not be sent to the recorder.
+                If None (the default), then the "parameters" record will not be sent to the recorder.
                 The parameters_name must be different to all simulator entity names.
 
         Ensures:
@@ -117,8 +117,8 @@ class Simulator:
             (like opened files).
 
         Warning:
-            If the simulation raises an exception then entity fields
-            may be left in an arbitrary state. This may cause issues
+            If the simulation raises an exception, then entity fields
+            may be left in an arbitrary state. This may cause issues with
             any field that is updated based on previous states of fields.
         """
         try:

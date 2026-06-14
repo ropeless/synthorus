@@ -14,6 +14,7 @@ from synthorus.utils.math_extras import p_log_p
 from synthorus.utils.print_function import PrintFunction, Destination, Print
 from synthorus.utils.time_extras import timestamp
 from synthorus.workflows.file_names import REPORTS, PRIVACY_REPORT_FILE_NAME, MODEL_SPEC_NAME, MODEL_INDEX_NAME
+from synthorus.workflows.report_helpers import rng_n_str, budget_str, calculate_privacy_budget
 
 DEFAULT_INDENT = '    '
 
@@ -97,13 +98,13 @@ def report_privacy(
         _print(f'{prefix}Model author: {model_spec.author}')
         _print()
         _print(f'{prefix}PGM cross-tables: {model_spec.pgm_crosstabs}')
-        _print(f'{prefix}Random number generator security level: {model_spec.rng_n} ({_rng_n_str(model_spec.rng_n)})')
+        _print(f'{prefix}Random number generator security level: {model_spec.rng_n} ({rng_n_str(model_spec.rng_n)})')
 
-        privacy_budget: float = _calculate_privacy_budget(model_spec, model_index)
-        _print(f'{prefix}Privacy budget: {clean_num(privacy_budget)} ({_budget_str(privacy_budget)})')
+        privacy_budget: float = calculate_privacy_budget(model_spec, model_index)
+        _print(f'{prefix}Privacy budget used: {clean_num(privacy_budget)} ({budget_str(privacy_budget)})')
         _print()
 
-        # Get the datasources in a stable order, and identify those with zero sensitivity
+        # Get the datasources in a stable order and identify those with zero sensitivity
         sorted_datasources: List[str] = sorted(model_spec.datasources.keys())
         zero_sensitivity_datasources: List[str] = [
             datasource_name
@@ -249,31 +250,6 @@ def _privacy_report_crosstab(
     _print(f'{prefix}Entropy: {entropy}')
 
 
-def _calculate_privacy_budget(model_spec: ModelSpec, model_index: ModelIndex) -> float:
-    """
-    Calculate the total privacy budget for a model. This is
-    the sum of cross-table epsilon values, for cross-tables of a
-    datasource with sensitivity > 0.
-
-    Args:
-        model_spec: synthetic data model specification.
-        model_index: cached relationships between model components.
-
-    Returns:
-        sum of cross-table epsilon using sources with sensitivity > 0.
-    """
-    total: float = 0
-    crosstab_name: str
-    crosstab_spec: ModelCrosstabSpec
-    for crosstab_name, crosstab_spec in model_spec.crosstabs.items():
-        crosstab_index: CrosstabIndex = model_index.crosstabs[crosstab_name]
-        datasource_name: str = crosstab_index.datasource
-        sensitivity: float = model_spec.datasources[datasource_name].sensitivity
-        if sensitivity > 0:
-            total += crosstab_spec.epsilon
-    return total
-
-
 def _analyse_crosstab_data(dataset: Dataset, rvs: Optional[Sequence[str]] = None):
     if rvs is None:
         rvs = dataset.rvs
@@ -284,45 +260,6 @@ def _analyse_crosstab_data(dataset: Dataset, rvs: Optional[Sequence[str]] = None
         for row in distribution.itertuples(index=False)
     )
     return distribution, total_weight, entropy
-
-
-def _rng_n_str(rng_n: int) -> str:
-    """
-    Interpret the random number generator security level as a
-    human-readable string.
-
-    See class SafeRandom in package modelling.noise.
-
-    For details on the interpretation, see:
-    Holohan, N., & Braghin, S. (2021, October). Secure random sampling in differential privacy.
-    In European Symposium on Research in Computer Security (pp. 523-542). Springer, Cham.
-    """
-    if rng_n < 4:
-        return 'lower than AES128 - unverified security'
-    if rng_n == 4:
-        return 'equivalent to AES128 - adequate security'
-    if rng_n == 5:
-        return 'equivalent to AES192 - good security'
-    if rng_n == 6:
-        return 'equivalent to AES256 - very good security'
-    if rng_n > 6:
-        return 'better than AES256 - excellent security'
-    return 'no interpretation'
-
-
-def _budget_str(privacy_budget: float) -> str:
-    """
-    Interpret the privacy_budget as a human-readable string.
-    """
-    if privacy_budget <= 0:
-        return 'no privacy risk'
-    if privacy_budget < 0.01:
-        return 'very good privacy protection'
-    if privacy_budget < 1.0:
-        return 'good privacy protection'
-    if privacy_budget < 10.0:
-        return 'low privacy protection'
-    return 'effectively no privacy protection'
 
 
 def _join(elements: Iterable[Any], sep: str = ', ') -> str:

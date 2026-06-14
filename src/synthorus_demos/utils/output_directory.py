@@ -5,9 +5,15 @@ from pathlib import Path
 from synthorus.utils.config_help import config
 
 
+DEMO_OUT_CONFIG: str = 'DEMO_OUT'
+"""
+This is the optional config variable defining where output directories are created.
+"""
+
+
 class output_directory(Path):
     """
-    THIS IS ONLY USED TO SUPPORT DEMONSTRATION SCRIPTS. IT IS NOT NEEDED FOR SYNTHORUS.
+    THIS IS ONLY USED TO SUPPORT DEMONSTRATION SCRIPTS. IT IS UNNECESSARY FOR SYNTHORUS.
 
     A managed directory path for demo output files.
 
@@ -55,14 +61,14 @@ class output_directory(Path):
         """
         self._tmp_dir = None
         demo_out: Path
-        if 'DEMO_OUT' not in config:
+        if DEMO_OUT_CONFIG not in config:
             if allow_tmp:
                 self._tmp_dir = tempfile.TemporaryDirectory()
                 demo_out = Path(self._tmp_dir.name)
             else:
-                raise RuntimeError('DEMO_OUT not in config.py or OS environment')
+                raise RuntimeError(f'{DEMO_OUT_CONFIG} not in config.py or OS environment')
         else:
-            demo_out = Path(config.DEMO_OUT)
+            demo_out = Path(config[DEMO_OUT_CONFIG])
 
         if not demo_out.is_dir():
             raise FileNotFoundError(f'the demo output directory does not exist: {demo_out}')

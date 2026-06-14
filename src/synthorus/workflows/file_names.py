@@ -32,7 +32,7 @@ SIMULATOR_SPEC_NAME = 'simulator_spec.json'
 
 # Report files
 PRIVACY_REPORT_FILE_NAME = 'report_on_privacy.txt'
-MODEL_SPEC_REPORT_FILE_NAME = 'report_on_model_spec.txt'
+MODEL_SPEC_REPORT_FILE_NAME = 'report_on_model_spec.html'
 UTILITY_REPORT_FILE_NAME = 'report_on_utility.txt'
 UTILITY_RESULTS_FILE_NAME = 'utility_results.csv'
 CROSSTAB_REPORT_FILE_NAME = 'crosstabs.csv'

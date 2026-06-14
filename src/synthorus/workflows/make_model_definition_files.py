@@ -19,7 +19,7 @@ from synthorus.noise.safe_random import SafeRandom
 from synthorus.simulator.make_simulator_spec_from_model_spec import make_simulator_spec_from_model_spec
 from synthorus.simulator.simulator_spec import SimulatorSpec
 from synthorus.utils.config_help import config
-from synthorus.utils.data_catcher import RamDataCatcher, DataCatcher
+from synthorus.utils.data_catcher import RamDataCatcher
 from synthorus.utils.print_function import PrintFunction
 from synthorus.workflows.cross_table_loader import save_cross_table, CrossTableLoader
 from synthorus.workflows.file_names import CLEAN_CROSS_TABLES, NOISY_CROSS_TABLES, REPORTS, \
@@ -77,7 +77,7 @@ def make_model_definition_files(
         save_clean: flag whether to save clean cross-tables or not.
         save_noisy: flag whether to save noisy cross-tables or not.
         make_privacy_report: flag whether to save a privacy report or not.
-        make_crosstab_report: flag whether to save a cross-tables report or not.
+        make_crosstab_report: flag whether to save a cross-table report or not.
         make_model_spec_report: flag whether to save a model spec report or not.
         make_pgms: flag whether to create the PGMs or not.
         log: print function for log messages.
@@ -99,25 +99,17 @@ def make_model_definition_files(
     if clean_path is not None and noisy_path is not None and clean_path == noisy_path:
         raise SynthorusError('clean and noisy directories must be different')
 
-    # Save the model spec
-    with open(model_directory_path / MODEL_SPEC_NAME, 'w') as file:
-        print(model_spec.model_dump_json(indent=2), file=file)
-
-    # Make and save a model index
+    # Make model index
     dataset_cache = DatasetCache(model_spec, cwd)
     model_index: ModelIndex = make_model_index(model_spec, dataset_cache)
-    with open(model_directory_path / MODEL_INDEX_NAME, 'w') as file:
-        print(model_index.model_dump_json(indent=2), file=file)
 
     # Infer the simulator from the model spec and save it
     simulator_spec: SimulatorSpec = make_simulator_spec_from_model_spec(model_spec)
     with open(model_directory_path / SIMULATOR_SPEC_NAME, 'w') as file:
         print(simulator_spec.model_dump_json(indent=2), file=file)
 
-    # Extract and save cross-tables, keeping track of cross-table properties to report on
-    crosstab_report = RamDataCatcher()
-    _extract_cross_tables(model_spec, model_index, dataset_cache, clean_path, noisy_path, crosstab_report, log)
-
+    # Extract and save cross-tables
+    _extract_cross_tables(model_spec, model_index, dataset_cache, clean_path, noisy_path, log)
     # Make PGM models if requested
     if make_pgms:
         log(f'creating entity PGMs: {model_spec.pgm_crosstabs}')
@@ -135,9 +127,18 @@ def make_model_definition_files(
         entity_models_directory.mkdir()
         make_entity_pgms(model_index, crosstab_loader, entity_models_directory, log=log)
 
+    # Save the model spec
+    with open(model_directory_path / MODEL_SPEC_NAME, 'w') as file:
+        print(model_spec.model_dump_json(indent=2), file=file)
+
+    # Save the model index
+    with open(model_directory_path / MODEL_INDEX_NAME, 'w') as file:
+        print(model_index.model_dump_json(indent=2), file=file)
+
     # Save initial reports
     if make_crosstab_report:
         log('saving cross-tables report')
+        crosstab_report: RamDataCatcher = _extract_crosstab_report(model_spec, model_index)
         crosstab_report.to_csv(report_path / CROSSTAB_REPORT_FILE_NAME)
     if make_privacy_report:
         log('saving privacy report')
@@ -164,6 +165,50 @@ def _set_up_model_directory(model_definition_directory: PathLike, overwrite: boo
     return model_directory
 
 
+def _extract_crosstab_report(model_spec: ModelSpec, model_index: ModelIndex) -> RamDataCatcher:
+    """
+    Extract a tabular report of the cross-tables.
+    """
+    crosstab_report = RamDataCatcher()
+    for crosstab_name, crosstab_spec in model_spec.crosstabs.items():
+        crosstab_index = model_index.crosstabs[crosstab_name]
+        datasource_spec = model_spec.datasources[crosstab_index.datasource]
+
+        crosstab_record = crosstab_report.append()
+        crosstab_record['Cross-table'] = crosstab_name
+
+        def _track(label, value, denominator=None):
+            crosstab_record[label] = value
+            if denominator is not None:
+                percentage: float = value / denominator * 100
+                crosstab_record[f'{label}%'] = percentage
+
+        _track('Random variables', ' '.join(repr(rv) for rv in crosstab_index.rvs))
+        _track('Number-of-rvs', len(crosstab_index.rvs))
+        _track('Datasource', crosstab_index.datasource)
+        _track('State space size', crosstab_index.number_of_states)
+
+        _track('Clean number of rows', crosstab_index.clean_num_rows)
+        _track('Clean number of suppressed rows', crosstab_index.clean_num_suppressed)
+        _track('Clean min weight', crosstab_index.clean_min_weight)
+        _track('Clean max weight', crosstab_index.clean_max_weight)
+        _track('Clean total weight', crosstab_index.clean_total_weight)
+
+        _track('Sensitivity', datasource_spec.sensitivity)
+        _track('Epsilon', crosstab_spec.epsilon)
+        _track('Min cell size', crosstab_spec.min_cell_size)
+        _track('Noiser', crosstab_spec.noiser.model_dump_json())
+        _track('Orig rows', crosstab_index.clean_num_rows)
+        _track('Lost rows', crosstab_index.rows_lost, crosstab_index.clean_num_rows)
+        _track('Added rows', crosstab_index.rows_added, crosstab_index.clean_num_rows)
+        _track('Final rows', crosstab_index.noisy_num_rows, crosstab_index.clean_num_rows)
+        _track('Final min weight', crosstab_index.noisy_min_weight)
+        _track('Final max weight', crosstab_index.noisy_max_weight)
+        _track('Final total weight', crosstab_index.noisy_total_weight)
+
+    return crosstab_report
+
+
 def _cross_table_path(model_directory_path: Path, sub_dir: str, save: bool) -> Optional[Path]:
     """
     Constructs a cross-table's subdirectory.
@@ -182,8 +227,7 @@ def _extract_cross_tables(
         dataset_cache: DatasetCache,
         clean_path: Optional[Path],
         noisy_path: Optional[Path],
-        crosstab_report: DataCatcher,
-        log
+        log: PrintFunction
 ) -> None:
     """
     This will extract all necessary cross-tables, not just the specified cross-tables, but also
@@ -194,7 +238,6 @@ def _extract_cross_tables(
         dataset_cache: access to datasources.
         clean_path: where to save clean cross-tables (or None).
         noisy_path: where to save noisy cross-tables (or None).
-        crosstab_report: place to record interesting parameter values.
         log: print function for log messages.
     """
     # Create a safe random number for adding noise to cross-tables.
@@ -210,7 +253,6 @@ def _extract_cross_tables(
             model_index,
             dataset_cache,
             datasources,
-            crosstab_report,
             random,
             clean_path,
             noisy_path,
@@ -225,11 +267,10 @@ def _extract_cross_table(
         model_index: ModelIndex,
         dataset_cache: DatasetCache,
         datasource_specs: Dict[str, DatasourceSpec],
-        crosstab_report: DataCatcher,
         random: SafeRandom,
         clean_path: Optional[Path],
         noisy_path: Optional[Path],
-        log
+        log: PrintFunction
 ):
     crosstab_spec: ModelCrosstabSpec = model_spec.crosstabs[crosstab_name]
     crosstab_index: CrosstabIndex = model_index.crosstabs[crosstab_name]
@@ -239,14 +280,9 @@ def _extract_cross_table(
     datasource_name: str = crosstab_index.datasource
     dataset: Dataset = dataset_cache[datasource_name]
 
-    crosstab_record = crosstab_report.append()
-    crosstab_record['Cross-table'] = crosstab_name
-
     def _track(label, value, denominator=None):
-        crosstab_record[label] = value
         if denominator is not None:
             percentage: float = value / denominator * 100
-            crosstab_record[f'{label}%'] = percentage
             log(f'{label}: {value:,} ({percentage:.2f}%)')
         elif isinstance(value, (int, float)):
             log(f'{label}: {value:,}')
@@ -272,14 +308,27 @@ def _extract_cross_table(
     epsilon = 0.0 if datasource_sensitivity == 0 else crosstab_spec.epsilon
 
     _track('State space size', num_states)
-    _track('Number of rows', num_rows)
-    _track('Number of suppressed rows', num_suppressed)
-    _track('Min weight', min_weight)
-    _track('Max weight', max_weight)
-    _track('Total weight', total_weight)
+    _track('Clean number of rows', num_rows)
+    _track('Clean number of suppressed rows', num_suppressed)
+    _track('Clean min weight', min_weight)
+    _track('Clean max weight', max_weight)
+    _track('Clean total weight', total_weight)
+
+    crosstab_index.clean_num_rows = num_rows
+    crosstab_index.clean_min_weight = min_weight
+    crosstab_index.clean_max_weight = max_weight
+    crosstab_index.clean_total_weight = total_weight
 
     if clean_path is not None:
         save_cross_table(crosstab, clean_path, crosstab_name)
+
+    # Default noiser result, updated if noise is added.
+    crosstab_index.noisy_num_rows = crosstab_index.clean_num_rows
+    crosstab_index.noisy_min_weight = crosstab_index.clean_min_weight
+    crosstab_index.noisy_max_weight = crosstab_index.clean_max_weight
+    crosstab_index.noisy_total_weight = crosstab_index.clean_total_weight
+    crosstab_index.rows_lost = 0
+    crosstab_index.rows_added = 0
 
     if noisy_path is not None:
         log()
@@ -301,14 +350,22 @@ def _extract_cross_table(
             log
         )
 
-        rows_original = noiser_result.rows_original
-        rows_lost = noiser_result.rows_lost
-        rows_added = noiser_result.rows_added
-        rows_final = noiser_result.rows_final
+        assert crosstab_index.clean_num_rows == noiser_result.rows_original, 'consistency check'
 
-        _track('Orig rows', rows_original)
-        _track('Lost rows', rows_lost, rows_original)
-        _track('Added rows', rows_added, rows_original)
-        _track('Final rows', rows_final, rows_original)
+        noisy_cross_table: pd.DataFrame = noiser_result.cross_table
+        weights: pd.Series = noisy_cross_table.iloc[:, -1]
+
+        crosstab_index.noisy_num_rows = noiser_result.rows_final
+        crosstab_index.noisy_min_weight = float(weights.min())
+        crosstab_index.noisy_max_weight = float(weights.max())
+        crosstab_index.noisy_total_weight = float(weights.sum())
+        crosstab_index.rows_lost = noiser_result.rows_lost
+        crosstab_index.rows_added = noiser_result.rows_added
+
+        clean_num_rows = crosstab_index.clean_num_rows
+        _track('Orig rows', clean_num_rows)
+        _track('Lost rows', noiser_result.rows_lost, clean_num_rows)
+        _track('Added rows', noiser_result.rows_added, clean_num_rows)
+        _track('Final rows', noiser_result.rows_final, clean_num_rows)
 
         save_cross_table(noiser_result.cross_table, noisy_path, crosstab_name)

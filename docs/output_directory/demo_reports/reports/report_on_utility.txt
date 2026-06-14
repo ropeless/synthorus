@@ -1,0 +1,24 @@
+Utility Report
+==============
+
+Report date: 2026-07-23 14:45:21 (AUS Eastern Standard Time)
+Report author: user "barry"
+
+Model name: spec_simple_pjm
+Model author: Barry Drake
+
+Analysis summary:
+
+    Number of entities: 2
+
+    Entity: event
+        Worst histogram-intersection overall: 100.00%
+            random variable set: {event_duration}
+            random variable set: {event_duration_since_last}
+            random variable set: {event_type}
+
+    Entity: patient
+        Worst histogram-intersection overall: 100.00%
+            random variable set: {patient_age}
+
+--------------------------------------------------------------------------------

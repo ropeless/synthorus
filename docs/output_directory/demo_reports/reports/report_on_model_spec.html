@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Model Spec Report for 'spec_simple_pjm'</title>
+    <style>
+        .tree-menu details {
+          margin-left: 20px;
+          margin-top: 8px;
+        }
+    </style>
+    <style>
+        code {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+  </head>
+  <body>
+    <h1>Model Spec Report for 'spec_simple_pjm'</h1>
+    <details class="tree-menu">
+      <summary>Report metadata</summary>
+      <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+        <tbody>
+          <tr>
+            <td style="color: gray; padding: 8px;">Report date</td>
+            <td style="padding: 8px;">2026-07-23 14:45:20 (AUS Eastern Standard Time)</td>
+          </tr>
+          <tr>
+            <td style="color: gray; padding: 8px;">Report author</td>
+            <td style="padding: 8px;">user &quot;barry&quot;</td>
+          </tr>
+        </tbody>
+      </table>
+    </details>
+    <p></p>
+    <details class="tree-menu">
+      <summary>Model metadata</summary>
+      <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+        <tbody>
+          <tr>
+            <td style="color: gray; padding: 8px;">Model name</td>
+            <td style="padding: 8px;">spec_simple_pjm</td>
+          </tr>
+          <tr>
+            <td style="color: gray; padding: 8px;">Model author</td>
+            <td style="padding: 8px;">Barry Drake</td>
+          </tr>
+          <tr>
+            <td style="color: gray; padding: 8px;">Random number generator security level</td>
+            <td style="padding: 8px;">4 (equivalent to AES128 - adequate security)</td>
+          </tr>
+          <tr>
+            <td style="color: gray; padding: 8px;">Privacy budget</td>
+            <td style="padding: 8px;">0 (no privacy risk)</td>
+          </tr>
+          <tr>
+            <td style="color: gray; padding: 8px;">PGM cross-table source</td>
+            <td style="padding: 8px;">noisy</td>
+          </tr>
+        </tbody>
+      </table>
+      <details>
+        <summary>Comment</summary>
+        <p> This is a spec file designed to show the use of entities and parameters for modelling patient journeys.</p>
+      </details>
+      <details>
+        <summary>Roots (0)</summary>
+      </details>
+    </details>
+    <p></p>
+    <details class="tree-menu">
+      <summary>Model parameters (2)</summary>
+      <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+        <tbody>
+          <tr>
+            <td style="color: gray; padding: 8px;">number_of_patients</td>
+            <td style="padding: 8px;">10</td>
+          </tr>
+          <tr>
+            <td style="color: gray; padding: 8px;">time_limit</td>
+            <td style="padding: 8px;">100</td>
+          </tr>
+        </tbody>
+      </table>
+    </details>
+    <p></p>
+    <details class="tree-menu">
+      <summary>Datasources (3)</summary>
+      <details>
+        <summary>event_duration (csv)</summary>
+        <div id="DATASOURCE_event_duration">
+          <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="color: gray; padding: 8px;">Sensitivity</td>
+                <td style="padding: 8px;">0.0</td>
+              </tr>
+            </tbody>
+          </table>
+          <details>
+            <summary>Dataset Specification</summary>
+            <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+              <tbody>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Format</td>
+                  <td style="padding: 8px;">CSV</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Separator</td>
+                  <td style="padding: 8px;">','</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Header</td>
+                  <td style="padding: 8px;">True</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Skip blank lines</td>
+                  <td style="padding: 8px;">True</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Skip initial space</td>
+                  <td style="padding: 8px;">True</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Weight column</td>
+                  <td style="padding: 8px;">-1</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">RV map</td>
+                  <td style="padding: 8px;"></td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">RV define</td>
+                  <td style="padding: 8px;"></td>
+                </tr>
+              </tbody>
+            </table>
+            <details>
+              <summary>Data inline</summary>
+              <pre><code>
+event_duration, weight
+1,              2.56
+2,              1.28
+3,              0.64
+4,              0.32
+5,              0.16
+6,              0.08
+7,              0.04
+8,              0.02
+9,              0.01
+</code></pre>
+            </details>
+          </details>
+          <details>
+            <summary>Random variables (1)</summary>
+            <p>
+              <a href="#RV_event_duration">event_duration</a>
+            </p>
+          </details>
+        </div>
+      </details>
+      <details>
+        <summary>event_duration_since_last (csv)</summary>
+        <div id="DATASOURCE_event_duration_since_last">
+          <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="color: gray; padding: 8px;">Sensitivity</td>
+                <td style="padding: 8px;">0.0</td>
+              </tr>
+            </tbody>
+          </table>
+          <details>
+            <summary>Dataset Specification</summary>
+            <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+              <tbody>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Format</td>
+                  <td style="padding: 8px;">CSV</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Separator</td>
+                  <td style="padding: 8px;">','</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Header</td>
+                  <td style="padding: 8px;">True</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Skip blank lines</td>
+                  <td style="padding: 8px;">True</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Skip initial space</td>
+                  <td style="padding: 8px;">True</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Weight column</td>
+                  <td style="padding: 8px;">-1</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">RV map</td>
+                  <td style="padding: 8px;"></td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">RV define</td>
+                  <td style="padding: 8px;"></td>
+                </tr>
+              </tbody>
+            </table>
+            <details>
+              <summary>Data inline</summary>
+              <pre><code>
+event_duration_since_last, weight
+1,                         0.01
+2,                         0.02
+3,                         0.04
+4,                         0.08
+5,                         0.16
+6,                         0.32
+7,                         0.64
+8,                         1.28
+9,                         2.56
+</code></pre>
+            </details>
+          </details>
+          <details>
+            <summary>Random variables (1)</summary>
+            <p>
+              <a href="#RV_event_duration_since_last">event_duration_since_last</a>
+            </p>
+          </details>
+        </div>
+      </details>
+      <details>
+        <summary>patient_age__event_type (csv)</summary>
+        <div id="DATASOURCE_patient_age__event_type">
+          <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="color: gray; padding: 8px;">Sensitivity</td>
+                <td style="padding: 8px;">0.0</td>
+              </tr>
+            </tbody>
+          </table>
+          <details>
+            <summary>Dataset Specification</summary>
+            <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+              <tbody>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Format</td>
+                  <td style="padding: 8px;">CSV</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Separator</td>
+                  <td style="padding: 8px;">','</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Header</td>
+                  <td style="padding: 8px;">True</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Skip blank lines</td>
+                  <td style="padding: 8px;">True</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Skip initial space</td>
+                  <td style="padding: 8px;">True</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Weight column</td>
+                  <td style="padding: 8px;">-1</td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">RV map</td>
+                  <td style="padding: 8px;"></td>
+                </tr>
+                <tr>
+                  <td style="color: gray; padding: 8px;">RV define</td>
+                  <td style="padding: 8px;"></td>
+                </tr>
+              </tbody>
+            </table>
+            <details>
+              <summary>Data inline</summary>
+              <pre><code>
+patient_age, event_type, weight
+young,       GP,         30
+middle_aged, ED,         24
+middle_aged, GP,         24
+old,         ED,         9
+old,         AP,         9
+old,         GP,         9
+old,         DEATH,      3
+</code></pre>
+            </details>
+          </details>
+          <details>
+            <summary>Random variables (2)</summary>
+            <p>
+              <a href="#RV_patient_age">patient_age</a>
+            </p>
+            <p>
+              <a href="#RV_event_type">event_type</a>
+            </p>
+          </details>
+        </div>
+      </details>
+    </details>
+    <p></p>
+    <details class="tree-menu">
+      <summary>Random variables (4)</summary>
+      <details>
+        <summary>event_duration</summary>
+        <div id="RV_event_duration">
+          <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="color: gray; padding: 8px;">States specified</td>
+                <td style="padding: 8px;">infer_distinct</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Ensure None</td>
+                <td style="padding: 8px;">False</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Primary datasource</td>
+                <td style="padding: 8px;">
+                  <a href="#DATASOURCE_event_duration">event_duration</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <details>
+            <summary>States (9)</summary>
+            <p>1</p>
+            <p>2</p>
+            <p>3</p>
+            <p>4</p>
+            <p>5</p>
+            <p>6</p>
+            <p>7</p>
+            <p>8</p>
+            <p>9</p>
+          </details>
+          <details>
+            <summary>All datasources (1)</summary>
+            <p>
+              <a href="#DATASOURCE_event_duration">event_duration</a>
+            </p>
+          </details>
+          <details>
+            <summary>All distribution crosstabs (1)</summary>
+            <p>
+              <a href="#CROSSTAB__event_duration">_event_duration</a>
+            </p>
+          </details>
+          <details>
+            <summary>All sampling entities (1)</summary>
+            <p>
+              <a href="#ENTITY_event">event</a>
+            </p>
+          </details>
+        </div>
+      </details>
+      <details>
+        <summary>event_duration_since_last</summary>
+        <div id="RV_event_duration_since_last">
+          <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="color: gray; padding: 8px;">States specified</td>
+                <td style="padding: 8px;">infer_distinct</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Ensure None</td>
+                <td style="padding: 8px;">False</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Primary datasource</td>
+                <td style="padding: 8px;">
+                  <a href="#DATASOURCE_event_duration_since_last">event_duration_since_last</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <details>
+            <summary>States (9)</summary>
+            <p>1</p>
+            <p>2</p>
+            <p>3</p>
+            <p>4</p>
+            <p>5</p>
+            <p>6</p>
+            <p>7</p>
+            <p>8</p>
+            <p>9</p>
+          </details>
+          <details>
+            <summary>All datasources (1)</summary>
+            <p>
+              <a href="#DATASOURCE_event_duration_since_last">event_duration_since_last</a>
+            </p>
+          </details>
+          <details>
+            <summary>All distribution crosstabs (1)</summary>
+            <p>
+              <a href="#CROSSTAB__event_duration_since_last">_event_duration_since_last</a>
+            </p>
+          </details>
+          <details>
+            <summary>All sampling entities (1)</summary>
+            <p>
+              <a href="#ENTITY_event">event</a>
+            </p>
+          </details>
+        </div>
+      </details>
+      <details>
+        <summary>event_type</summary>
+        <div id="RV_event_type">
+          <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="color: gray; padding: 8px;">States specified</td>
+                <td style="padding: 8px;">infer_distinct</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Ensure None</td>
+                <td style="padding: 8px;">False</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Primary datasource</td>
+                <td style="padding: 8px;">
+                  <a href="#DATASOURCE_patient_age__event_type">patient_age__event_type</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <details>
+            <summary>States (4)</summary>
+            <p>'AP'</p>
+            <p>'DEATH'</p>
+            <p>'ED'</p>
+            <p>'GP'</p>
+          </details>
+          <details>
+            <summary>All datasources (1)</summary>
+            <p>
+              <a href="#DATASOURCE_patient_age__event_type">patient_age__event_type</a>
+            </p>
+          </details>
+          <details>
+            <summary>All distribution crosstabs (1)</summary>
+            <p>
+              <a href="#CROSSTAB__event_type">_event_type</a>
+            </p>
+          </details>
+          <details>
+            <summary>All sampling entities (1)</summary>
+            <p>
+              <a href="#ENTITY_event">event</a>
+            </p>
+          </details>
+        </div>
+      </details>
+      <details>
+        <summary>patient_age</summary>
+        <div id="RV_patient_age">
+          <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="color: gray; padding: 8px;">States specified</td>
+                <td style="padding: 8px;">infer_distinct</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Ensure None</td>
+                <td style="padding: 8px;">False</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Primary datasource</td>
+                <td style="padding: 8px;">
+                  <a href="#DATASOURCE_patient_age__event_type">patient_age__event_type</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <details>
+            <summary>States (3)</summary>
+            <p>'middle_aged'</p>
+            <p>'old'</p>
+            <p>'young'</p>
+          </details>
+          <details>
+            <summary>All datasources (1)</summary>
+            <p>
+              <a href="#DATASOURCE_patient_age__event_type">patient_age__event_type</a>
+            </p>
+          </details>
+          <details>
+            <summary>All distribution crosstabs (1)</summary>
+            <p>
+              <a href="#CROSSTAB__patient_age">_patient_age</a>
+            </p>
+          </details>
+          <details>
+            <summary>All sampling entities (1)</summary>
+            <p>
+              <a href="#ENTITY_patient">patient</a>
+            </p>
+          </details>
+        </div>
+      </details>
+    </details>
+    <p></p>
+    <details class="tree-menu">
+      <summary>Cross-tables (4)</summary>
+      <details>
+        <summary>_event_duration</summary>
+        <div id="CROSSTAB__event_duration">
+          <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="color: gray; padding: 8px;">Datasource</td>
+                <td style="padding: 8px;">
+                  <a href="#DATASOURCE_event_duration">event_duration</a>
+                </td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Sensitivity</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Epsilon</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Min cell size</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">State space size</td>
+                <td style="padding: 8px;">9</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean number of rows</td>
+                <td style="padding: 8px;">9</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean number of suppressed rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean min weight</td>
+                <td style="padding: 8px;">0.01</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean max weight</td>
+                <td style="padding: 8px;">2.56</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean total weight</td>
+                <td style="padding: 8px;">5.11</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Lost rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Added rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final rows</td>
+                <td style="padding: 8px;">9</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final number of suppressed rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final min weight</td>
+                <td style="padding: 8px;">0.01</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final max weight</td>
+                <td style="padding: 8px;">2.56</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final total weight</td>
+                <td style="padding: 8px;">5.11</td>
+              </tr>
+            </tbody>
+          </table>
+          <details>
+            <summary>Noiser: laplace</summary>
+            <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+              <tbody>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Max add rows</td>
+                  <td style="padding: 8px;">1,000,000</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+          <details>
+            <summary>Random variables (1)</summary>
+            <p>
+              <a href="#RV_event_duration">event_duration</a>
+            </p>
+          </details>
+          <details>
+            <summary>Issues (0)</summary>
+          </details>
+          <details>
+            <summary>Recommendations (0)</summary>
+          </details>
+        </div>
+      </details>
+      <details>
+        <summary>_event_duration_since_last</summary>
+        <div id="CROSSTAB__event_duration_since_last">
+          <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="color: gray; padding: 8px;">Datasource</td>
+                <td style="padding: 8px;">
+                  <a href="#DATASOURCE_event_duration_since_last">event_duration_since_last</a>
+                </td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Sensitivity</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Epsilon</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Min cell size</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">State space size</td>
+                <td style="padding: 8px;">9</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean number of rows</td>
+                <td style="padding: 8px;">9</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean number of suppressed rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean min weight</td>
+                <td style="padding: 8px;">0.01</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean max weight</td>
+                <td style="padding: 8px;">2.56</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean total weight</td>
+                <td style="padding: 8px;">5.11</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Lost rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Added rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final rows</td>
+                <td style="padding: 8px;">9</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final number of suppressed rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final min weight</td>
+                <td style="padding: 8px;">0.01</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final max weight</td>
+                <td style="padding: 8px;">2.56</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final total weight</td>
+                <td style="padding: 8px;">5.11</td>
+              </tr>
+            </tbody>
+          </table>
+          <details>
+            <summary>Noiser: laplace</summary>
+            <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+              <tbody>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Max add rows</td>
+                  <td style="padding: 8px;">1,000,000</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+          <details>
+            <summary>Random variables (1)</summary>
+            <p>
+              <a href="#RV_event_duration_since_last">event_duration_since_last</a>
+            </p>
+          </details>
+          <details>
+            <summary>Issues (0)</summary>
+          </details>
+          <details>
+            <summary>Recommendations (0)</summary>
+          </details>
+        </div>
+      </details>
+      <details>
+        <summary>_event_type</summary>
+        <div id="CROSSTAB__event_type">
+          <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="color: gray; padding: 8px;">Datasource</td>
+                <td style="padding: 8px;">
+                  <a href="#DATASOURCE_patient_age__event_type">patient_age__event_type</a>
+                </td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Sensitivity</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Epsilon</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Min cell size</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">State space size</td>
+                <td style="padding: 8px;">4</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean number of rows</td>
+                <td style="padding: 8px;">4</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean number of suppressed rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean min weight</td>
+                <td style="padding: 8px;">3</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean max weight</td>
+                <td style="padding: 8px;">63</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean total weight</td>
+                <td style="padding: 8px;">108</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Lost rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Added rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final rows</td>
+                <td style="padding: 8px;">4</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final number of suppressed rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final min weight</td>
+                <td style="padding: 8px;">3</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final max weight</td>
+                <td style="padding: 8px;">63</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final total weight</td>
+                <td style="padding: 8px;">108</td>
+              </tr>
+            </tbody>
+          </table>
+          <details>
+            <summary>Noiser: laplace</summary>
+            <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+              <tbody>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Max add rows</td>
+                  <td style="padding: 8px;">1,000,000</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+          <details>
+            <summary>Random variables (1)</summary>
+            <p>
+              <a href="#RV_event_type">event_type</a>
+            </p>
+          </details>
+          <details>
+            <summary>Issues (0)</summary>
+          </details>
+          <details>
+            <summary>Recommendations (0)</summary>
+          </details>
+        </div>
+      </details>
+      <details>
+        <summary>_patient_age</summary>
+        <div id="CROSSTAB__patient_age">
+          <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="color: gray; padding: 8px;">Datasource</td>
+                <td style="padding: 8px;">
+                  <a href="#DATASOURCE_patient_age__event_type">patient_age__event_type</a>
+                </td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Sensitivity</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Epsilon</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Min cell size</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">State space size</td>
+                <td style="padding: 8px;">3</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean number of rows</td>
+                <td style="padding: 8px;">3</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean number of suppressed rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean min weight</td>
+                <td style="padding: 8px;">30</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean max weight</td>
+                <td style="padding: 8px;">48</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Clean total weight</td>
+                <td style="padding: 8px;">108</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Lost rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Added rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final rows</td>
+                <td style="padding: 8px;">3</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final number of suppressed rows</td>
+                <td style="padding: 8px;">0</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final min weight</td>
+                <td style="padding: 8px;">30</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final max weight</td>
+                <td style="padding: 8px;">48</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Final total weight</td>
+                <td style="padding: 8px;">108</td>
+              </tr>
+            </tbody>
+          </table>
+          <details>
+            <summary>Noiser: laplace</summary>
+            <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+              <tbody>
+                <tr>
+                  <td style="color: gray; padding: 8px;">Max add rows</td>
+                  <td style="padding: 8px;">1,000,000</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+          <details>
+            <summary>Random variables (1)</summary>
+            <p>
+              <a href="#RV_patient_age">patient_age</a>
+            </p>
+          </details>
+          <details>
+            <summary>Issues (0)</summary>
+          </details>
+          <details>
+            <summary>Recommendations (0)</summary>
+          </details>
+        </div>
+      </details>
+    </details>
+    <p></p>
+    <details class="tree-menu">
+      <summary>Cross-table issues (0)</summary>
+      <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+        <tbody></tbody>
+      </table>
+    </details>
+    <p></p>
+    <details class="tree-menu">
+      <summary>Entities (2)</summary>
+      <details>
+        <summary>event</summary>
+        <div id="ENTITY_event">
+          <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="color: gray; padding: 8px;">ID field name</td>
+                <td style="padding: 8px;">_id_</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Count field name</td>
+                <td style="padding: 8px;">_count_</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Parent</td>
+                <td style="padding: 8px;">
+                  <a href="#ENTITY_patient">patient</a>
+                </td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Foreign field name</td>
+                <td style="padding: 8px;">_patient__id_</td>
+              </tr>
+            </tbody>
+          </table>
+          <details>
+            <summary>Fields (4)</summary>
+            <details>
+              <summary>event_type (sample)</summary>
+              <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+                <tbody>
+                  <tr>
+                    <td style="color: gray; padding: 8px;">Field type</td>
+                    <td style="padding: 8px;">sample</td>
+                  </tr>
+                  <tr>
+                    <td style="color: gray; padding: 8px;">PGM random variable</td>
+                    <td style="padding: 8px;">event_type</td>
+                  </tr>
+                </tbody>
+              </table>
+            </details>
+            <details>
+              <summary>event_duration (sample)</summary>
+              <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+                <tbody>
+                  <tr>
+                    <td style="color: gray; padding: 8px;">Field type</td>
+                    <td style="padding: 8px;">sample</td>
+                  </tr>
+                  <tr>
+                    <td style="color: gray; padding: 8px;">PGM random variable</td>
+                    <td style="padding: 8px;">event_duration</td>
+                  </tr>
+                </tbody>
+              </table>
+            </details>
+            <details>
+              <summary>event_duration_since_last (sample)</summary>
+              <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+                <tbody>
+                  <tr>
+                    <td style="color: gray; padding: 8px;">Field type</td>
+                    <td style="padding: 8px;">sample</td>
+                  </tr>
+                  <tr>
+                    <td style="color: gray; padding: 8px;">PGM random variable</td>
+                    <td style="padding: 8px;">event_duration_since_last</td>
+                  </tr>
+                </tbody>
+              </table>
+            </details>
+            <details>
+              <summary>time (sum)</summary>
+              <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+                <tbody>
+                  <tr>
+                    <td style="color: gray; padding: 8px;">Field type</td>
+                    <td style="padding: 8px;">sum</td>
+                  </tr>
+                  <tr>
+                    <td style="color: gray; padding: 8px;">Initial value</td>
+                    <td style="padding: 8px;">0</td>
+                  </tr>
+                  <tr>
+                    <td style="color: gray; padding: 8px;">Offset value</td>
+                    <td style="padding: 8px;">0</td>
+                  </tr>
+                </tbody>
+              </table>
+              <details>
+                <summary>Summation fields (3)</summary>
+                <p>time</p>
+                <p>event_duration</p>
+                <p>event_duration_since_last</p>
+              </details>
+            </details>
+          </details>
+          <details>
+            <summary>Cardinality (2)</summary>
+            <pre><code>
+Field(time) &gt;= Field(time_limit)
+</code></pre>
+            <pre><code>
+Field(event_type) in {'DEATH'}
+</code></pre>
+          </details>
+        </div>
+      </details>
+      <details>
+        <summary>patient</summary>
+        <div id="ENTITY_patient">
+          <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="color: gray; padding: 8px;">ID field name</td>
+                <td style="padding: 8px;">_id_</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Count field name</td>
+                <td style="padding: 8px;">_count_</td>
+              </tr>
+              <tr>
+                <td style="color: gray; padding: 8px;">Parent</td>
+                <td style="padding: 8px;"></td>
+              </tr>
+            </tbody>
+          </table>
+          <details>
+            <summary>Fields (1)</summary>
+            <details>
+              <summary>patient_age (sample)</summary>
+              <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+                <tbody>
+                  <tr>
+                    <td style="color: gray; padding: 8px;">Field type</td>
+                    <td style="padding: 8px;">sample</td>
+                  </tr>
+                  <tr>
+                    <td style="color: gray; padding: 8px;">PGM random variable</td>
+                    <td style="padding: 8px;">patient_age</td>
+                  </tr>
+                </tbody>
+              </table>
+            </details>
+          </details>
+          <details>
+            <summary>Cardinality (1)</summary>
+            <pre><code>
+Field(_count_) &gt;= Field(number_of_patients)
+</code></pre>
+          </details>
+        </div>
+      </details>
+    </details>
+    <p></p>
+  </body>
+</html>

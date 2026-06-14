@@ -45,6 +45,28 @@ class CrosstabIndex(BaseModel):
     datasource: str  # The covering dataset for the cross-table
     number_of_states: int  # The total number of possible states of the cross-table
 
+    # Cross-table statistics, before noise is added
+    clean_num_rows: int
+    clean_min_weight: float
+    clean_max_weight: float
+    clean_total_weight: float
+
+    # Cross-table statistics, after noise is added
+    noisy_num_rows: int
+    noisy_min_weight: float
+    noisy_max_weight: float
+    noisy_total_weight: float
+    rows_lost: int
+    rows_added: int
+
+    @property
+    def clean_num_suppressed(self) -> int:
+        return self.number_of_states - self.clean_num_rows
+
+    @property
+    def noisy_num_suppressed(self) -> int:
+        return self.number_of_states - self.noisy_num_rows
+
 
 class EntityIndex(BaseModel):
     """

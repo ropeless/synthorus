@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Iterable, Callable, Dict, get_args, TypeAlias
+from typing import Iterable, Callable, Dict, get_args, TypeAlias, TypeVar
 
 from ck.pgm import State
 
 from synthorus.simulator.condition_spec import OpSpec
 from synthorus.simulator.sim_field import SimField
 
-OpFunction: TypeAlias = Callable[[State, State], bool]
+_S = TypeVar('_S', bound=State)
+OpFunction: TypeAlias = Callable[[_S, _S], bool]
 
 OPERATION: Dict[str, OpFunction] = {
     '<': lambda x, y: x < y,
@@ -31,7 +32,10 @@ class SimCondition(ABC):
     @abstractmethod
     def stop(self) -> bool:
         """
-        Does this condition indicate a simulation loop should stop.
+        Decide whether this condition indicates a simulation loop should stop or not.
+
+        Returns:
+            bool: True if the simulation loop should stop, False otherwise.
         """
 
 
@@ -41,10 +45,10 @@ class FixedLimitCondition(SimCondition):
     """
 
     def __init__(self, check_field: SimField, limit: State, op: str):
-        self.check_field = check_field
-        self.limit = limit
-        self.op = op
-        self.op_function = OPERATION[op]
+        self.check_field: SimField = check_field
+        self.limit: State = limit
+        self.op: str = op
+        self.op_function: OpFunction = OPERATION[op]
 
     def stop(self) -> bool:
         return self.op_function(self.check_field.value, self.limit)

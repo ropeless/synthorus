@@ -16,13 +16,14 @@ classifiers = [
 
 dependencies = [
     "compiled-knowledge",
+    "dominate",
     "pandas",
-    "pyarrow",
-    "pyodbc",
     "psycopg",
     "psycopg-binary",
-    "xlsxwriter",
+    "pyarrow",
     "pydantic",
+    "pyodbc",
+    "xlsxwriter",
 ]
 
 # [doc_extra]

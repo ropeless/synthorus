@@ -1,0 +1,84 @@
+Privacy Report
+==============
+
+Report date: 2026-07-23 14:45:32 (AUS Eastern Standard Time)
+Report author: barry
+
+Model name: spec_tiny
+Model author: _unknown_
+
+PGM cross-tables: noisy
+Random number generator security level: 4 (equivalent to AES128 - adequate security)
+Privacy budget used: 0 (no privacy risk)
+
+Datasources with zero sensitivity (1 of 1):
+    xyz
+
+Datasources (1):
+    Datasource name: xyz
+    Sensitivity: 0
+    Random variables: X, Y, Z
+    Distinct rows: 8
+    Total weight: 8
+    Entropy: 3.0
+
+Cross-tables (3):
+    Random variables: X
+    State space size: 2
+    Datasource: xyz
+    Sensitivity: 0
+    Epsilon: 0
+    Min cell size: 0
+    Distinct rows: 8
+    Total weight: 8
+    Entropy: 3.0
+
+    Random variables: Y
+    State space size: 2
+    Datasource: xyz
+    Sensitivity: 0
+    Epsilon: 0
+    Min cell size: 0
+    Distinct rows: 8
+    Total weight: 8
+    Entropy: 3.0
+
+    Random variables: Z
+    State space size: 2
+    Datasource: xyz
+    Sensitivity: 0
+    Epsilon: 0
+    Min cell size: 0
+    Distinct rows: 8
+    Total weight: 8
+    Entropy: 3.0
+
+Random variables (3):
+    Random variable name: 'X'
+    Primary datasource: 'xyz'
+    Number of values: 2
+    Number of support values: 2
+    Values: n, y
+    Total weight: 8
+    Entropy: 1.0
+    Distribution: n = 0.5, y = 0.5
+
+    Random variable name: 'Y'
+    Primary datasource: 'xyz'
+    Number of values: 2
+    Number of support values: 2
+    Values: n, y
+    Total weight: 8
+    Entropy: 1.0
+    Distribution: n = 0.5, y = 0.5
+
+    Random variable name: 'Z'
+    Primary datasource: 'xyz'
+    Number of values: 2
+    Number of support values: 2
+    Values: n, y
+    Total weight: 8
+    Entropy: 1.0
+    Distribution: n = 0.5, y = 0.5
+
+--------------------------------------------------------------------------------

@@ -30,10 +30,17 @@ Example usage:
 ```
 
 """
+from __future__ import annotations
+
 import os
-from typing import Dict, Any, Mapping, KeysView, ValuesView, Iterator, ItemsView
+from typing import Dict, Any, Mapping, KeysView, ValuesView, Iterator, ItemsView, Iterable, Optional, Self, List, Tuple
 
 from synthorus.utils.const import Const
+
+
+def _illegal_name(name: str) -> bool:
+    return name in ('', 'get', 'keys', 'values', 'items',) or name.startswith('_') or not name.isidentifier()
+
 
 try:
     # try to import the user's config.py
@@ -42,7 +49,7 @@ try:
     _CONFIG: Dict[str, Any] = {
         var: value
         for var, value in _config.__dict__.items()
-        if len(var) > 0 and not var.startswith('_')
+        if not _illegal_name(var)
     }
 except ImportError:
     # if not, no problem
@@ -67,7 +74,7 @@ class Config(Mapping[str, Any]):
         self._config: Dict[str, Any] = {
             var: value
             for var, value in os.environ.items()
-            if len(var) > 0 and not var.startswith('_')
+            if not _illegal_name(var)
         }
         self._config.update(_CONFIG)
 
@@ -96,7 +103,7 @@ class Config(Mapping[str, Any]):
         return len(self._config)
 
     def __getattr__(self, name: str) -> Any:
-        if name in ('', 'get', 'keys', 'values', 'items',) or name.startswith('_'):
+        if _illegal_name(name):
             raise AttributeError(f'illegal config attribute: {name!r}')
 
         got = self._config.get(name, _Nil)

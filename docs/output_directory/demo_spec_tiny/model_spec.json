@@ -1,0 +1,109 @@
+{
+  "name": "spec_tiny",
+  "author": "_unknown_",
+  "comment": "This is an example simple Synthorus spec file.",
+  "roots": [],
+  "rng_n": 4,
+  "pgm_crosstabs": "noisy",
+  "datasources": {
+    "xyz": {
+      "sensitivity": 0.0,
+      "rvs": [
+        "X",
+        "Y",
+        "Z"
+      ],
+      "dataset_spec": {
+        "type": "csv",
+        "weight": null,
+        "rv_map": null,
+        "rv_define": {},
+        "input": {
+          "type": "inline",
+          "inline": "X,Y,Z\ny,y,y\ny,y,n\ny,n,y\ny,n,n\nn,y,y\nn,y,n\nn,n,y\nn,n,n\n"
+        },
+        "sep": ",",
+        "header": true,
+        "skip_blank_lines": true,
+        "skip_initial_space": true
+      },
+      "non_distribution_rvs": []
+    }
+  },
+  "rvs": {
+    "X": {
+      "states": "infer_distinct",
+      "ensure_none": false
+    },
+    "Z": {
+      "states": "infer_distinct",
+      "ensure_none": false
+    },
+    "Y": {
+      "states": "infer_distinct",
+      "ensure_none": false
+    }
+  },
+  "crosstabs": {
+    "_X": {
+      "rvs": [
+        "X"
+      ],
+      "datasource": "xyz",
+      "epsilon": 0.1,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
+    },
+    "_Z": {
+      "rvs": [
+        "Z"
+      ],
+      "datasource": "xyz",
+      "epsilon": 0.1,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
+    },
+    "_Y": {
+      "rvs": [
+        "Y"
+      ],
+      "datasource": "xyz",
+      "epsilon": 0.1,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
+    }
+  },
+  "entities": {
+    "_default_entity_": {
+      "id_field_name": "_id_",
+      "count_field_name": "_count_",
+      "foreign_field_name": null,
+      "fields": {
+        "X": {
+          "type": "sample",
+          "rv_name": "X"
+        },
+        "Z": {
+          "type": "sample",
+          "rv_name": "Z"
+        },
+        "Y": {
+          "type": "sample",
+          "rv_name": "Y"
+        }
+      },
+      "cardinality": [],
+      "parent": null
+    }
+  },
+  "parameters": {}
+}

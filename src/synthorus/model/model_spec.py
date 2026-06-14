@@ -195,7 +195,7 @@ class ModelFieldSpecSample(BaseModel):
 class ModelFieldSpecSum(BaseModel):
     type: Literal['sum'] = 'sum'  # for JSON round trip
     initial_value: State = 0  # initial field state (default is 0)
-    sum: List[str]  # list of source rvs to add
+    sum: List[str]  # list of source fields to sum
     offset: State = 0  # optional offset value to sum
 
 

@@ -1,4 +1,5 @@
 from importlib.abc import Traversable
+from os import PathLike
 from pathlib import Path
 from typing import Mapping, Optional, Dict, Sequence, Iterable, List, Iterator
 
@@ -13,7 +14,7 @@ class DatasetCache(Mapping[str, Dataset]):
     Keeps track of all datasets loaded for a model spec.
     """
 
-    def __init__(self, model_spec: ModelSpec, cwd: Optional[Path | Traversable]):
+    def __init__(self, model_spec: ModelSpec, cwd: Optional[PathLike | Traversable]):
         """
         Args:
             model_spec: the model datasources and roots.
@@ -24,7 +25,7 @@ class DatasetCache(Mapping[str, Dataset]):
         self._datasets: Dict[str, Dataset] = {}
 
     @property
-    def roots(self) -> Sequence[Path]:
+    def roots(self) -> Sequence[Path | Traversable]:
         return self._roots
 
     def loaded_keys(self) -> Iterable[str]:
@@ -49,7 +50,7 @@ class DatasetCache(Mapping[str, Dataset]):
         return iter(self._model_spec.datasources)
 
 
-def interpret_roots(roots: List[str], cwd: Optional[Path | Traversable]) -> List[Path]:
+def interpret_roots(roots: List[str], cwd: Optional[PathLike | Traversable]) -> List[Traversable | Path]:
     """
     Return a list of Path objects defining the root directories
     to search for datasource files.
@@ -68,8 +69,10 @@ def interpret_roots(roots: List[str], cwd: Optional[Path | Traversable]) -> List
     if len(roots) == 0:
         if cwd is None:
             return []
-        else:
+        elif isinstance(cwd, (Traversable, Path)):
             return [cwd]
+        else:
+            return [Path(cwd)]
 
     roots_paths = [Path(root) for root in roots]
 

@@ -1,0 +1,74 @@
+{
+  "parameters": {
+    "number_of_patients": 10,
+    "time_limit": 100
+  },
+  "entities": {
+    "patient": {
+      "parent": null,
+      "sampler": "patient",
+      "id_field_name": "_id_",
+      "count_field_name": "_count_",
+      "foreign_field_name": null,
+      "fields": {
+        "patient_age": {
+          "type": "sample",
+          "rv_name": "patient_age"
+        }
+      },
+      "cardinality": [
+        {
+          "type": "variable",
+          "field": "_count_",
+          "op": ">=",
+          "limit_field": "number_of_patients"
+        }
+      ]
+    },
+    "event": {
+      "parent": "patient",
+      "sampler": "event",
+      "id_field_name": "_id_",
+      "count_field_name": "_count_",
+      "foreign_field_name": "_patient__id_",
+      "fields": {
+        "event_type": {
+          "type": "sample",
+          "rv_name": "event_type"
+        },
+        "event_duration": {
+          "type": "sample",
+          "rv_name": "event_duration"
+        },
+        "event_duration_since_last": {
+          "type": "sample",
+          "rv_name": "event_duration_since_last"
+        },
+        "time": {
+          "type": "sum",
+          "initial_value": 0,
+          "inputs": [
+            "event_duration",
+            "event_duration_since_last"
+          ],
+          "add_self": true
+        }
+      },
+      "cardinality": [
+        {
+          "type": "variable",
+          "field": "time",
+          "op": ">=",
+          "limit_field": "time_limit"
+        },
+        {
+          "type": "states",
+          "field": "event_type",
+          "states": [
+            "DEATH"
+          ]
+        }
+      ]
+    }
+  }
+}

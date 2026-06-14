@@ -8,6 +8,10 @@ from typing import List, Dict, Any
 
 import toml
 
+from synthorus.utils.config_help import config
+from synthorus.utils.time_extras import timestamp
+from synthorus_demos.utils import output_directory
+
 FORCE_REBUILD: bool = True
 BUILD_API_DOCS: bool = True
 INSTANTIATE_TEMPLATES: bool = True
@@ -29,9 +33,10 @@ def main() -> None:
     src_dir: Path = project_dir / 'src'
     ck_package_dir: Path = src_dir / 'synthorus'
     docs_dir: Path = project_dir / 'docs'
+    api_docs_dir: Path = docs_dir / 'api'
+    doc_out_dir: Path = docs_dir / 'output_directory'
     build_dir: Path = docs_dir / '_build'
-    html_index = build_dir / 'html/index.html'
-    api_docs_dir = docs_dir / 'api'
+    html_index: Path = build_dir / 'html' / 'index.html'
 
     if FORCE_REBUILD:
         if build_dir.exists():
@@ -44,13 +49,57 @@ def main() -> None:
         instantiate_templates(project_dir, docs_dir)
 
     if EXECUTE_NOTEBOOKS:
+        config_out_dir: Path = get_config_out_dir()
+        start_timestamp: float = datetime.now().timestamp()
         for notebook_path in docs_dir.glob('*.ipynb'):
             execute_notebook(notebook_path)
+        copy_output_directory(config_out_dir, doc_out_dir, start_timestamp)
 
     run_jupyter_book()
 
     if OPEN_DOCUMENT_HTML:
         webbrowser.open(html_index.as_uri())
+
+
+def get_config_out_dir() -> Path:
+    """
+    The caller must have 'OUT_DIR' defined in their local config so that we can
+    collect notebook output files for the document build.
+    """
+    config_out_dir = config.get(output_directory.DEMO_OUT_CONFIG)
+    if config_out_dir is None:
+        raise RuntimeError(
+            f'Need to have a defined output directory using config: {output_directory.DEMO_OUT_CONFIG}'
+        )
+    return Path(config_out_dir)
+
+
+def copy_output_directory(
+        config_out_dir: Path,
+        doc_out_dir: Path,
+        start_timestamp: float,
+) -> None:
+    """
+    Copy the output directory results to the document area, in a clean directory.
+
+    Args:
+        config_out_dir: The output directory to copy from.
+        doc_out_dir: The output directory to copy to.
+        start_timestamp: Only files modified after this timestamp are copied.
+    """
+    if doc_out_dir.exists():
+        shutil.rmtree(doc_out_dir)
+
+    # Deep copy text files.
+    for source_path in config_out_dir.rglob('*'):
+        if source_path.suffix.lower() not in {'.html', '.txt', '.json', '.csv'}:
+            continue
+        if source_path.stat().st_mtime <= start_timestamp:
+            continue
+        relative_path = source_path.relative_to(config_out_dir)
+        target_path = doc_out_dir / relative_path
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, target_path)
 
 
 def build_api_docs(ck_package_dir: Path, api_docs_dir: Path) -> None:
@@ -95,15 +144,15 @@ def instantiate_templates(project_dir: Path, docs_dir: Path) -> None:
 
     Args:
         project_dir: where to find the 'pyproject.toml' file.
-        docs_dir: where to find the documents files.
+        docs_dir: where to find the document files.
     """
     pyproject = load_pyproject(project_dir / 'pyproject.toml')
-    # These values will be inserted into the template using `str.format`.
 
+    # These values will be inserted into the template using `str.format`.
     fields: Dict[str, str] = {
         'version': pyproject['project']['version'],
         'version_note': pyproject.get('doc_extra', {}).get('version_note', ''),
-        'date': datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S (%Z)'),
+        'date': timestamp(),
     }
 
     for template_file in docs_dir.glob('*_template.md'):

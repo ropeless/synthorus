@@ -52,6 +52,14 @@ synthorus.workflows.make\_simulator\_from\_files module
    :undoc-members:
    :show-inheritance:
 
+synthorus.workflows.report\_helpers module
+------------------------------------------
+
+.. automodule:: synthorus.workflows.report_helpers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 synthorus.workflows.report\_privacy module
 ------------------------------------------
 

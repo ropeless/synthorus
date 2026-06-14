@@ -68,6 +68,14 @@ synthorus.model.model\_spec module
    :undoc-members:
    :show-inheritance:
 
+synthorus.model.noiser\_spec module
+-----------------------------------
+
+.. automodule:: synthorus.model.noiser_spec
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

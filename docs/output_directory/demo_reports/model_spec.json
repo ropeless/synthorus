@@ -1,0 +1,213 @@
+{
+  "name": "spec_simple_pjm",
+  "author": "Barry Drake",
+  "comment": "This is a spec file designed to show the use of entities and parameters\nfor modelling patient journeys.",
+  "roots": [],
+  "rng_n": 4,
+  "pgm_crosstabs": "noisy",
+  "datasources": {
+    "patient_age__event_type": {
+      "sensitivity": 0.0,
+      "rvs": [
+        "patient_age",
+        "event_type"
+      ],
+      "dataset_spec": {
+        "type": "csv",
+        "weight": -1,
+        "rv_map": null,
+        "rv_define": {},
+        "input": {
+          "type": "inline",
+          "inline": "patient_age, event_type, weight\nyoung,       GP,         30\nmiddle_aged, ED,         24\nmiddle_aged, GP,         24\nold,         ED,         9\nold,         AP,         9\nold,         GP,         9\nold,         DEATH,      3\n"
+        },
+        "sep": ",",
+        "header": true,
+        "skip_blank_lines": true,
+        "skip_initial_space": true
+      },
+      "non_distribution_rvs": []
+    },
+    "event_duration": {
+      "sensitivity": 0.0,
+      "rvs": [
+        "event_duration"
+      ],
+      "dataset_spec": {
+        "type": "csv",
+        "weight": -1,
+        "rv_map": null,
+        "rv_define": {},
+        "input": {
+          "type": "inline",
+          "inline": "event_duration, weight\n1,              2.56\n2,              1.28\n3,              0.64\n4,              0.32\n5,              0.16\n6,              0.08\n7,              0.04\n8,              0.02\n9,              0.01\n"
+        },
+        "sep": ",",
+        "header": true,
+        "skip_blank_lines": true,
+        "skip_initial_space": true
+      },
+      "non_distribution_rvs": []
+    },
+    "event_duration_since_last": {
+      "sensitivity": 0.0,
+      "rvs": [
+        "event_duration_since_last"
+      ],
+      "dataset_spec": {
+        "type": "csv",
+        "weight": -1,
+        "rv_map": null,
+        "rv_define": {},
+        "input": {
+          "type": "inline",
+          "inline": "event_duration_since_last, weight\n1,                         0.01\n2,                         0.02\n3,                         0.04\n4,                         0.08\n5,                         0.16\n6,                         0.32\n7,                         0.64\n8,                         1.28\n9,                         2.56\n"
+        },
+        "sep": ",",
+        "header": true,
+        "skip_blank_lines": true,
+        "skip_initial_space": true
+      },
+      "non_distribution_rvs": []
+    }
+  },
+  "rvs": {
+    "event_type": {
+      "states": "infer_distinct",
+      "ensure_none": false
+    },
+    "patient_age": {
+      "states": "infer_distinct",
+      "ensure_none": false
+    },
+    "event_duration_since_last": {
+      "states": "infer_distinct",
+      "ensure_none": false
+    },
+    "event_duration": {
+      "states": "infer_distinct",
+      "ensure_none": false
+    }
+  },
+  "crosstabs": {
+    "_event_type": {
+      "rvs": [
+        "event_type"
+      ],
+      "datasource": "patient_age__event_type",
+      "epsilon": 0.1,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
+    },
+    "_patient_age": {
+      "rvs": [
+        "patient_age"
+      ],
+      "datasource": "patient_age__event_type",
+      "epsilon": 0.1,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
+    },
+    "_event_duration_since_last": {
+      "rvs": [
+        "event_duration_since_last"
+      ],
+      "datasource": "event_duration_since_last",
+      "epsilon": 0.1,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
+    },
+    "_event_duration": {
+      "rvs": [
+        "event_duration"
+      ],
+      "datasource": "event_duration",
+      "epsilon": 0.1,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
+    }
+  },
+  "entities": {
+    "patient": {
+      "id_field_name": "_id_",
+      "count_field_name": "_count_",
+      "foreign_field_name": null,
+      "fields": {
+        "patient_age": {
+          "type": "sample",
+          "rv_name": "patient_age"
+        }
+      },
+      "cardinality": [
+        {
+          "type": "variable",
+          "field": "_count_",
+          "op": ">=",
+          "limit_field": "number_of_patients"
+        }
+      ],
+      "parent": null
+    },
+    "event": {
+      "id_field_name": "_id_",
+      "count_field_name": "_count_",
+      "foreign_field_name": "_patient__id_",
+      "fields": {
+        "event_type": {
+          "type": "sample",
+          "rv_name": "event_type"
+        },
+        "event_duration": {
+          "type": "sample",
+          "rv_name": "event_duration"
+        },
+        "event_duration_since_last": {
+          "type": "sample",
+          "rv_name": "event_duration_since_last"
+        },
+        "time": {
+          "type": "sum",
+          "initial_value": 0,
+          "sum": [
+            "time",
+            "event_duration",
+            "event_duration_since_last"
+          ],
+          "offset": 0
+        }
+      },
+      "cardinality": [
+        {
+          "type": "variable",
+          "field": "time",
+          "op": ">=",
+          "limit_field": "time_limit"
+        },
+        {
+          "type": "states",
+          "field": "event_type",
+          "states": [
+            "DEATH"
+          ]
+        }
+      ],
+      "parent": "patient"
+    }
+  },
+  "parameters": {
+    "number_of_patients": 10,
+    "time_limit": 100
+  }
+}

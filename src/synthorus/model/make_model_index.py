@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import List, Set, Dict, Sequence, Optional, Collection
+from functools import cmp_to_key
+from typing import List, Set, Dict, Sequence, Optional, Collection, Tuple
 
 from ck.pgm import State
 from ck.utils.iter_extras import multiply
@@ -63,13 +64,13 @@ def _register_datasources(
     For each dataset in `datasources`:
         for each rv in dataset:
             register the dataset with rv.all_datasources.
-            if rv is not a conditioned random variable
+            If rv is not a conditioned random variable:
                 register the dataset with potential_dist_datasources[rv].
 
     Args:
         index: index being updated
         datasources: all available datasources.
-        potential_dist_datasources: for each random variable, a list datasources
+        potential_dist_datasources: for each random variable, a list of datasources
             providing a distribution for the random variable.
     """
     datasource_name: str
@@ -112,6 +113,7 @@ def _register_crosstabs(index: ModelIndex, model_spec: ModelSpec) -> None:
     """
     Register cross-tables with the given model index.
     All `CrosstabIndex.dataset` values will have a placeholder object that should be resolved.
+    Metadata about the cross-table will be filled in later.
     """
     crosstabs: Dict[str, ModelCrosstabSpec] = model_spec.crosstabs
 
@@ -131,7 +133,7 @@ def _register_crosstabs(index: ModelIndex, model_spec: ModelSpec) -> None:
                     f' must include non-distribution random variable: {non_distribution_rv!r}'
                 )
 
-        # Index the cross-table with its distribution random variables
+        # Index the cross-table with its "distribution" random variables
         for rv_name in distribution_rvs:
             rv_index: RVIndex = index.rvs[rv_name]
             rv_index.all_distribution_crosstabs.append(crosstab_name)
@@ -146,6 +148,17 @@ def _register_crosstabs(index: ModelIndex, model_spec: ModelSpec) -> None:
             distribution_rvs=distribution_rvs,
             datasource=datasource_name,
             number_of_states=number_of_states,
+            # The following values will be filled in later
+            clean_num_rows=0,
+            clean_min_weight=0.0,
+            clean_max_weight=0.0,
+            clean_total_weight=0.0,
+            noisy_num_rows=0,
+            noisy_min_weight=0.0,
+            noisy_max_weight=0.0,
+            noisy_total_weight=0.0,
+            rows_added=0,
+            rows_lost=0,
         )
 
 
@@ -215,7 +228,8 @@ def _find_ancestor_conditions(
                 if rv_name in found:
                     # The random variable appears multiple times in the ancestors.
                     # I.e. two or more fields sampling the same rv.
-                    raise SynthorusError(f'ambiguous conditioning random variable: {rv_name!r}, for entity: {entity_name!r}')
+                    raise SynthorusError(
+                        f'ambiguous conditioning random variable: {rv_name!r}, for entity: {entity_name!r}')
                 found.add(rv_name)
                 result.append(
                     AncestorConditionsIndex(
@@ -237,7 +251,7 @@ def find_covering_crosstabs(
 
     Args:
         rvs: random variables to cover.
-        index: The model index, with rvs and cross-tables are already registered.
+        index: The model index, with rvs and cross-tables already registered.
 
     Assumes:
         rvs and cross-tables are already registered with the index.
@@ -340,7 +354,7 @@ def _resolve_rv_states(
 
     # RV states specified directly
     if isinstance(states_spec, int):
-        base_states = _make_states_range(rv_name, 0, states_spec - 1)
+        base_states = list(range(states_spec))
     elif isinstance(states_spec, list):
         base_states = list(states_spec)
     else:
@@ -361,14 +375,13 @@ def _resolve_rv_states(
             if not need_none:
                 need_none = None in distinct
             distinct.discard(None)
-            base_states = sorted(distinct)
+            base_states = sorted(distinct, key=cmp_to_key(_compare_states))
         elif states_spec == 'infer_range':
-            min_val = max(datasource.value_min(rv_name) for datasource in datasets)
-            max_val = max(datasource.value_max(rv_name) for datasource in datasets)
-            base_states = _make_states_range(rv_name, min_val, max_val)
+            min_val, max_val = _infer_range(rv_name, datasets)
+            base_states = list(range(min_val, max_val + 1))
         elif states_spec == 'infer_max':
-            max_val = max(datasource.value_max(rv_name) for datasource in datasets)
-            base_states = _make_states_range(rv_name, 0, max_val)
+            _, max_val = _infer_range(rv_name, datasets)
+            base_states = list(range(max_val + 1))
         else:
             raise SynthorusError(f'random variable ({rv_name!r}) state specification not understood: {states_spec!r}')
 
@@ -378,19 +391,77 @@ def _resolve_rv_states(
     return base_states
 
 
-def _make_states_range(rv_name: str, from_val: State, to_val: State) -> List[int]:
+def _infer_range(rv_name: str, datasets: List[Dataset]) -> Tuple[int, int]:
     """
-    Construct a list of states (for the named random variable) `from_val` -- `to_val`, inclusive.
-    Raises:
-        SynthorusError: If `from_val` or `to_val` cannot be interpreted as an integer.
-    """
-    try:
-        from_int: int = int(from_val)
-    except ValueError:
-        raise SynthorusError(f'random variable ({rv_name!r}) state minimum value not an int: {from_val!r}')
-    try:
-        to_int: int = int(to_val)
-    except ValueError:
-        raise SynthorusError(f'random variable ({rv_name!r}) state maximum value not an int: {from_val!r}')
+    Infer the range of values for a random variable over one or more datasets.
 
-    return list(range(from_int, to_int + 1))
+    Raises:
+        SynthorusError: If values cannot be interpreted as an integer.
+    """
+    if len(datasets) == 0:
+        raise SynthorusError(f'cannot infer value range for random variable {rv_name!r}: no datasets')
+
+    min_val: int
+    max_val: int
+    min_val, max_val = _min_max_ints(rv_name, datasets[0])
+
+    for dataset in datasets[1:]:
+        min_val_dataset, max_val_dataset = _min_max_ints(rv_name, dataset)
+        min_val = min(min_val, min_val_dataset)
+        max_val = max(max_val, max_val_dataset)
+
+    return min_val, max_val
+
+
+def _min_max_ints(rv_name: str, dataset: Dataset) -> tuple[int, int]:
+    """
+    Get the minimum and maximum values of a random variable for a dataset, ensuring that they are integers.
+    """
+    min_state: State = dataset.value_min(rv_name)
+    max_state: State = dataset.value_max(rv_name)
+
+    try:
+        min_int: int = int(min_state)  # type: ignore
+    except (ValueError, TypeError):
+        raise SynthorusError(f'random variable ({rv_name!r}) state minimum value not an int: {min_state!r}')
+    try:
+        max_int: int = int(max_state)  # type: ignore
+    except (ValueError, TypeError):
+        raise SynthorusError(f'random variable ({rv_name!r}) state maximum value not an int: {max_state!r}')
+
+    return min_int, max_int
+
+
+def _compare_states(s1: State, s2: State) -> int:
+    """
+    Compare two states for sorting purposes.
+    This function is used to sort states meaningfully, especially when states are not directly comparable.
+    """
+    # None is always larger than anything else
+    if s1 is None:
+        return 1  # s2 comes first
+    if s2 is None:
+        return -1  # s1 comes first
+
+    # Normally comparable...
+    if isinstance(s1, bool) and isinstance(s2, bool):
+        return (s1 > s2) - (s1 < s2)
+    if isinstance(s1, (int, float)) and isinstance(s2, (int, float)):
+        return (s1 > s2) - (s1 < s2)
+    if isinstance(s1, str) and isinstance(s2, str):
+        return (s1 > s2) - (s1 < s2)
+
+    # Put booleans first
+    if isinstance(s1, bool):
+        return -1
+    if isinstance(s2, bool):
+        return 1
+
+    # Then numbers
+    if isinstance(s1, (int, float)):
+        return -1
+    if isinstance(s2, (int, float)):
+        return 1
+
+    # This should never be reached as we should have handled all cases
+    assert False, f'cannot compare {s1!r} and {s2!r}'
