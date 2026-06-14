@@ -268,14 +268,14 @@ def _interpret_cardinality_r(parent: SpecDict, cardinality_spec: Any, count_fiel
             if isinstance(limit, Integral):
                 count_limit_fixed: int = parent.check_is_positive_int(int(limit))
                 return [ConditionSpecFixedLimit(
-                    field=count_field_name,
+                    field=field,
                     limit=count_limit_fixed,
                 )]
 
             elif isinstance(limit, str):
                 limit_field: str = limit
                 return [ConditionSpecVariableLimit(
-                    field=count_field_name,
+                    field=field,
                     limit_field=limit_field,
                 )]
 
@@ -283,7 +283,7 @@ def _interpret_cardinality_r(parent: SpecDict, cardinality_spec: Any, count_fiel
 
         elif state is not None:
 
-            if isinstance(state, str):
+            if isinstance(state, (int, str, bool, float)) or state is None:
                 return [ConditionSpecStates(
                     field=field,
                     states=[state],
