@@ -131,6 +131,14 @@
       },
       "entity_crosstabs": [
         {
+          "crosstab": "_Z",
+          "sampled_rvs": [
+            "Z"
+          ],
+          "condition_rvs": [],
+          "non_distribution_rvs": []
+        },
+        {
           "crosstab": "_X",
           "sampled_rvs": [
             "X"
@@ -142,14 +150,6 @@
           "crosstab": "_Y",
           "sampled_rvs": [
             "Y"
-          ],
-          "condition_rvs": [],
-          "non_distribution_rvs": []
-        },
-        {
-          "crosstab": "_Z",
-          "sampled_rvs": [
-            "Z"
           ],
           "condition_rvs": [],
           "non_distribution_rvs": []

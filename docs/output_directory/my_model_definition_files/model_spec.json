@@ -31,10 +31,6 @@
     }
   },
   "rvs": {
-    "Z": {
-      "states": "infer_distinct",
-      "ensure_none": false
-    },
     "Y": {
       "states": "infer_distinct",
       "ensure_none": false
@@ -42,21 +38,13 @@
     "X": {
       "states": "infer_distinct",
       "ensure_none": false
+    },
+    "Z": {
+      "states": "infer_distinct",
+      "ensure_none": false
     }
   },
   "crosstabs": {
-    "_Z": {
-      "rvs": [
-        "Z"
-      ],
-      "datasource": "xyz",
-      "epsilon": 0.1,
-      "min_cell_size": 0.0,
-      "noiser": {
-        "type": "laplace",
-        "max_add_rows": 1000000
-      }
-    },
     "_Y": {
       "rvs": [
         "Y"
@@ -80,6 +68,18 @@
         "type": "laplace",
         "max_add_rows": 1000000
       }
+    },
+    "_Z": {
+      "rvs": [
+        "Z"
+      ],
+      "datasource": "xyz",
+      "epsilon": 0.1,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
     }
   },
   "entities": {
@@ -88,10 +88,6 @@
       "count_field_name": "_count_",
       "foreign_field_name": null,
       "fields": {
-        "Z": {
-          "type": "sample",
-          "rv_name": "Z"
-        },
         "Y": {
           "type": "sample",
           "rv_name": "Y"
@@ -99,6 +95,10 @@
         "X": {
           "type": "sample",
           "rv_name": "X"
+        },
+        "Z": {
+          "type": "sample",
+          "rv_name": "Z"
         }
       },
       "cardinality": [],

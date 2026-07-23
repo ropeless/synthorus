@@ -1,6 +1,6 @@
 # _front matter_
 
-Synthorus version 1.1.3, built 2026-07-23 15:34:42 (AUS Eastern Standard Time).
+Synthorus version 1.2.0, built 2026-07-23 15:46:53 (AUS Eastern Standard Time).
 
 
 These pages form a reference for the software known as Synthorus.

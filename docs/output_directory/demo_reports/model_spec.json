@@ -72,11 +72,7 @@
     }
   },
   "rvs": {
-    "event_type": {
-      "states": "infer_distinct",
-      "ensure_none": false
-    },
-    "patient_age": {
+    "event_duration_since_last": {
       "states": "infer_distinct",
       "ensure_none": false
     },
@@ -84,29 +80,21 @@
       "states": "infer_distinct",
       "ensure_none": false
     },
-    "event_duration_since_last": {
+    "event_type": {
+      "states": "infer_distinct",
+      "ensure_none": false
+    },
+    "patient_age": {
       "states": "infer_distinct",
       "ensure_none": false
     }
   },
   "crosstabs": {
-    "_event_type": {
+    "_event_duration_since_last": {
       "rvs": [
-        "event_type"
+        "event_duration_since_last"
       ],
-      "datasource": "patient_age__event_type",
-      "epsilon": 0.1,
-      "min_cell_size": 0.0,
-      "noiser": {
-        "type": "laplace",
-        "max_add_rows": 1000000
-      }
-    },
-    "_patient_age": {
-      "rvs": [
-        "patient_age"
-      ],
-      "datasource": "patient_age__event_type",
+      "datasource": "event_duration_since_last",
       "epsilon": 0.1,
       "min_cell_size": 0.0,
       "noiser": {
@@ -126,11 +114,23 @@
         "max_add_rows": 1000000
       }
     },
-    "_event_duration_since_last": {
+    "_event_type": {
       "rvs": [
-        "event_duration_since_last"
+        "event_type"
       ],
-      "datasource": "event_duration_since_last",
+      "datasource": "patient_age__event_type",
+      "epsilon": 0.1,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
+    },
+    "_patient_age": {
+      "rvs": [
+        "patient_age"
+      ],
+      "datasource": "patient_age__event_type",
       "epsilon": 0.1,
       "min_cell_size": 0.0,
       "noiser": {

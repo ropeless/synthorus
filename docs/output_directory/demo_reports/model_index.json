@@ -1,5 +1,53 @@
 {
   "rvs": {
+    "event_duration_since_last": {
+      "name": "event_duration_since_last",
+      "states": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "primary_datasource": "event_duration_since_last",
+      "all_datasources": [
+        "event_duration_since_last"
+      ],
+      "all_distribution_crosstabs": [
+        "_event_duration_since_last"
+      ],
+      "all_sampling_entities": [
+        "event"
+      ]
+    },
+    "event_duration": {
+      "name": "event_duration",
+      "states": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "primary_datasource": "event_duration",
+      "all_datasources": [
+        "event_duration"
+      ],
+      "all_distribution_crosstabs": [
+        "_event_duration"
+      ],
+      "all_sampling_entities": [
+        "event"
+      ]
+    },
     "event_type": {
       "name": "event_type",
       "states": [
@@ -36,57 +84,53 @@
       "all_sampling_entities": [
         "patient"
       ]
-    },
-    "event_duration": {
-      "name": "event_duration",
-      "states": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9
-      ],
-      "primary_datasource": "event_duration",
-      "all_datasources": [
-        "event_duration"
-      ],
-      "all_distribution_crosstabs": [
-        "_event_duration"
-      ],
-      "all_sampling_entities": [
-        "event"
-      ]
-    },
-    "event_duration_since_last": {
-      "name": "event_duration_since_last",
-      "states": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9
-      ],
-      "primary_datasource": "event_duration_since_last",
-      "all_datasources": [
-        "event_duration_since_last"
-      ],
-      "all_distribution_crosstabs": [
-        "_event_duration_since_last"
-      ],
-      "all_sampling_entities": [
-        "event"
-      ]
     }
   },
   "crosstabs": {
+    "_event_duration_since_last": {
+      "name": "_event_duration_since_last",
+      "rvs": [
+        "event_duration_since_last"
+      ],
+      "non_distribution_rvs": [],
+      "distribution_rvs": [
+        "event_duration_since_last"
+      ],
+      "datasource": "event_duration_since_last",
+      "number_of_states": 9,
+      "clean_num_rows": 9,
+      "clean_min_weight": 0.01,
+      "clean_max_weight": 2.56,
+      "clean_total_weight": 5.109999999999999,
+      "noisy_num_rows": 9,
+      "noisy_min_weight": 0.01,
+      "noisy_max_weight": 2.56,
+      "noisy_total_weight": 5.109999999999999,
+      "rows_lost": 0,
+      "rows_added": 0
+    },
+    "_event_duration": {
+      "name": "_event_duration",
+      "rvs": [
+        "event_duration"
+      ],
+      "non_distribution_rvs": [],
+      "distribution_rvs": [
+        "event_duration"
+      ],
+      "datasource": "event_duration",
+      "number_of_states": 9,
+      "clean_num_rows": 9,
+      "clean_min_weight": 0.01,
+      "clean_max_weight": 2.56,
+      "clean_total_weight": 5.109999999999999,
+      "noisy_num_rows": 9,
+      "noisy_min_weight": 0.01,
+      "noisy_max_weight": 2.56,
+      "noisy_total_weight": 5.109999999999999,
+      "rows_lost": 0,
+      "rows_added": 0
+    },
     "_event_type": {
       "name": "_event_type",
       "rvs": [
@@ -130,50 +174,6 @@
       "noisy_total_weight": 108.0,
       "rows_lost": 0,
       "rows_added": 0
-    },
-    "_event_duration": {
-      "name": "_event_duration",
-      "rvs": [
-        "event_duration"
-      ],
-      "non_distribution_rvs": [],
-      "distribution_rvs": [
-        "event_duration"
-      ],
-      "datasource": "event_duration",
-      "number_of_states": 9,
-      "clean_num_rows": 9,
-      "clean_min_weight": 0.01,
-      "clean_max_weight": 2.56,
-      "clean_total_weight": 5.109999999999999,
-      "noisy_num_rows": 9,
-      "noisy_min_weight": 0.01,
-      "noisy_max_weight": 2.56,
-      "noisy_total_weight": 5.109999999999999,
-      "rows_lost": 0,
-      "rows_added": 0
-    },
-    "_event_duration_since_last": {
-      "name": "_event_duration_since_last",
-      "rvs": [
-        "event_duration_since_last"
-      ],
-      "non_distribution_rvs": [],
-      "distribution_rvs": [
-        "event_duration_since_last"
-      ],
-      "datasource": "event_duration_since_last",
-      "number_of_states": 9,
-      "clean_num_rows": 9,
-      "clean_min_weight": 0.01,
-      "clean_max_weight": 2.56,
-      "clean_total_weight": 5.109999999999999,
-      "noisy_num_rows": 9,
-      "noisy_min_weight": 0.01,
-      "noisy_max_weight": 2.56,
-      "noisy_total_weight": 5.109999999999999,
-      "rows_lost": 0,
-      "rows_added": 0
     }
   },
   "entities": {
@@ -205,17 +205,17 @@
       },
       "entity_crosstabs": [
         {
-          "crosstab": "_event_type",
+          "crosstab": "_event_duration_since_last",
           "sampled_rvs": [
-            "event_type"
+            "event_duration_since_last"
           ],
           "condition_rvs": [],
           "non_distribution_rvs": []
         },
         {
-          "crosstab": "_event_duration_since_last",
+          "crosstab": "_event_type",
           "sampled_rvs": [
-            "event_duration_since_last"
+            "event_type"
           ],
           "condition_rvs": [],
           "non_distribution_rvs": []

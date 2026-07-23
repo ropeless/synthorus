@@ -1,5 +1,5 @@
 Cross-table,Random variables,Number-of-rvs,Datasource,State space size,Clean number of rows,Clean number of suppressed rows,Clean min weight,Clean max weight,Clean total weight,Sensitivity,Epsilon,Min cell size,Noiser,Orig rows,Lost rows,Lost rows%,Added rows,Added rows%,Final rows,Final rows%,Final min weight,Final max weight,Final total weight
+_event_duration_since_last,'event_duration_since_last',1,event_duration_since_last,9,9,0,0.01,2.56,5.109999999999999,0.0,0.1,0.0,"{""type"":""laplace"",""max_add_rows"":1000000}",9,0,0.0,0,0.0,9,100.0,0.01,2.56,5.109999999999999
+_event_duration,'event_duration',1,event_duration,9,9,0,0.01,2.56,5.109999999999999,0.0,0.1,0.0,"{""type"":""laplace"",""max_add_rows"":1000000}",9,0,0.0,0,0.0,9,100.0,0.01,2.56,5.109999999999999
 _event_type,'event_type',1,patient_age__event_type,4,4,0,3.0,63.0,108.0,0.0,0.1,0.0,"{""type"":""laplace"",""max_add_rows"":1000000}",4,0,0.0,0,0.0,4,100.0,3.0,63.0,108.0
 _patient_age,'patient_age',1,patient_age__event_type,3,3,0,30.0,48.0,108.0,0.0,0.1,0.0,"{""type"":""laplace"",""max_add_rows"":1000000}",3,0,0.0,0,0.0,3,100.0,30.0,48.0,108.0
-_event_duration,'event_duration',1,event_duration,9,9,0,0.01,2.56,5.109999999999999,0.0,0.1,0.0,"{""type"":""laplace"",""max_add_rows"":1000000}",9,0,0.0,0,0.0,9,100.0,0.01,2.56,5.109999999999999
-_event_duration_since_last,'event_duration_since_last',1,event_duration_since_last,9,9,0,0.01,2.56,5.109999999999999,0.0,0.1,0.0,"{""type"":""laplace"",""max_add_rows"":1000000}",9,0,0.0,0,0.0,9,100.0,0.01,2.56,5.109999999999999
