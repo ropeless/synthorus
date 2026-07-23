@@ -35,11 +35,11 @@
       "states": "infer_distinct",
       "ensure_none": false
     },
-    "Z": {
+    "Y": {
       "states": "infer_distinct",
       "ensure_none": false
     },
-    "Y": {
+    "Z": {
       "states": "infer_distinct",
       "ensure_none": false
     }
@@ -48,18 +48,6 @@
     "_X": {
       "rvs": [
         "X"
-      ],
-      "datasource": "xyz",
-      "epsilon": 0.1,
-      "min_cell_size": 0.0,
-      "noiser": {
-        "type": "laplace",
-        "max_add_rows": 1000000
-      }
-    },
-    "_Z": {
-      "rvs": [
-        "Z"
       ],
       "datasource": "xyz",
       "epsilon": 0.1,
@@ -80,6 +68,18 @@
         "type": "laplace",
         "max_add_rows": 1000000
       }
+    },
+    "_Z": {
+      "rvs": [
+        "Z"
+      ],
+      "datasource": "xyz",
+      "epsilon": 0.1,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
     }
   },
   "entities": {
@@ -92,13 +92,13 @@
           "type": "sample",
           "rv_name": "X"
         },
-        "Z": {
-          "type": "sample",
-          "rv_name": "Z"
-        },
         "Y": {
           "type": "sample",
           "rv_name": "Y"
+        },
+        "Z": {
+          "type": "sample",
+          "rv_name": "Z"
         }
       },
       "cardinality": [],

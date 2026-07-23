@@ -1,9 +1,9 @@
 entity,number_of_rvs,rvs,measure_name,measurement
+event,1,event_duration_since_last,histogram-intersection,1.0
+event,1,event_duration_since_last,KL-divergence,0.0
 event,1,event_duration,KL-divergence,0.0
 event,1,event_duration,histogram-intersection,1.0
-event,1,event_duration_since_last,histogram-intersection,1.0
-event,1,event_type,KL-divergence,0.0
-event,1,event_duration_since_last,KL-divergence,0.0
 event,1,event_type,histogram-intersection,1.0
-patient,1,patient_age,histogram-intersection,1.0
+event,1,event_type,KL-divergence,0.0
 patient,1,patient_age,KL-divergence,0.0
+patient,1,patient_age,histogram-intersection,1.0

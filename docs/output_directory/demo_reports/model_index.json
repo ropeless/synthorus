@@ -37,30 +37,6 @@
         "patient"
       ]
     },
-    "event_duration_since_last": {
-      "name": "event_duration_since_last",
-      "states": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9
-      ],
-      "primary_datasource": "event_duration_since_last",
-      "all_datasources": [
-        "event_duration_since_last"
-      ],
-      "all_distribution_crosstabs": [
-        "_event_duration_since_last"
-      ],
-      "all_sampling_entities": [
-        "event"
-      ]
-    },
     "event_duration": {
       "name": "event_duration",
       "states": [
@@ -80,6 +56,30 @@
       ],
       "all_distribution_crosstabs": [
         "_event_duration"
+      ],
+      "all_sampling_entities": [
+        "event"
+      ]
+    },
+    "event_duration_since_last": {
+      "name": "event_duration_since_last",
+      "states": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "primary_datasource": "event_duration_since_last",
+      "all_datasources": [
+        "event_duration_since_last"
+      ],
+      "all_distribution_crosstabs": [
+        "_event_duration_since_last"
       ],
       "all_sampling_entities": [
         "event"
@@ -131,16 +131,16 @@
       "rows_lost": 0,
       "rows_added": 0
     },
-    "_event_duration_since_last": {
-      "name": "_event_duration_since_last",
+    "_event_duration": {
+      "name": "_event_duration",
       "rvs": [
-        "event_duration_since_last"
+        "event_duration"
       ],
       "non_distribution_rvs": [],
       "distribution_rvs": [
-        "event_duration_since_last"
+        "event_duration"
       ],
-      "datasource": "event_duration_since_last",
+      "datasource": "event_duration",
       "number_of_states": 9,
       "clean_num_rows": 9,
       "clean_min_weight": 0.01,
@@ -153,16 +153,16 @@
       "rows_lost": 0,
       "rows_added": 0
     },
-    "_event_duration": {
-      "name": "_event_duration",
+    "_event_duration_since_last": {
+      "name": "_event_duration_since_last",
       "rvs": [
-        "event_duration"
+        "event_duration_since_last"
       ],
       "non_distribution_rvs": [],
       "distribution_rvs": [
-        "event_duration"
+        "event_duration_since_last"
       ],
-      "datasource": "event_duration",
+      "datasource": "event_duration_since_last",
       "number_of_states": 9,
       "clean_num_rows": 9,
       "clean_min_weight": 0.01,
@@ -205,9 +205,9 @@
       },
       "entity_crosstabs": [
         {
-          "crosstab": "_event_duration",
+          "crosstab": "_event_type",
           "sampled_rvs": [
-            "event_duration"
+            "event_type"
           ],
           "condition_rvs": [],
           "non_distribution_rvs": []
@@ -221,9 +221,9 @@
           "non_distribution_rvs": []
         },
         {
-          "crosstab": "_event_type",
+          "crosstab": "_event_duration",
           "sampled_rvs": [
-            "event_type"
+            "event_duration"
           ],
           "condition_rvs": [],
           "non_distribution_rvs": []

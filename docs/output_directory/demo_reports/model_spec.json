@@ -80,11 +80,11 @@
       "states": "infer_distinct",
       "ensure_none": false
     },
-    "event_duration_since_last": {
+    "event_duration": {
       "states": "infer_distinct",
       "ensure_none": false
     },
-    "event_duration": {
+    "event_duration_since_last": {
       "states": "infer_distinct",
       "ensure_none": false
     }
@@ -114,11 +114,11 @@
         "max_add_rows": 1000000
       }
     },
-    "_event_duration_since_last": {
+    "_event_duration": {
       "rvs": [
-        "event_duration_since_last"
+        "event_duration"
       ],
-      "datasource": "event_duration_since_last",
+      "datasource": "event_duration",
       "epsilon": 0.1,
       "min_cell_size": 0.0,
       "noiser": {
@@ -126,11 +126,11 @@
         "max_add_rows": 1000000
       }
     },
-    "_event_duration": {
+    "_event_duration_since_last": {
       "rvs": [
-        "event_duration"
+        "event_duration_since_last"
       ],
-      "datasource": "event_duration",
+      "datasource": "event_duration_since_last",
       "epsilon": 0.1,
       "min_cell_size": 0.0,
       "noiser": {

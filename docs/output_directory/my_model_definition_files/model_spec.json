@@ -31,11 +31,11 @@
     }
   },
   "rvs": {
-    "Y": {
+    "Z": {
       "states": "infer_distinct",
       "ensure_none": false
     },
-    "Z": {
+    "Y": {
       "states": "infer_distinct",
       "ensure_none": false
     },
@@ -45,9 +45,9 @@
     }
   },
   "crosstabs": {
-    "_Y": {
+    "_Z": {
       "rvs": [
-        "Y"
+        "Z"
       ],
       "datasource": "xyz",
       "epsilon": 0.1,
@@ -57,9 +57,9 @@
         "max_add_rows": 1000000
       }
     },
-    "_Z": {
+    "_Y": {
       "rvs": [
-        "Z"
+        "Y"
       ],
       "datasource": "xyz",
       "epsilon": 0.1,
@@ -88,13 +88,13 @@
       "count_field_name": "_count_",
       "foreign_field_name": null,
       "fields": {
-        "Y": {
-          "type": "sample",
-          "rv_name": "Y"
-        },
         "Z": {
           "type": "sample",
           "rv_name": "Z"
+        },
+        "Y": {
+          "type": "sample",
+          "rv_name": "Y"
         },
         "X": {
           "type": "sample",

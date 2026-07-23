@@ -1,22 +1,5 @@
 {
   "rvs": {
-    "Y": {
-      "name": "Y",
-      "states": [
-        "n",
-        "y"
-      ],
-      "primary_datasource": "xyz",
-      "all_datasources": [
-        "xyz"
-      ],
-      "all_distribution_crosstabs": [
-        "_Y"
-      ],
-      "all_sampling_entities": [
-        "_default_entity_"
-      ]
-    },
     "Z": {
       "name": "Z",
       "states": [
@@ -29,6 +12,23 @@
       ],
       "all_distribution_crosstabs": [
         "_Z"
+      ],
+      "all_sampling_entities": [
+        "_default_entity_"
+      ]
+    },
+    "Y": {
+      "name": "Y",
+      "states": [
+        "n",
+        "y"
+      ],
+      "primary_datasource": "xyz",
+      "all_datasources": [
+        "xyz"
+      ],
+      "all_distribution_crosstabs": [
+        "_Y"
       ],
       "all_sampling_entities": [
         "_default_entity_"
@@ -53,14 +53,14 @@
     }
   },
   "crosstabs": {
-    "_Y": {
-      "name": "_Y",
+    "_Z": {
+      "name": "_Z",
       "rvs": [
-        "Y"
+        "Z"
       ],
       "non_distribution_rvs": [],
       "distribution_rvs": [
-        "Y"
+        "Z"
       ],
       "datasource": "xyz",
       "number_of_states": 2,
@@ -75,14 +75,14 @@
       "rows_lost": 0,
       "rows_added": 0
     },
-    "_Z": {
-      "name": "_Z",
+    "_Y": {
+      "name": "_Y",
       "rvs": [
-        "Z"
+        "Y"
       ],
       "non_distribution_rvs": [],
       "distribution_rvs": [
-        "Z"
+        "Y"
       ],
       "datasource": "xyz",
       "number_of_states": 2,
@@ -125,11 +125,19 @@
       "name": "_default_entity_",
       "parent": null,
       "sampled_fields": {
-        "Y": "Y",
         "Z": "Z",
+        "Y": "Y",
         "X": "X"
       },
       "entity_crosstabs": [
+        {
+          "crosstab": "_X",
+          "sampled_rvs": [
+            "X"
+          ],
+          "condition_rvs": [],
+          "non_distribution_rvs": []
+        },
         {
           "crosstab": "_Y",
           "sampled_rvs": [
@@ -142,14 +150,6 @@
           "crosstab": "_Z",
           "sampled_rvs": [
             "Z"
-          ],
-          "condition_rvs": [],
-          "non_distribution_rvs": []
-        },
-        {
-          "crosstab": "_X",
-          "sampled_rvs": [
-            "X"
           ],
           "condition_rvs": [],
           "non_distribution_rvs": []

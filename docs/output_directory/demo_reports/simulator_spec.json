@@ -48,8 +48,8 @@
           "type": "sum",
           "initial_value": 0,
           "inputs": [
-            "event_duration",
-            "event_duration_since_last"
+            "event_duration_since_last",
+            "event_duration"
           ],
           "add_self": true
         }
