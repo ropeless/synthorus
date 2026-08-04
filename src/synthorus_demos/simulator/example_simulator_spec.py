@@ -4,6 +4,7 @@ from ck.pgm import State, PGM
 from ck.pgm_circuit.wmc_program import WMCProgram
 from ck.pgm_compiler import DEFAULT_PGM_COMPILER
 
+from synthorus.model.model_spec import ForeignKeyField
 from synthorus.simulator.condition_spec import ConditionSpecVariableLimit, ConditionSpecFixedLimit, ConditionSpecStates
 from synthorus.simulator.pgm_sim_sampler import PGMSimSampler
 from synthorus.simulator.sim_entity import SimSampler
@@ -40,8 +41,9 @@ def make_simulator_spec() -> SimulatorSpec:
 
     event = SimEntitySpec(
         sampler='event_sampler',
-        parent='patient',
-        foreign_field_name='_patient__id_',
+        foreign_key_fields=[
+            ForeignKeyField(foreign_key_field_name='_patient__id_', foreign_entity='patient'),
+        ],
         fields={
             'type': SampleSpec(rv_name='event_type'),
             'duration': SampleSpec(rv_name='event_duration'),

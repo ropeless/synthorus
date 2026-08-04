@@ -11,10 +11,10 @@ def make_simulator() -> Simulator:
 
     entity_1.add_field(
         'field',  # name of the field
-        value=0,  # value prior to any updates (i.e., initial value for `prev_value`.
+        value=0,  # value prior to any updates (i.e., initial value for `prev_value`).
         update=FunctionUpdate(
             func='_count_ + prev_value',  # an expression representing the body of the function
-            fields=[entity_1.count_field], # argument to the function
+            fields=[entity_1.count_field],  # argument to the function
             prev_value='prev_value',  # name in the `func` argument to use for the previous value of the field
         ),
     )

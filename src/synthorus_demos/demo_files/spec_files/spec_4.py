@@ -9,9 +9,6 @@ from synthorus.spec_file.keys import *
 spec = {
     roots: './datasets',
 
-    sensitivity: 0,
-    min_cell_size: 0,
-
     datasources: {
         'counter_10': {
             data_format: csv,

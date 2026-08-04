@@ -19,11 +19,10 @@ JSON: str = """
   },
   "entities": {
     "patient": {
-      "parent": null,
       "sampler": "patient_sampler",
       "id_field_name": "_id_",
       "count_field_name": "_count_",
-      "foreign_field_name": null,
+      "foreign_key_fields": [],
       "fields": {
         "age": {
           "type": "sample",
@@ -52,11 +51,15 @@ JSON: str = """
       ]
     },
     "event": {
-      "parent": "patient",
       "sampler": "event_sampler",
       "id_field_name": "_id_",
       "count_field_name": "_count_",
-      "foreign_field_name": "_patient__id_",
+      "foreign_key_fields": [
+        {
+          "foreign_key_field_name": "_patient__id_",
+          "foreign_entity": "patient"
+        }
+      ],
       "fields": {
         "type": {
           "type": "sample",

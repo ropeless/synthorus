@@ -53,7 +53,7 @@ def make_simulator() -> Simulator:
     patient.add_cardinality_variable_count(number_of_patients)
 
     # Entity - event
-    event = sim.add_entity('event', parent=patient, foreign_field_name='_patient_id', sampler=event_sampler)
+    event = sim.add_entity('event', foreign_key_fields=[('_patient_id', patient)], sampler=event_sampler)
     #
     field_event_type = event.add_field_sampled('type', 'event_type')
     field_duration = event.add_field_sampled('duration', 'event_duration')

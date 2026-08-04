@@ -61,7 +61,11 @@ class SumUpdate(SimFieldUpdate):
         """
         dest_field.value := sum(source field values and the constant)
         """
-        value = sum((field.value for field in self.source_fields), start=self.constant)
+        try:
+            value = sum((field.value for field in self.source_fields), start=self.constant)  # type: ignore
+        except TypeError:
+            values = [repr(field.value) for field in self.source_fields] + [repr(self.constant)]
+            raise SynthorusError('cannot sum field values', values)
         if self.include_self:
             dest_field.value += value
         else:
@@ -113,11 +117,9 @@ class FunctionUpdate(SimFieldUpdate):
                 raise SynthorusError(f'self argument name {prev_value!r} cannot be the same as any field name')
             in_names.append(prev_value)
 
-        self._func: UpdateFunction
         if isinstance(func, str):
-            self._func = parse_formula(func, in_names)
-        else:
-            self._func = func
+            func = parse_formula(func, in_names)
+        self._func: UpdateFunction = func
 
     def update(self, dest_field: SimField) -> None:
         input_values = tuple(field.value for field in self._fields)

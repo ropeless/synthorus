@@ -11,7 +11,7 @@ from synthorus_demos.utils.file_helper import print_file_tree
 from synthorus_demos.utils.output_directory import output_directory
 
 DEMO_NAME: str = Path(__file__).stem
-DEMO_SPEC_FILE_NAME: str = 'spec_simple_pjm.py'
+DEMO_SPEC_FILE_NAME: str = 'spec_2.py'
 
 
 def main() -> None:
@@ -42,7 +42,7 @@ def main() -> None:
         print()
 
         print('Making model spec report...')
-        make_model_spec_report(model_definition_dir, cwd=ROOT_DIR)
+        make_model_spec_report(model_definition_dir)
 
         # Show what files got created
         print('-------------------------------------------')

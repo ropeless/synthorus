@@ -45,7 +45,7 @@ class PostgresDataset(Dataset):
             self,
             table_name: str,
             *,
-            connection_params: Optional[Dict[str, Optional[str]]] = None,
+            connection_params: Optional[Dict[str, Optional[str | int]]] = None,
             column_names: Optional[Iterable[str]] = None,
             schema_name: Optional[str] = None,
     ):
@@ -108,7 +108,7 @@ class PostgresDataset(Dataset):
         return query(self._connection, sql, variables)
 
     @staticmethod
-    def _get_connection(connection_params: Optional[Dict[str, Optional[str]]]):
+    def _get_connection(connection_params: Optional[Dict[str, Optional[str | int]]]):
         connection_params: Dict[str, str] = resolve_connection(connection_params)
         connection_string = connection_str(connection_params, delim=' ')
         connections = PostgresDataset._CONNECTIONS

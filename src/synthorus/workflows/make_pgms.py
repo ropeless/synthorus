@@ -42,7 +42,7 @@ def make_entity_pgms(
 
     Args:
         model_index: All the important characteristics of the model for PGMs.
-        crosstab_loader: Access to crosstables.
+        crosstab_loader: Access to cross-tables.
         save_directory_path: Where to write the PGMs - an existing empty directory.
         log: A destination for log messages, a print function.
 
@@ -182,7 +182,7 @@ class EntityCrossTableMaker:
             allow_ancestor_conditioning: bool,
     ) -> CrossTable:
         """
-        Construct a CrossTable object from the given cross-table dataframe.
+        Construct a `CrossTable` object from the given cross-table dataframe.
 
         This is a recursive method that will call itself to resolve non-distribution rvs.
 
@@ -191,7 +191,7 @@ class EntityCrossTableMaker:
             allow_ancestor_conditioning: Whether to allow ancestor conditioning of non-distribution rvs.
 
         Returns:
-            a CK CrossTable object.
+            a CK `CrossTable` object.
         """
         # Get the synthorus cross-table as a dataframe
         dataframe: pd.DataFrame = self.crosstab_loader[entity_crosstab_index.crosstab]

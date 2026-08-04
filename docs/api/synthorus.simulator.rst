@@ -20,10 +20,10 @@ synthorus.simulator.make\_simulator\_from\_simulator\_spec module
    :undoc-members:
    :show-inheritance:
 
-synthorus.simulator.make\_simulator\_spec\_from\_model\_spec module
--------------------------------------------------------------------
+synthorus.simulator.make\_simulator\_spec\_from\_model\_index module
+--------------------------------------------------------------------
 
-.. automodule:: synthorus.simulator.make_simulator_spec_from_model_spec
+.. automodule:: synthorus.simulator.make_simulator_spec_from_model_index
    :members:
    :undoc-members:
    :show-inheritance:

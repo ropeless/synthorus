@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import Optional, Dict, List, Tuple, Mapping, Iterator
+from typing import Optional, Dict, List, Tuple, Mapping, Iterator, Iterable, Sequence, Set
 
 from ck.pgm import State
 
@@ -20,14 +20,32 @@ class SimEntity(Mapping[str, SimField]):
     def __init__(
             self,
             name: str,
-            parent: Optional[SimEntity],
             sampler: SimSampler,
             id_field_name: str,
             count_field_name: str,
-            foreign_id_field_name: str,
+            foreign_key_fields: Iterable[Tuple[str, SimEntity]],
+            owner: int,
+            order: int,
     ):
+        """
+        Construct a SimEntity object within a Simulator.
+
+        This method should only be called by `Simulator.add_entity`.
+
+        Args:
+            name: name of the entity.
+            sampler: the sampler to use for sampled fields.
+            id_field_name: name of the primary key field.
+            count_field_name: name of the "count" field.
+            foreign_key_fields: all foreign keys.
+            owner: a number to uniquely identify the owning simulator for error checking, e.g., using Python `id`.
+            order: a unique number providing a total order over all entities within a simulator.
+        Raises:
+            SynthorusError if any foreign entity in `foreign_key_fields` has a different owner.
+        """
         self._name: str = name
-        self._parent: Optional[SimEntity] = parent
+        self._owner: int = owner
+        self._order: int = order
         self._sampler: SimSampler = sampler
         self._fields: Dict[str, SimField] = OrderedDict()
         self._field_names: Tuple[str, ...] = ()  # field names, in the order they were added
@@ -36,19 +54,38 @@ class SimEntity(Mapping[str, SimField]):
         # Add fields (id field first)
         self._id_field: SimField = self.add_field(id_field_name, update=INCR_UPDATE)
         self._count_field: SimField = self.add_field(count_field_name, update=INCR_UPDATE)
-        self._foreign_field: Optional[SimField] = None
-        if parent is not None:
-            self._foreign_field = self.add_field(foreign_id_field_name, update=CopyUpdate(parent.id_field))
+        foreign_key_fields_list: List[Tuple[SimField, SimEntity]] = []
+        for foreign_key_field_name, foreign_entity in foreign_key_fields:
+            if foreign_entity._owner != owner:
+                raise SynthorusError(f'foreign entity is not from the same simulator: {foreign_entity.name!r}')
+            foreign_key_field: SimField = self.add_field(
+                foreign_key_field_name,
+                update=CopyUpdate(foreign_entity.id_field)
+            )
+            foreign_key_fields_list.append((foreign_key_field, foreign_entity))
+        # Order the foreign keys by entity order
+        # noinspection PyProtectedMember
+        foreign_key_fields_list.sort(key=lambda f: f[1]._order)
+        self._foreign_key_fields: Tuple[Tuple[SimField, SimEntity], ...] = tuple(foreign_key_fields_list)
 
         # These are set in the initialise method.
         self._reset_values: List[State] = []
-        self._fields_to_reset: List[State] = []
+        self._fields_to_reset: List[SimField] = []
+
+    def __str__(self) -> str:
+        return f'{self.__class__.__name__}({self.name})'
 
     @property
     def name(self) -> str:
+        """
+        Name of this entity.
+        """
         return self._name
 
     def __len__(self) -> int:
+        """
+        Get the number of fields for this entity.
+        """
         return len(self._fields)
 
     def __iter__(self) -> Iterator[str]:
@@ -58,28 +95,96 @@ class SimEntity(Mapping[str, SimField]):
         return iter(self._fields)
 
     def __getitem__(self, field_name: str) -> SimField:
+        """
+        Get a field of this entity, by name.
+        """
         return self._fields[field_name]
 
     def get(self, field_name: str, default: Optional[SimField] = None) -> Optional[SimField]:
+        """
+        Get a field of this entity, by name.
+        """
         return self._fields.get(field_name, default)
 
     @property
-    def parent(self) -> Optional[SimEntity]:
-        return self._parent
-
-    @property
     def id_field(self) -> SimField:
+        """
+        Get the primary key field of this entity.
+        """
         return self._id_field
 
     @property
     def count_field(self) -> SimField:
+        """
+        Get the "count" field of this entity.
+        """
         return self._count_field
 
     @property
-    def foreign_field(self) -> Optional[SimField]:
-        return self._foreign_field
+    def foreign_key_fields(self) -> Sequence[Tuple[SimField, SimEntity]]:
+        """
+        Get the sequence of (foreign_key_field, foreign_entity) pairs.
+        The results are ordered by foreign_entity order in the simulator.
+        The sequence is fixed for the life-time of this entity, i.e., it
+        is not possible to add or remove foreign keys.
+        """
+        return self._foreign_key_fields
+
+    def find_ancestor_field(self, field_name: str) -> SimField:
+        """
+        Find the given named field looking in all ancestors of this entity.
+
+        Args:
+            field_name:
+
+        Returns:
+            The found field.
+
+        Raises:
+            SynthorusError: not exactly one field found in this entity's ancestors.
+        """
+        found: Optional[SimField] = None
+        for ancestor in self.ancestors():
+            field: Optional[SimField] = ancestor.get(field_name)
+            if field is not None:
+                if found is None:
+                    found = field
+                else:
+                    raise SynthorusError(f'field {field_name!r} exists in multiple ancestors of {self.name!r}')
+        if found is None:
+            raise SynthorusError(f'field {field_name!r} not found in ancestors of {self.name!r}')
+        return found
+
+    def ancestors(self) -> Iterable[SimEntity]:
+        """
+        Return ancestors of this entity, ensuring children are reported before parents.
+        """
+        return self._ancestors_r(set())
+
+    def _ancestors_r(self, checked: Set[str]) -> Iterable[SimEntity]:
+        if self.name not in checked:
+            checked.add(self.name)
+            for _, parent_entity in self._foreign_key_fields:
+                yield parent_entity
+            for _, parent_entity in self._foreign_key_fields:
+                yield from parent_entity._ancestors_r(checked)
+
+    # ===========================================================================
+    # Entity configuration methods...
+    # ===========================================================================
 
     def add_field(self, field_name: str, *, value=None, update: SimFieldUpdate = NO_UPDATE) -> SimField:
+        """
+        Add a field to this entity.
+
+        Args:
+            field_name: name of the field to add.
+            value: the initial value of the field, prior to creating the first simulated record.
+            update: the field updater function to use to set the field's value for the next record.
+
+        Returns:
+            a SimField object.
+        """
         if field_name in self._fields.keys():
             raise SynthorusError(f'field {field_name!r} already exists in entity {self.name!r}')
         field = SimField(field_name, value, update)
@@ -90,15 +195,19 @@ class SimEntity(Mapping[str, SimField]):
     def add_field_sampled(self, field_name: str, rv_name: Optional[str] = None) -> SimField:
         """
         Add a field that is updated from the entity's sampler.
-        If no rv_name is provided, the field_name is used.
-        This calls:
-            self.add_field(field_name, update=self.sampler.get_updater(rv_name))
+        If no rv_name is provided then the field_name is used.
+        This calls: `self.add_field(field_name, update=self.sampler.get_updater(rv_name))`.
         """
         if rv_name is None:
             rv_name = field_name
         return self.add_field(field_name, update=self._sampler.get_updater(rv_name))
 
     def add_cardinality_condition(self, condition: SimCondition) -> None:
+        """
+        This is the base method for adding cardinality conditions to this entity.
+        Typically, a high-level "add_cardinality_..." method will be called rather
+        than calling this method directly.
+        """
         self._conditions.append(condition)
 
     def add_cardinality_fixed_count(self, limit: int) -> None:
@@ -143,7 +252,7 @@ class SimEntity(Mapping[str, SimField]):
     def initialise(self, id_field_value: int) -> None:
         """
         Called at the start of the simulation to prepare the entity.
-        This records the initial values used by reset_values.
+        This records the initial values used by `reset_fields`.
         """
         self.id_field.value = id_field_value
         self._count_field.value = 0
@@ -157,7 +266,7 @@ class SimEntity(Mapping[str, SimField]):
         Reset all fields to their initial values, as registered when `initialise` is called.
 
         Assumes:
-            `initialise` has been called.
+            `initialise` has been called at least once at the start of the simulation.
         """
         for field, value in zip(self._fields_to_reset, self._reset_values):
             field.value = value
@@ -167,7 +276,7 @@ class SimEntity(Mapping[str, SimField]):
         Called at the start of a run of record generations.
 
         Assumes:
-            `initialise` has been called.
+            `initialise` has been called at least once at the start of the simulation.
         """
         # Reset fields that need to be reset
         self.reset_fields()

@@ -7,7 +7,6 @@ __author__ = 'Barry Drake'
 from synthorus.spec_file.keys import *
 
 spec = {
-    min_cell_size: 0,
     rng_n: 6,
     epsilon: 0.1,
     sensitivity: 1,
@@ -34,13 +33,11 @@ spec = {
             condition: [],  # allow the datasource to provide a distribution for weight and height
             function:
             """
-            int(weight / height / height * 10000 + 0.5) / 10
-            if 0 < int(weight / height / height * 10000 + 0.5) / 10 < 100
-            else None
+            max(0, min(100, int(weight / height / height * 10000 + 0.5)))   # clamp to range 0-100.
             """,
             input: {
-                'weight': {start: 1, stop: 1 + 5000},  # in 0.1 kg
-                'height': range(1, 1 + 300),           # in cm
+                'weight': {start: 2, stop: 500, step: 0.5},  # in kg
+                'height': range(1, 280),                     # in cm
             }
         }
     },
@@ -53,9 +50,9 @@ spec = {
         'A': {},
         'B': {},
         'C': {},
-        'bmi': {states: infer_distinct},
-        'weight': {states: infer_range},
-        'height': {states: infer_range},
+        'bmi': {states: infer_range},
+        'weight': {states: infer_distinct},
+        'height': {states: range(1, 300)},
     },
 
     crosstabs: [

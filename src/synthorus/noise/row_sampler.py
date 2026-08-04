@@ -71,7 +71,9 @@ class SamplerRVIndex:
     def add(self, row: Tuple, i: int) -> int:
         """
         Record the fact that the given row is used and should not be drawn.
-        Assumes this is an RV index for the ith random variable, indexed from zero.
+
+        Assumes:
+            `self` is an RV index for the ith random variable, indexed from zero.
 
         Returns:
             1 if added, 0 if already in the index.
@@ -93,6 +95,7 @@ class SamplerRVIndex:
                 # The row is already in the index.
                 return 0
             else:
+                assert isinstance(state_index, SamplerRVIndex), 'not expecting _END'
                 added = state_index.add(row, i)
                 self.num_used += added
                 return added
@@ -104,10 +107,11 @@ class SamplerRVIndex:
         The drawn row is returned and the row is added to `used`, so it cannot
         be drawn again. The number of used rows is incremented by 1.
 
-        Assumes 0 <= idx < number of unused rows, where the number of unused rows
-        is the size of the state space minus the number of rows used.
-
         This method uses `states` and `chunk_sizes` as cached by the caller.
+
+        Assumes:
+            0 <= idx < number of unused rows, where the number of unused rows
+            is the size of the state space minus the number of rows used.
 
         Args:
             idx: is the index into the unused rows, starting from zero.
@@ -117,8 +121,7 @@ class SamplerRVIndex:
         Returns:
             the drawn row, and marks the drawn row as used.
         """
-        if idx < 0:
-            raise IndexError('index out of range')
+        assert idx >= 0, 'index out of range'
         result = []
         self._draw_r(idx, states, chunk_sizes, result)
         return tuple(result)
@@ -161,11 +164,10 @@ class SamplerRVIndex:
                         state_index = next_index
                     self.used[state] = state_index
                     self.num_used += 1
-
-                    if idx != 0:
-                        raise IndexError('index out of range')
+                    assert idx == 0, 'index out of range'
                     return
             else:
+                state_index: SamplerRVIndex
                 available = chunk_size - state_index.num_used
                 next_idx = idx - available
                 if next_idx < 0:
@@ -190,61 +192,3 @@ def calc_state_space(states: List[Tuple]) -> List[int]:
         state_space.append(len(ss) * state_space[-1])
     state_space.reverse()
     return state_space
-
-# Deprecated
-#
-# class RejectionRowSampler:
-#     """
-#     A sampler to draw rows from a state space, without replacement.
-#
-#     This sampler uses rejection sampling. I.e., rows that have already
-#     been seen are rejected. This is a kind of sampling may be inefficient
-#     when the proportion of used rows is large.
-#     """
-#
-#     def __init__(self, states: List[Tuple]):
-#         self._row_set: Set[Tuple] = set()
-#         self._states = states
-#
-#     def remove_rows(self, rows: Iterable[Tuple]) -> None:
-#         """
-#         Remove the given rows from the possible rows to draw.
-#         """
-#         self._row_set.update(rows)
-#
-#     @property
-#     def available_rows(self) -> int:
-#         """
-#         How many rows are available to be drawn.
-#         """
-#         return math.prod(len(ss) for ss in self._states) - len(self._row_set)
-#
-#     def draw_rows(self, k: int) -> List[Tuple]:
-#         """
-#         Draw `k` new rows from the state space, without replacement.
-#         """
-#         row_set = self._row_set
-#         states = self._states
-#
-#         # Protect against infinite loop when looking for new rows.
-#         # This is the maximum number of random rows to try.
-#         max_tries = k * 20
-#
-#         new_rows = []
-#         while len(new_rows) < k and max_tries > 0:
-#             # Draw a random row, uniformly from all possible rows.
-#             # The possible random variable states for the ith random variable
-#             # is given by states[i].
-#             row = tuple(
-#                 random.choice(ss)
-#                 for ss in states
-#             )
-#             # Accept the row if it is not already in the set
-#             if row not in row_set:
-#                 row_set.add(row)
-#                 new_rows.append(row)
-#             max_tries -= 1
-#         if len(new_rows) < k:
-#             raise RuntimeError('cannot find enough new rows: max tries exceeded')
-#
-#         return new_rows

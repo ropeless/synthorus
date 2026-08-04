@@ -1,6 +1,5 @@
 import pickle
 import warnings
-from importlib.abc import Traversable
 from io import StringIO
 from pathlib import Path
 from typing import Literal, Optional, Dict, TypeAlias, Annotated, Union, List, Tuple, Callable, Sequence, Set
@@ -14,9 +13,11 @@ from synthorus.dataset import Dataset, PandasDataset, MathDataset, MathRV, OdbcD
     PostgresDataset, read_table_builder
 from synthorus.error import SynthorusError
 from synthorus.utils import dataframe_extras
-from synthorus.utils.string_extras import unindent
 from synthorus.utils.config_help import config
+from synthorus.utils.file_extras import DataPath, open_binary
+from synthorus.utils.dataframe_extras import read_csv
 from synthorus.utils.parse_formula import parse_formula
+from synthorus.utils.string_extras import unindent
 from synthorus.utils.validate_inputs import validate_inputs
 
 ColumnSpec: TypeAlias = int | str  # a pandas column name
@@ -97,7 +98,7 @@ class DatasetSpecCsv(BaseModel):
     skip_blank_lines: bool = True  # as per pandas.read_csv
     skip_initial_space: bool = False  # as per pandas.read_csv
 
-    def dataset(self, roots: Sequence[Path | Traversable] = ()) -> Dataset:
+    def dataset(self, roots: Sequence[DataPath] = ()) -> Dataset:
         """
         Get a dataset object for this DatasetSpec.
 
@@ -117,7 +118,7 @@ class DatasetSpecTableBuilder(BaseModel):
     rv_define: Dict[str, ColumnDefinitionSpec] = {}
     input: TextInputSpec
 
-    def dataset(self, roots: Sequence[Path | Traversable] = ()) -> Dataset:
+    def dataset(self, roots: Sequence[DataPath] = ()) -> Dataset:
         """
         Get a dataset object for this DatasetSpec.
 
@@ -138,7 +139,7 @@ class DatasetSpecPickle(BaseModel):
     rv_define: Dict[str, ColumnDefinitionSpec] = {}
     location: str
 
-    def dataset(self, roots: Sequence[Path | Traversable] = ()) -> Dataset:
+    def dataset(self, roots: Sequence[DataPath] = ()) -> Dataset:
         """
         Get a dataset object for this DatasetSpec.
 
@@ -159,7 +160,7 @@ class DatasetSpecParquet(BaseModel):
     rv_define: Dict[str, ColumnDefinitionSpec] = {}
     location: str
 
-    def dataset(self, roots: Sequence[Path | Traversable] = ()) -> Dataset:
+    def dataset(self, roots: Sequence[DataPath] = ()) -> Dataset:
         """
         Get a dataset object for this DatasetSpec.
 
@@ -180,7 +181,7 @@ class DatasetSpecFeather(BaseModel):
     rv_define: Dict[str, ColumnDefinitionSpec] = {}
     location: str
 
-    def dataset(self, roots: Sequence[Path | Traversable] = ()) -> Dataset:
+    def dataset(self, roots: Sequence[DataPath] = ()) -> Dataset:
         """
         Get a dataset object for this DatasetSpec.
 
@@ -200,7 +201,7 @@ class DatasetSpecFunction(BaseModel):
     output_rv: str
     function: str  # Python expression representing the body of a function
 
-    def dataset(self, _: Sequence[Path | Traversable] = ()) -> Dataset:
+    def dataset(self, _: Sequence[DataPath] = ()) -> Dataset:
         """
         Get a dataset object for this DatasetSpec.
 
@@ -223,7 +224,7 @@ class DatasetSpecDBMS(BaseModel):
     # `connection={password: None}` the None value will be replaced by `config.DB_CONX_password`,
     connection: Optional[Dict[str, Optional[str | int]]] = None
 
-    def dataset(self, _: Sequence[Path | Traversable] = ()) -> Dataset:
+    def dataset(self, _: Sequence[DataPath] = ()) -> Dataset:
         """
         Get a dataset object for this DatasetSpec.
 
@@ -235,11 +236,11 @@ class DatasetSpecDBMS(BaseModel):
 
 def _make_dataset_text(
         dataset_spec: DatasetSpecCsv | DatasetSpecTableBuilder,
-        roots: Sequence[Path | Traversable],
+        roots: Sequence[DataPath],
 ) -> Dataset:
     input_spec: TextInputSpec = dataset_spec.input
     if isinstance(input_spec, TextInputSpecLocation):
-        file_path: Path = _find_file(input_spec.location, roots)
+        file_path: DataPath = _find_file(input_spec.location, roots)
         return _make_dataset_text_from_io(dataset_spec, file_path)
     elif isinstance(input_spec, TextInputSpecInline):
         io = StringIO(unindent(input_spec.inline))
@@ -248,10 +249,9 @@ def _make_dataset_text(
         raise SynthorusError(f'unsupported dataset input spec: {type(input_spec)}')
 
 
-def _make_dataset_pickle(dataset_spec: DatasetSpecPickle, roots: Sequence[Path | Traversable]) -> Dataset:
-    file_path: Path = _find_file(dataset_spec.location, roots)
-
-    with open(file_path, 'rb') as file:
+def _make_dataset_pickle(dataset_spec: DatasetSpecPickle, roots: Sequence[DataPath]) -> Dataset:
+    file_path: DataPath = _find_file(dataset_spec.location, roots)
+    with open_binary(file_path) as file:
         dataframe: pd.DataFrame = pickle.load(file)
 
     datasource: PandasDataset = _finish_make_dataframe(
@@ -263,10 +263,10 @@ def _make_dataset_pickle(dataset_spec: DatasetSpecPickle, roots: Sequence[Path |
     return datasource
 
 
-def _make_dataset_parquet(dataset_spec: DatasetSpecParquet, roots: Sequence[Path | Traversable]) -> Dataset:
-    file_path: Path = _find_file(dataset_spec.location, roots)
-
-    dataframe: pd.DataFrame = pd.read_parquet(file_path)
+def _make_dataset_parquet(dataset_spec: DatasetSpecParquet, roots: Sequence[DataPath]) -> Dataset:
+    file_path: DataPath = _find_file(dataset_spec.location, roots)
+    with open_binary(file_path) as file:
+        dataframe: pd.DataFrame = pd.read_parquet(file)
 
     datasource: PandasDataset = _finish_make_dataframe(
         dataframe,
@@ -277,10 +277,10 @@ def _make_dataset_parquet(dataset_spec: DatasetSpecParquet, roots: Sequence[Path
     return datasource
 
 
-def _make_dataset_feather(dataset_spec: DatasetSpecFeather, roots: Sequence[Path | Traversable]) -> Dataset:
-    file_path: Path = _find_file(dataset_spec.location, roots)
-
-    dataframe: pd.DataFrame = pd.read_feather(file_path)
+def _make_dataset_feather(dataset_spec: DatasetSpecFeather, roots: Sequence[DataPath]) -> Dataset:
+    file_path: DataPath = _find_file(dataset_spec.location, roots)
+    with open_binary(file_path) as file:
+        dataframe: pd.DataFrame = pd.read_feather(file)
 
     datasource: PandasDataset = _finish_make_dataframe(
         dataframe,
@@ -371,7 +371,7 @@ def _clean_connection_val(key: str, val: str | int | None) -> Union[str, int]:
     raise SynthorusError(f'invalid connection value: {val!r}')
 
 
-def _find_file(location: str, roots: Sequence[Path | Traversable]) -> Path:
+def _find_file(location: str, roots: Sequence[DataPath]) -> DataPath:
     """
     Get a file path from a spec file location string.
 
@@ -388,7 +388,7 @@ def _find_file(location: str, roots: Sequence[Path | Traversable]) -> Path:
     found = None
     for root in roots:
         location_as_path = root / location
-        if location_as_path.exists():
+        if location_as_path.is_file():
             if found is not None:
                 raise SynthorusError(f'multiple source files found: {location!r}')
             found = location_as_path
@@ -399,7 +399,7 @@ def _find_file(location: str, roots: Sequence[Path | Traversable]) -> Path:
 
 def _make_dataset_text_from_io(
         dataset_spec: DatasetSpecCsv | DatasetSpecTableBuilder,
-        io: Path | StringIO,
+        io: DataPath | StringIO,
 ) -> Dataset:
     data_format: Literal['csv', 'table_builder'] = dataset_spec.type
 
@@ -407,19 +407,20 @@ def _make_dataset_text_from_io(
     weight: Optional[ColumnSpec]
     try:
         if data_format == 'csv':
+            dataset_spec: DatasetSpecCsv
             sep = dataset_spec.sep
             header = dataset_spec.header
             skip_blank_lines = dataset_spec.skip_blank_lines
             skip_initial_space = dataset_spec.skip_initial_space
 
-            # Pass low_memory=False to ensure consistent type inference.
-            dataframe = pd.read_csv(
+            # Pass `low_memory=False` to ensure consistent dtype inference.
+            dataframe = read_csv(
                 io,
                 sep=sep,
                 header=(0 if header else None),
                 skip_blank_lines=skip_blank_lines,
                 skipinitialspace=skip_initial_space,
-                low_memory=False
+                low_memory=False,
             )
             weight = dataset_spec.weight
         elif data_format == 'table_builder':
@@ -459,8 +460,10 @@ def _finish_make_dataframe(
     weights: Optional[pd.Series] = None
     if weight is not None:
         if isinstance(weight, int):
+            non_weight: List[int] = list(range(dataframe.shape[1]))
+            non_weight.pop(weight)
             weights = dataframe.iloc[:, weight]
-            dataframe = dataframe.drop(columns=dataframe.columns[weight])
+            dataframe: pd.DataFrame = dataframe.iloc[:, non_weight]
         elif isinstance(weight, str):
             weights = dataframe[weight]
             dataframe = dataframe.drop(columns=weight)
@@ -553,7 +556,7 @@ def _function_column(dataframe: pd.DataFrame, definition: ColumnDefinitionSpecFu
 
 def _group_column(
         dataframe: pd.DataFrame,
-        weights: pd.Series,
+        weights: Optional[pd.Series],
         definition: ColumnDefinitionSpecGroup,
 ) -> pd.Series:
     grouping: Literal['group_cut', 'group_qcut', 'group_normalise'] = definition.type
@@ -634,7 +637,7 @@ def _create_group_column_normalise(
 
         # Add row values, in turn, to the group with the lowest weight
         groups = [[] for _ in range(number_of_groups)]
-        group_weights = [(0, i) for i in range(number_of_groups)]
+        group_weights: List[Tuple[int, int]] = [(0, i) for i in range(number_of_groups)]
         for row in crosstab.itertuples(index=False):
             values = tuple(row[:-1])
             weight = row[-1]

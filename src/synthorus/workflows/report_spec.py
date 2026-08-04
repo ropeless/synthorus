@@ -3,41 +3,37 @@ Module for generating reports on a model specification.
 """
 
 import getpass
-import math
-from importlib.abc import Traversable
-from os import PathLike
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Sequence
 
 import dominate
-import pandas as pd
 from ck.pgm import State
 from dominate.tags import p, i, h1, details, summary, a, div, html_tag
 
-from synthorus.model.dataset_cache import DatasetCache
 from synthorus.model.dataset_spec import DatasetSpec
 from synthorus.model.dataset_spec_impl import DatasetSpecCsv, TextInputSpecLocation, TextInputSpecInline, \
     DatasetSpecTableBuilder, DatasetSpecPickle, DatasetSpecParquet, DatasetSpecFeather, DatasetSpecFunction, \
     DatasetSpecDBMS
 from synthorus.model.datasource_spec import DatasourceSpec
 from synthorus.model.model_index import ModelIndex, CrosstabIndex, RVIndex
+from synthorus.model.model_meta import ModelMeta, CrosstabMeta
 from synthorus.model.model_spec import ModelSpec, ModelCrosstabSpec, ModelEntitySpec, ModelFieldSpec, \
     ModelFieldSpecSample, ModelFieldSpecSum, ModelFieldSpecFunction, ModelRVSpec
 from synthorus.model.noiser_spec import NoiserSpec, NoiserSpecBasicLaplace
-from synthorus.noise.noiser import recommended_min_cell_size
 from synthorus.simulator.condition_spec import ConditionSpec, ConditionSpecFixedLimit, ConditionSpecVariableLimit, \
     ConditionSpecStates
 from synthorus.utils.clean_num import clean_num
+from synthorus.utils.file_extras import open_text
 from synthorus.utils.time_extras import timestamp
-from synthorus.workflows.file_names import REPORTS, MODEL_SPEC_REPORT_FILE_NAME, MODEL_SPEC_NAME, MODEL_INDEX_NAME
-from synthorus.workflows.report_helpers import dict_table, rng_n_str, calculate_privacy_budget, budget_str, \
+from synthorus.workflows.file_names import REPORTS, MODEL_SPEC_REPORT_FILE_NAME, MODEL_SPEC_FILE_NAME, \
+    MODEL_INDEX_FILE_NAME, MODEL_META_FILE_NAME
+from synthorus.workflows.reporting_helpers import dict_table, rng_n_str, calculate_privacy_budget, budget_str, \
     render_comment, render_inline_data, render_code, add_head_styles
 
 
 def make_model_spec_report(
         model_directory_path: Path,
         *,
-        cwd: Optional[PathLike | Traversable] = None,
         overwrite: bool = False,
         report_author: Optional[str] = None,
 ) -> None:
@@ -46,7 +42,6 @@ def make_model_spec_report(
 
     Args:
         model_directory_path: Directory where to find model cross-tables and other information.
-        cwd: The working directory to use for resolving relative roots for accessing datasets.
         overwrite: if True, then any previous report will be overwritten.
         report_author: Optional name of the report author (default is system username).
     """
@@ -56,18 +51,19 @@ def make_model_spec_report(
     elif report_path.exists():
         raise RuntimeError(f'report already exists: {report_path}')
 
-    with open(model_directory_path / MODEL_SPEC_NAME, 'r') as file:
+    with open_text(model_directory_path / MODEL_SPEC_FILE_NAME) as file:
         model_spec: ModelSpec = ModelSpec.model_validate_json(file.read())
 
-    with open(model_directory_path / MODEL_INDEX_NAME, 'r') as file:
+    with open_text(model_directory_path / MODEL_INDEX_FILE_NAME) as file:
         model_index: ModelIndex = ModelIndex.model_validate_json(file.read())
 
-    dataset_cache = DatasetCache(model_spec, cwd)
+    with open_text(model_directory_path / MODEL_META_FILE_NAME) as file:
+        model_meta: ModelMeta = ModelMeta.model_validate_json(file.read())
 
     report_model_spec(
         model_spec=model_spec,
         model_index=model_index,
-        dataset_cache=dataset_cache,
+        model_meta=model_meta,
         destination=report_path,
         report_author=report_author,
     )
@@ -76,8 +72,8 @@ def make_model_spec_report(
 def report_model_spec(
         model_spec: ModelSpec,
         model_index: ModelIndex,
-        dataset_cache: DatasetCache,
-        destination: Optional[PathLike] = None,
+        model_meta: ModelMeta,
+        destination: Optional[Path] = None,
         *,
         report_author: Optional[str] = None
 ) -> None:
@@ -88,15 +84,15 @@ def report_model_spec(
     and extracted cross-table data. No PGMs are constructed or analysed.
 
     Args:
-        model_spec: The synthetic data model specification.
-        model_index: The cached relationships between model components.
-        dataset_cache: Object to access to model datasets.
+        model_spec: The model specification.
+        model_index: Index of model specification.
+        model_meta: The metadata of the model specification.
         destination: Where to write the report, None for stdout.
         report_author: Optional name of the report author (default is system username).
     """
     if report_author is None:
         report_author = f'user "{getpass.getuser()}"'
-    doc = _report_model_spec(model_spec, model_index, dataset_cache, report_author)
+    doc = _report_model_spec(model_spec, model_index, model_meta, report_author)
     if destination is None:
         print(doc.render())
     else:
@@ -107,7 +103,7 @@ def report_model_spec(
 def _report_model_spec(
         model_spec: ModelSpec,
         model_index: ModelIndex,
-        dataset_cache: DatasetCache,
+        model_meta: ModelMeta,
         report_author: str,
 ) -> dominate.document:
     """
@@ -117,9 +113,9 @@ def _report_model_spec(
     and extracted cross-table data. No PGMs are constructed or analysed.
 
     Args:
-        model_spec: The synthetic data model specification.
-        model_index: The cached relationships between model components.
-        dataset_cache: Object to access to model datasets.
+        model_spec: The model specification.
+        model_index: Index of model specification.
+        model_meta: The metadata of the model specification.
         report_author: name of the report author.
 
     Returns:
@@ -198,13 +194,11 @@ def _report_model_spec(
             crosstab_names: List[str] = sorted(model_spec.crosstabs.keys(), key=lambda _name: _name.lower())
             summary(f'Cross-tables ({len(crosstab_names)})')
             for crosstab_name in crosstab_names:
-                crosstab: ModelCrosstabSpec = model_spec.crosstabs[crosstab_name]
                 issues = _report_on_crosstab(
                     crosstab_name,
-                    crosstab,
                     model_spec,
                     model_index,
-                    dataset_cache,
+                    model_meta,
                 )
                 crosstab_issues[crosstab_name] = issues
         p()
@@ -242,20 +236,17 @@ def _report_on_entity(
     with details():
         summary(entity_name)
         with div(id=f'ENTITY_{entity_name}'):
-            summary_dict: Dict[str, Any] = ({
+            dict_table({
                 'ID field name': entity.id_field_name,
                 'Count field name': entity.count_field_name,
             })
-            if entity.parent is None:
-                summary_dict.update({
-                    'Parent': None,
+
+            with details():
+                summary(f'Foreign keys ({len(entity.foreign_key_fields)})')
+                dict_table({
+                    foreign_key_field.foreign_key_field_name: _entity_link(foreign_key_field.foreign_entity)
+                    for foreign_key_field in entity.foreign_key_fields
                 })
-            else:
-                summary_dict.update({
-                    'Parent': _entity_link(entity.parent),
-                    'Foreign field name': entity.foreign_field_name,
-                })
-            dict_table(summary_dict)
 
             with details():
                 summary(f'Fields ({len(entity.fields)})')
@@ -541,10 +532,9 @@ def _report_on_dataset_spec_csv(dataset_spec: DatasetSpecCsv) -> None:
 
 def _report_on_crosstab(
         crosstab_name: str,
-        crosstab: ModelCrosstabSpec,
         model_spec: ModelSpec,
         model_index: ModelIndex,
-        dataset_cache: DatasetCache,
+        model_meta: ModelMeta,
 ) -> List[str]:
     """
     Use `dominate` to make a report on the given crosstab.
@@ -552,16 +542,15 @@ def _report_on_crosstab(
     analyse the cross-table data.
     A list of issues is returned.
     """
+    crosstab_spec: ModelCrosstabSpec = model_spec.crosstabs[crosstab_name]
     crosstab_index: CrosstabIndex = model_index.crosstabs[crosstab_name]
+    crosstab_meta: CrosstabMeta = model_meta.crosstabs[crosstab_name]
 
-    num_states: int = crosstab_index.number_of_states
-    datasource_name: str = crosstab.datasource
+    num_states: int = crosstab_meta.number_of_states
+    datasource_name: str = crosstab_index.datasource
     sensitivity: float = model_spec.datasources[datasource_name].sensitivity
-    min_cell_size: float = crosstab.min_cell_size
-    epsilon: float = 0 if sensitivity == 0 else crosstab.epsilon
-
-    crosstab_data: pd.DataFrame = dataset_cache[datasource_name].crosstab(crosstab.rvs)
-    weights: pd.Series = crosstab_data.iloc[:, -1]
+    min_cell_size: float = crosstab_spec.min_cell_size
+    epsilon: float = crosstab_spec.epsilon
 
     crosstab_summary: Dict[str, Any] = {
         'Datasource': _datasource_link(datasource_name),
@@ -570,138 +559,42 @@ def _report_on_crosstab(
         'Min cell size': clean_num(min_cell_size),
         'State space size': f'{num_states:,}',
 
-        'Clean number of rows': clean_num(crosstab_index.clean_num_rows),
-        'Clean number of suppressed rows': clean_num(crosstab_index.clean_num_suppressed),
-        'Clean min weight': clean_num(crosstab_index.clean_min_weight),
-        'Clean max weight': clean_num(crosstab_index.clean_max_weight),
-        'Clean total weight': clean_num(crosstab_index.clean_total_weight),
+        'Clean number of rows': clean_num(crosstab_meta.clean_num_rows),
+        'Clean number of suppressed rows': clean_num(crosstab_meta.clean_num_suppressed),
+        'Clean min weight': clean_num(crosstab_meta.clean_min_weight),
+        'Clean max weight': clean_num(crosstab_meta.clean_max_weight),
+        'Clean total weight': clean_num(crosstab_meta.clean_total_weight),
 
-        'Lost rows': clean_num(crosstab_index.rows_lost),
-        'Added rows': clean_num(crosstab_index.rows_added),
-        'Final rows': clean_num(crosstab_index.noisy_num_rows),
-        'Final number of suppressed rows': clean_num(crosstab_index.noisy_num_suppressed),
-        'Final min weight': clean_num(crosstab_index.noisy_min_weight),
-        'Final max weight': clean_num(crosstab_index.noisy_max_weight),
-        'Final total weight': clean_num(crosstab_index.noisy_total_weight),
+        'Lost rows': clean_num(crosstab_meta.rows_lost),
+        'Added rows': clean_num(crosstab_meta.rows_added),
+        'Final rows': clean_num(crosstab_meta.noisy_num_rows),
+        'Final number of suppressed rows': clean_num(crosstab_meta.noisy_num_suppressed),
+        'Final min weight': clean_num(crosstab_meta.noisy_min_weight),
+        'Final max weight': clean_num(crosstab_meta.noisy_max_weight),
+        'Final total weight': clean_num(crosstab_meta.noisy_total_weight),
     }
 
     issues = []
-    recommendations = []
-
-    # Multiple condition tables are an issue as adjusting cross-table
-    # weights may distort previous condition adjustments made to the
-    # cross-table.
-    #
-    # This issue may be improved by restructuring the datasources.
-    #
-    # if len(crosstab.conditions) > 1:
-    #     condition_names = ', '.join(repr(cond.crosstab.name) for cond in crosstab.conditions)
-    #     issues.append(f'multiple conditioning cross-tables: {condition_names}')
-
-    # Unsatisfied condition rvs are rvs of datasources that are
-    # inferred as condition rv but are not available as a distribution
-    # rv in any other cross-table.
-    #
-    # Not having these rvs available as a distribution rv in some other cross-table
-    # means this cross-table may have reduced accuracy for the joint
-    # distribution over the cross-table rvs.
-    #
-    # This issue can normally be rectified by adding new cross-tables
-    # to cover the necessary distribution rvs.
-    #
-    # if len(crosstab.unsatisfied_condition_rvs) > 0:
-    #     rv_names = ', '.join(rv.name for rv in crosstab.unsatisfied_condition_rvs)
-    #     issues.append(f'unsatisfied condition rvs: {rv_names}')
-
-    # An unused condition rv is a rv mentioned as a condition rv in a
-    # datasource of the cross-table, but is not in the cross-table.
-    #
-    # This represents a potential opportunity to grow the scope of the cross-table.
-    #
-    # if len(crosstab.unused_condition_rvs) > 0:
-    #     rv_names = ', '.join(rv.name for rv in crosstab.unused_condition_rvs)
-    #     issues.append(f'unused condition rvs: {rv_names}')
-
     # Report cross-tables where the addition of Laplace noise and min cell size
     # causes many rows to be created or lost.
-    #
-
-    if sensitivity > 0 or min_cell_size > 0:
-        num_rows: int = crosstab_index.noisy_num_rows
-        num_suppressed: int = num_states - num_rows
-        total_weight: float = crosstab_index.noisy_total_weight
-
-        threshold = 0.5  # Lost rows and lost weight proportion threshold
-
-        # Analyse potential new rows introduced by adding noise to suppressed rows
-        recommended_min_cell_size_add_rows = 0
-        if sensitivity > 0:
-            alpha = 0.5 * math.exp(-min_cell_size * sensitivity / epsilon)
-            expected_new_rows = math.ceil(num_suppressed * alpha)
-            # Can never add more rows than is suppressed
-            expected_new_rows = min(expected_new_rows, num_suppressed)
-
-            if num_rows > 0 and num_suppressed > 0:
-                recommended_min_cell_size_add_rows = recommended_min_cell_size(
-                    epsilon,
-                    sensitivity,
-                    num_suppressed,
-                    target_rows=num_rows
-                )
-
-            new_rows_percent = int(expected_new_rows / num_rows * 100 + 0.5)
-            crosstab_summary.update({
-                'Alpha': clean_num(alpha),
-                'Expected new rows': f'{clean_num(expected_new_rows)} ({new_rows_percent}%)',
-
-            })
-            recommendations.append(f'minimum min-cell-size: {clean_num(recommended_min_cell_size_add_rows)}')
-            if expected_new_rows > num_rows:
-                issues.append('high expected new rows')
-
-        # Analyse potential lost rows
-        if min_cell_size > 0:
-            # TODO: These expectations are not right because it neglects injected noise
-            #  which can cause a weight to drop below min_cell_size.
-            lost_rows = weights[weights < min_cell_size]
-            expected_lost_rows = lost_rows.count()
-            expected_lost_weight = lost_rows.sum()
-
-            # The proportion of rows lost will always be higher than the proportion of weight lost.
-
-            # Work out the min cell size that leads to the threshold being met
-            row_threshold = num_rows * threshold
-            sorted_weights = weights.sort_values()
-            recommended_min_cell_size_lost_rows = 0
-            accumulated = 0
-            for w in sorted_weights:
-                accumulated += 1
-                if accumulated >= row_threshold:
-                    break
-                recommended_min_cell_size_lost_rows = w
-
-            row_loss_percent = int(expected_lost_rows / num_rows * 100 + 0.5)
-            weight_loss_percent = int(expected_lost_weight / total_weight * 100 + 0.5)
-            crosstab_summary.update({
-                'Expected lost rows': f'{clean_num(expected_lost_rows)} ({row_loss_percent}%)',
-                'Expected lost weight': f'{clean_num(expected_lost_weight)} ({weight_loss_percent}%)',
-            })
-            recommendations.append(f'maximum min-cell-size: {clean_num(recommended_min_cell_size_lost_rows)}')
-
-            if expected_lost_rows / num_rows > threshold:
-                issues.append('high expected lost rows')
-
-            if recommended_min_cell_size_lost_rows < recommended_min_cell_size_add_rows:
-                issues.append(
-                    f'no suitable min-cell-size: '
-                    f'recommended maximum (for lost rows) = {clean_num(recommended_min_cell_size_lost_rows)}, '
-                    f'recommended minimum (for added rows) = {clean_num(recommended_min_cell_size_add_rows)}'
-                )
+    threshold: float = 0.5  # lost or added rows proportion threshold
+    proportion_added: float = crosstab_meta.rows_added / crosstab_meta.clean_num_rows
+    proportion_lost: float = crosstab_meta.rows_lost / crosstab_meta.clean_num_rows
+    if proportion_added > threshold:
+        issues.append(f'high proportion of added rows ({proportion_added})')
+    if proportion_lost > threshold:
+        issues.append(f'high proportion of lost rows ({proportion_lost})')
+    if crosstab_meta.noisy_num_rows <= 1:
+        issues.append(f'low data volume ({crosstab_meta.noisy_num_rows})')
+    if epsilon > 0 and sensitivity == 0:
+        issues.append(
+            f'cross-table has epsilon = {epsilon} but datasource {datasource_name!r} has sensitivity = 0'
+        )
 
     with details():
         summary(crosstab_name)
         with div(id=f'CROSSTAB_{crosstab_name}'):
-            noiser: NoiserSpec = crosstab.noiser
+            noiser: NoiserSpec = crosstab_spec.noiser
             if isinstance(noiser, NoiserSpecBasicLaplace):
                 crosstab_summary.update({
                     'Noiser': noiser.type,
@@ -716,17 +609,12 @@ def _report_on_crosstab(
                         'Max add rows': noiser.max_add_rows,
                     })
 
-            _link_to_rvs('Random variables', crosstab.rvs)
+            _link_to_rvs('Random variables', crosstab_spec.rvs)
 
             with details(open=(len(issues) > 0)):
                 summary(f'Issues ({len(issues)})')
                 for issue in issues:
                     p(issue)
-
-            with details():
-                summary(f'Recommendations ({len(recommendations)})')
-                for recommendation in recommendations:
-                    p(recommendation)
 
     return issues
 

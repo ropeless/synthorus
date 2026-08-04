@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Set
+from itertools import chain
+from typing import Dict, List, Set
 
 from ck.pgm import State
 from pydantic import BaseModel
+
+from synthorus.model.model_spec import ModelEntitySpec
 
 
 class ModelIndex(BaseModel):
@@ -18,13 +21,14 @@ class ModelIndex(BaseModel):
     crosstabs: Dict[str, CrosstabIndex] = {}
     entities: Dict[str, EntityIndex] = {}
 
+    # copied from `ModelSpec`
+    parameters: Dict[str, State]
+
 
 class RVIndex(BaseModel):
     """
     A random variable in a ModelIndex.
     """
-    name: str  # The name of the random variable
-
     states: List[State]  # The states of the random variable (in order).
 
     primary_datasource: str
@@ -37,59 +41,57 @@ class CrosstabIndex(BaseModel):
     """
     A cross-table in a ModelIndex.
     """
-    name: str  # The name of the cross-table
-
     rvs: List[str]  # The random variables of the cross-table.
+    number_of_states: int  # The number of all possible states.
     non_distribution_rvs: List[str]  # The rvs that should _not_ be considered as providing a distribution
     distribution_rvs: List[str]  # The rvs that should be considered as providing a distribution
     datasource: str  # The covering dataset for the cross-table
-    number_of_states: int  # The total number of possible states of the cross-table
-
-    # Cross-table statistics, before noise is added
-    clean_num_rows: int
-    clean_min_weight: float
-    clean_max_weight: float
-    clean_total_weight: float
-
-    # Cross-table statistics, after noise is added
-    noisy_num_rows: int
-    noisy_min_weight: float
-    noisy_max_weight: float
-    noisy_total_weight: float
-    rows_lost: int
-    rows_added: int
-
-    @property
-    def clean_num_suppressed(self) -> int:
-        return self.number_of_states - self.clean_num_rows
-
-    @property
-    def noisy_num_suppressed(self) -> int:
-        return self.number_of_states - self.noisy_num_rows
 
 
 class EntityIndex(BaseModel):
     """
     An entity in a ModelIndex.
     """
-    name: str  # The name of the entity
-
-    parent: Optional[str]  # The parent entity.
-    sampled_fields: Dict[str, str]  # mapping field name -> random variable name
     entity_crosstabs: List[EntityCrosstabIndex]  # What cross-tables relate to this entity.
+    ancestors: List[str]  # What entities are ancestors of this entity
     ancestor_conditions: List[AncestorConditionsIndex]  # what ancestor entities cover `condition_rvs`
+    children: List[str]  # What entities have a foreign key to this entity
+    model_entity: ModelEntitySpec
 
     def sample_rvs(self) -> Set[str]:
-        return set(self.sampled_fields.values())
-
-    def ancestor_rvs(self) -> Set[str]:
-        return {i.rv for i in self.ancestor_conditions}
+        """
+        Returns:
+            The set of random variables sampled to set sampled fields.
+        """
+        return set(
+            field.rv_name
+            for _, field in self.model_entity.sampled_fields()
+        )
 
     def condition_rvs(self) -> Set[str]:
-        result = set()
-        for crosstab in self.entity_crosstabs:
-            result.update(crosstab.condition_rvs)
-        return result
+        """
+        Returns:
+            The set of random variables mentioned in cross-tables for this entity, but not in `sample_rvs`.
+        """
+        return set(chain(
+            *(crosstab.condition_rvs for crosstab in self.entity_crosstabs)
+        ))
+
+    def ancestor_rvs(self) -> Set[str]:
+        """
+        Returns:
+            The set of random variables that ancestors will condition, i.e.,
+            `condition_rvs` that are provided by ancestors.
+        """
+        return {i.rv for i in self.ancestor_conditions}
+
+    def unused_condition_rvs(self) -> Set[str]:
+        """
+        Returns:
+            The set of random variables that ancestors can't condition, i.e.,
+            `condition_rvs` that are _not_ provided by ancestors.
+        """
+        return self.condition_rvs().difference(self.ancestor_rvs())
 
 
 class EntityCrosstabIndex(BaseModel):

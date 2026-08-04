@@ -41,7 +41,7 @@ class OdbcDataset(Dataset):
             self,
             table_name: str,
             *,
-            connection_params: Optional[Dict[str, Optional[str]]] = None,
+            connection_params: Optional[Dict[str, Optional[str | int]]] = None,
             column_names: Optional[Iterable[str]] = None,
             schema_name: Optional[str] = None,
     ):
@@ -108,7 +108,7 @@ class OdbcDataset(Dataset):
         return query(self._connection, sql, variables)
 
     @staticmethod
-    def _get_connection(connection_params: Optional[Dict[str, Optional[str]]]):
+    def _get_connection(connection_params: Optional[Dict[str, Optional[str | int]]]):
         """
         Args:
             connection_params: a dictionary with entries PARAMETER:value for the connection string. If a value

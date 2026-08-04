@@ -1,14 +1,15 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Mapping, Any
 
 from synthorus.error import SynthorusError
 from synthorus.utils.config_help import config
 
 
 def resolve_connection(
-        connection_params: Optional[Dict[str, Optional[str]]],
+        connection_params: Optional[Dict[str, Optional[str | int]]],
         *,
         prefix: str = 'DB_',
         connection_config: str = 'DB_CONNECTION',
+        env: Mapping[str, Any] = config,
 ) -> Dict[str, str]:
     """
     Use local configuration (`config_help`) to resolve the value of
@@ -20,21 +21,22 @@ def resolve_connection(
         connection_params: A dictionary.
         prefix: the prefix to use to identify a local configuration variable from a dictionary key.
         connection_config: the config variable to use if connection_params is `None`.
+        env: the local config environment, default is `config_help.config`.
 
     Returns:
         A dictionary with no value `None`.
     """
     if connection_params is None:
-        connection_params = config.get(connection_config)
+        connection_params = env.get(connection_config)
         if connection_params is None:
             raise SynthorusError(f'cannot resolve connection parameter: {connection_config!r}')
 
     filtered_connection_params: Dict[str, str] = {}
     for param, value in connection_params.items():
         if value is not None:
-            filtered_connection_params[param] = value
+            filtered_connection_params[param] = str(value)
         else:
-            value = config.get(f'{prefix}{param}')
+            value = env.get(f'{prefix}{param}')
             if value is not None:
                 filtered_connection_params[param] = str(value)
             else:

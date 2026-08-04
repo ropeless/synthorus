@@ -8,11 +8,9 @@ __author__ = 'Barry Drake'
 from synthorus.spec_file.keys import *
 
 spec = {
-    sensitivity: 0,          # for all datasources
     data_format: csv,        # for all datasources
     weight: -1,              # for all datasources
     states: infer_distinct,  # for all rvs
-    min_cell_size: 0,        # for all cross-tables
 
     datasources: {
         'patient_age__event_type': {
@@ -81,7 +79,7 @@ spec = {
                     sum: ['time', 'event_duration', 'event_duration_since_last']
                 },
             },
-            parent: 'patient',
+            foreign_keys: 'patient',
             cardinality: [
                 {field: 'time', limit: 'time_limit'},
                 {field: 'event_type', state: 'DEATH'},

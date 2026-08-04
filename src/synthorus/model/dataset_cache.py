@@ -1,12 +1,10 @@
-from importlib.abc import Traversable
-from os import PathLike
 from pathlib import Path
-from typing import Mapping, Optional, Dict, Sequence, Iterable, List, Iterator
+from typing import Mapping, Optional, Dict, Sequence, List, Iterator, KeysView
 
 from synthorus.dataset import Dataset
-from synthorus.error import SynthorusError
 from synthorus.model.datasource_spec import DatasourceSpec
 from synthorus.model.model_spec import ModelSpec
+from synthorus.utils.file_extras import DataPathLike, DataPath
 
 
 class DatasetCache(Mapping[str, Dataset]):
@@ -14,24 +12,33 @@ class DatasetCache(Mapping[str, Dataset]):
     Keeps track of all datasets loaded for a model spec.
     """
 
-    def __init__(self, model_spec: ModelSpec, cwd: Optional[PathLike | Traversable]):
+    def __init__(self, model_spec: ModelSpec, cwd: Optional[DataPathLike]):
         """
         Args:
             model_spec: the model datasources and roots.
             cwd: Optional working directory to use for resolving relative roots.
         """
         self._model_spec = model_spec
-        self._roots: Sequence[Path | Traversable] = tuple(interpret_roots(model_spec.roots, cwd))
+        self._roots: Sequence[DataPath] = tuple(interpret_roots(model_spec.roots, cwd))
         self._datasets: Dict[str, Dataset] = {}
 
     @property
-    def roots(self) -> Sequence[Path | Traversable]:
+    def roots(self) -> Sequence[DataPath]:
+        """
+        Directories that will be searched when looking for on-file datasets.
+        """
         return self._roots
 
-    def loaded_keys(self) -> Iterable[str]:
+    def loaded_keys(self) -> KeysView[str]:
+        """
+        Names of all datasets loaded by this `DatasetCache`.
+        """
         return self._datasets.keys()
 
-    def keys(self) -> Iterable[str]:
+    def keys(self) -> KeysView[str]:
+        """
+        Names of all datasets known by this `DatasetCache`, whether loaded or not.
+        """
         return self._model_spec.datasources.keys()
 
     def __getitem__(self, key: str, /) -> Dataset:
@@ -50,7 +57,7 @@ class DatasetCache(Mapping[str, Dataset]):
         return iter(self._model_spec.datasources)
 
 
-def interpret_roots(roots: List[str], cwd: Optional[PathLike | Traversable]) -> List[Traversable | Path]:
+def interpret_roots(roots: List[str], cwd: Optional[DataPathLike]) -> List[DataPath]:
     """
     Return a list of Path objects defining the root directories
     to search for datasource files.
@@ -69,10 +76,10 @@ def interpret_roots(roots: List[str], cwd: Optional[PathLike | Traversable]) -> 
     if len(roots) == 0:
         if cwd is None:
             return []
-        elif isinstance(cwd, (Traversable, Path)):
-            return [cwd]
-        else:
+        elif isinstance(cwd, str):
             return [Path(cwd)]
+        else:
+            return [cwd]
 
     roots_paths = [Path(root) for root in roots]
 

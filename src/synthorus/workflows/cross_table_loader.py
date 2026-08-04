@@ -3,11 +3,13 @@ from typing import Dict
 
 import pandas as pd
 
+from synthorus.error import SynthorusError
+
 
 def save_cross_table(dataframe: pd.DataFrame, directory: Path, cross_table_name: str) -> None:
     """
     Save a cross-table to a directory, which can latter be
-    loaded using load_cross_table or CrossTableLoader.
+    loaded using `load_cross_table` or `CrossTableLoader`.
 
     Args:
         dataframe: The cross-table data.
@@ -27,7 +29,9 @@ def load_cross_table(directory: Path, cross_table_name: str) -> pd.DataFrame:
         cross_table_name: name of the cross-table.
     """
     file_path: Path = directory / (cross_table_name + '.pkl')
-    dataframe: pd.DataFrame = pd.read_pickle(file_path)
+    dataframe = pd.read_pickle(file_path)
+    if not isinstance(dataframe, pd.DataFrame):
+        raise SynthorusError(f'unexpected pickled cross-table {cross_table_name!r} type: {type(dataframe)}')
     return dataframe
 
 
@@ -38,7 +42,7 @@ class CrossTableLoader:
 
     def __init__(self, directory: Path, keep_loaded: bool):
         """
-        Save a cross-table to a directory, which can latter be loaded using CrossTableLoader.
+        Save a cross-table to a directory, which can latter be loaded using `CrossTableLoader`.
 
         Args:
             directory: where to load the cross-tables.

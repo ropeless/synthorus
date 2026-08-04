@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Dict, Annotated, Union, Literal, Optional, TypeAlias, Self, Iterator, Tuple, Set
+from typing import List, Dict, Annotated, Union, Literal, TypeAlias, Self, Iterator, Tuple, Set, Iterable
 
 from ck.pgm import State
-from pydantic import BaseModel, Field, field_validator, PositiveInt, model_validator, PositiveFloat, NonNegativeFloat
+from pydantic import BaseModel, Field, field_validator, PositiveInt, model_validator, NonNegativeFloat
 
 from synthorus.model.datasource_spec import DatasourceSpec
 from synthorus.model.defaults import DEFAULT_ID_FIELD, DEFAULT_COUNT_FIELD, DEFAULT_NAME, DEFAULT_AUTHOR, \
@@ -84,9 +84,17 @@ class ModelSpec(BaseModel):
                 raise ValueError('entity name cannot be the empty string')
 
         # Ensure each cross-table rvs matches datasources.
+        # Ensure that cross-table epsilon is non-zero if datasource sensitivity is non-zero.
         for crosstab_name, crosstab_spec in self.crosstabs.items():
             datasource_name: str = crosstab_spec.datasource
             datasource: DatasourceSpec = self.datasources[datasource_name]
+
+            if datasource.sensitivity > 0 and crosstab_spec.epsilon == 0:
+                raise ValueError(
+                    f'cross-table {crosstab_name!r} has epsilon = 0 '
+                    f'but datasource {datasource_name!r} has sensitivity = {datasource.sensitivity}'
+                )
+
             rv_name: str
             for rv_name in crosstab_spec.rvs:
                 if rv_name not in datasource.rvs:
@@ -103,14 +111,6 @@ class ModelSpec(BaseModel):
                         f' from datasource {datasource_name!r}'
                     )
 
-        # Ensure entity hierarchy has no loop
-        for entity_name, entity_spec in self.entities.items():
-            parent: Optional[str] = entity_spec.parent
-            while parent is not None:
-                if parent == entity_name:
-                    raise ValueError(f'entity loop detected: {entity_name}')
-                parent = self.entities.get(parent).parent
-
         return self
 
 
@@ -124,8 +124,8 @@ class ModelRVSpec(BaseModel):
 
 class ModelCrosstabSpec(BaseModel):
     rvs: List[str]
-    datasource: str  # The datasource to used to create this cross-table
-    epsilon: PositiveFloat = DEFAULT_EPSILON
+    datasource: str  # The datasource to use to create this cross-table
+    epsilon: NonNegativeFloat = DEFAULT_EPSILON
     min_cell_size: NonNegativeFloat = DEFAULT_MIN_CELL_SIZE
     noiser: NoiserSpec = NoiserSpecLaplace(max_add_rows=DEFAULT_MAX_ADD_ROWS)
 
@@ -139,13 +139,23 @@ class ModelCrosstabSpec(BaseModel):
         return self
 
 
+class ForeignKeyField(BaseModel):
+    """
+    A ForeignKeyField records a foreign key that references the primary key of another entity.
+    If entities x and y are in a one-to-many relationship, then entity y
+    keeps a ForeignKeyField reference to entity x. Practically, this
+    records the fact that entity y will have a foreign key to entity x.
+    """
+    foreign_key_field_name: str  # name of field holding ID for the dependency entity
+    foreign_entity: str  # name of the entity being referenced
+
+
 class ModelEntitySpec(BaseModel):
     id_field_name: str = DEFAULT_ID_FIELD  # name of field holding row ID for the entity
     count_field_name: str = DEFAULT_COUNT_FIELD  # name of field holding row count for the entity
-    foreign_field_name: Optional[str] = None  # name of field holding row ID for the _parent_ entity
+    foreign_key_fields: List[ForeignKeyField] = []
     fields: Dict[str, ModelFieldSpec] = {}
     cardinality: List[ConditionSpec] = []
-    parent: Optional[str] = None  # parent entity (default is None)
 
     def sampled_fields(self) -> Iterator[Tuple[str, ModelFieldSpecSample]]:
         """
@@ -160,28 +170,72 @@ class ModelEntitySpec(BaseModel):
 
     @model_validator(mode='after')
     def validate_model(self) -> Self:
-        if (self.parent is None) != (self.foreign_field_name is None):
-            raise ValueError(f'foreign field name required if and only if the entity has a parent')
-
-        if self.id_field_name in self.fields:
-            raise ValueError(f'id field name cannot be an explicit field: {self.id_field_name!r}')
-        if self.count_field_name in self.fields:
-            raise ValueError(f'count field name cannot be an explicit field: {self.count_field_name!r}')
-        if self.foreign_field_name in self.fields:
-            raise ValueError(f'foreign field name cannot be an explicit field: {self.foreign_field_name!r}')
-
-        if len({self.count_field_name, self.id_field_name, self.foreign_field_name}) != 3:
-            raise ValueError(f'count, id and foreign field names must be different')
-
-        all_fields = list(self.fields.keys()) + [self.id_field_name, self.count_field_name]
-        if self.foreign_field_name is not None:
-            all_fields.append(self.foreign_field_name)
-
-        for field_name in all_fields:
-            if field_name == '':
-                raise ValueError('field name cannot be the empty string')
-
+        self.check_fields()
         return self
+
+    def check_fields(self) -> None:
+        """
+        Raises:
+            ValueError: if the fields are not unique
+        """
+        check_fields(
+            self.id_field_name,
+            self.count_field_name,
+            self.foreign_key_fields,
+            self.fields.keys(),
+        )
+
+
+def check_fields(
+        id_field_name: str,
+        count_field_name: str,
+        foreign_key_fields: List[ForeignKeyField],
+        other_field_names: Iterable[str],
+) -> None:
+    """
+    Check field names and foreign entity names are unique and valid names.
+
+    Raises:
+        ValueError: if the fields are inconsistent
+    """
+    # foreign field names must be unique
+    foreign_key_field_names: Set[str] = {dependency.foreign_key_field_name for dependency in foreign_key_fields}
+    if len(foreign_key_field_names) != len(foreign_key_fields):
+        raise ValueError(f'foreign key field names are not unique')
+
+    # foreign entities must be unique
+    foreign_entity_names: Set[str] = {dependency.foreign_entity for dependency in foreign_key_fields}
+    if len(foreign_entity_names) != len(foreign_key_fields):
+        raise ValueError(f'foreign entity names are not unique')
+
+    other_field_names: Set[str] = set(other_field_names)
+
+    # foreign key field names must be different to the explicit file names
+    for foreign_field_name in foreign_key_field_names:
+        if foreign_field_name in other_field_names:
+            raise ValueError(f'foreign field name cannot be the same as an explicit field: {foreign_field_name!r}')
+
+    # id and count fields must be different to each other
+    if count_field_name == id_field_name:
+        raise ValueError(f'count and id field names must be different')
+
+    # id and count fields must be different to foreign fields and explicit fields
+    all_fields: Set[str] = foreign_key_field_names.union(other_field_names)
+    if id_field_name in all_fields:
+        raise ValueError(
+            f'id field name cannot be the same as an explicit or foreign field: {id_field_name!r}'
+        )
+    if count_field_name in all_fields:
+        raise ValueError(
+            f'count field name cannot be the same as an explicit or foreign field: {id_field_name!r}'
+        )
+
+    # no field can be the empty string
+    all_fields.add(id_field_name)
+    all_fields.add(count_field_name)
+    for field_name in all_fields:
+        if field_name == '':
+            raise ValueError('field name cannot be the empty string')
 
 
 class ModelFieldSpecSample(BaseModel):

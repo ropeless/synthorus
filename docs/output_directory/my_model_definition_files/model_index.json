@@ -1,7 +1,6 @@
 {
   "rvs": {
-    "Y": {
-      "name": "Y",
+    "X": {
       "states": [
         "n",
         "y"
@@ -11,14 +10,13 @@
         "xyz"
       ],
       "all_distribution_crosstabs": [
-        "_Y"
+        "_X_"
       ],
       "all_sampling_entities": [
         "_default_entity_"
       ]
     },
-    "X": {
-      "name": "X",
+    "Y": {
       "states": [
         "n",
         "y"
@@ -28,14 +26,13 @@
         "xyz"
       ],
       "all_distribution_crosstabs": [
-        "_X"
+        "_Y_"
       ],
       "all_sampling_entities": [
         "_default_entity_"
       ]
     },
     "Z": {
-      "name": "Z",
       "states": [
         "n",
         "y"
@@ -45,7 +42,7 @@
         "xyz"
       ],
       "all_distribution_crosstabs": [
-        "_Z"
+        "_Z_"
       ],
       "all_sampling_entities": [
         "_default_entity_"
@@ -53,93 +50,45 @@
     }
   },
   "crosstabs": {
-    "_Y": {
-      "name": "_Y",
-      "rvs": [
-        "Y"
-      ],
-      "non_distribution_rvs": [],
-      "distribution_rvs": [
-        "Y"
-      ],
-      "datasource": "xyz",
-      "number_of_states": 2,
-      "clean_num_rows": 2,
-      "clean_min_weight": 4.0,
-      "clean_max_weight": 4.0,
-      "clean_total_weight": 8.0,
-      "noisy_num_rows": 2,
-      "noisy_min_weight": 4.0,
-      "noisy_max_weight": 4.0,
-      "noisy_total_weight": 8.0,
-      "rows_lost": 0,
-      "rows_added": 0
-    },
-    "_X": {
-      "name": "_X",
+    "_X_": {
       "rvs": [
         "X"
       ],
+      "number_of_states": 2,
       "non_distribution_rvs": [],
       "distribution_rvs": [
         "X"
       ],
-      "datasource": "xyz",
-      "number_of_states": 2,
-      "clean_num_rows": 2,
-      "clean_min_weight": 4.0,
-      "clean_max_weight": 4.0,
-      "clean_total_weight": 8.0,
-      "noisy_num_rows": 2,
-      "noisy_min_weight": 4.0,
-      "noisy_max_weight": 4.0,
-      "noisy_total_weight": 8.0,
-      "rows_lost": 0,
-      "rows_added": 0
+      "datasource": "xyz"
     },
-    "_Z": {
-      "name": "_Z",
+    "_Y_": {
+      "rvs": [
+        "Y"
+      ],
+      "number_of_states": 2,
+      "non_distribution_rvs": [],
+      "distribution_rvs": [
+        "Y"
+      ],
+      "datasource": "xyz"
+    },
+    "_Z_": {
       "rvs": [
         "Z"
       ],
+      "number_of_states": 2,
       "non_distribution_rvs": [],
       "distribution_rvs": [
         "Z"
       ],
-      "datasource": "xyz",
-      "number_of_states": 2,
-      "clean_num_rows": 2,
-      "clean_min_weight": 4.0,
-      "clean_max_weight": 4.0,
-      "clean_total_weight": 8.0,
-      "noisy_num_rows": 2,
-      "noisy_min_weight": 4.0,
-      "noisy_max_weight": 4.0,
-      "noisy_total_weight": 8.0,
-      "rows_lost": 0,
-      "rows_added": 0
+      "datasource": "xyz"
     }
   },
   "entities": {
     "_default_entity_": {
-      "name": "_default_entity_",
-      "parent": null,
-      "sampled_fields": {
-        "Y": "Y",
-        "X": "X",
-        "Z": "Z"
-      },
       "entity_crosstabs": [
         {
-          "crosstab": "_Y",
-          "sampled_rvs": [
-            "Y"
-          ],
-          "condition_rvs": [],
-          "non_distribution_rvs": []
-        },
-        {
-          "crosstab": "_Z",
+          "crosstab": "_Z_",
           "sampled_rvs": [
             "Z"
           ],
@@ -147,15 +96,46 @@
           "non_distribution_rvs": []
         },
         {
-          "crosstab": "_X",
+          "crosstab": "_X_",
           "sampled_rvs": [
             "X"
           ],
           "condition_rvs": [],
           "non_distribution_rvs": []
+        },
+        {
+          "crosstab": "_Y_",
+          "sampled_rvs": [
+            "Y"
+          ],
+          "condition_rvs": [],
+          "non_distribution_rvs": []
         }
       ],
-      "ancestor_conditions": []
+      "ancestors": [],
+      "ancestor_conditions": [],
+      "children": [],
+      "model_entity": {
+        "id_field_name": "_id_",
+        "count_field_name": "_count_",
+        "foreign_key_fields": [],
+        "fields": {
+          "X": {
+            "type": "sample",
+            "rv_name": "X"
+          },
+          "Y": {
+            "type": "sample",
+            "rv_name": "Y"
+          },
+          "Z": {
+            "type": "sample",
+            "rv_name": "Z"
+          }
+        },
+        "cardinality": []
+      }
     }
-  }
+  },
+  "parameters": {}
 }

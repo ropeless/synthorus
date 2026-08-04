@@ -24,5 +24,5 @@ All DatasetSpec classes inherit pydantic BaseModel and all
 have these members:
     type: Literal[...]
     name: str
-    def dataset(self, roots: Sequence[Path | Traversable] = ()) -> Dataset
+    def dataset(self, roots: Sequence[DataPath] = ()) -> Dataset
 """

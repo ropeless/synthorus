@@ -12,7 +12,6 @@ spec = {
     author: 'B. Drake',
 
     rng_n: 6,
-    min_cell_size: 0,
     epsilon: 0.1,
 
     datasources: {

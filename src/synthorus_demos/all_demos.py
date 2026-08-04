@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from subprocess import call
 
-from synthorus_demos.utils.stop_watch import StopWatch
+from synthorus.utils.stop_watch import StopWatch
 
 DEMO_TOP_DIR = '.'  # relative to the directory this script is in
 

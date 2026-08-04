@@ -1,0 +1,107 @@
+{
+  "rvs": {
+    "event_duration_since_last": {
+      "name": "event_duration_since_last",
+      "clean_distribution": {
+        "1": 0.01,
+        "2": 0.02,
+        "3": 0.04,
+        "4": 0.08,
+        "5": 0.16,
+        "6": 0.32,
+        "7": 0.64,
+        "8": 1.28,
+        "9": 2.56
+      }
+    },
+    "patient_age": {
+      "name": "patient_age",
+      "clean_distribution": {
+        "middle_aged": 48.0,
+        "old": 30.0,
+        "young": 30.0
+      }
+    },
+    "event_duration": {
+      "name": "event_duration",
+      "clean_distribution": {
+        "1": 2.56,
+        "2": 1.28,
+        "3": 0.64,
+        "4": 0.32,
+        "5": 0.16,
+        "6": 0.08,
+        "7": 0.04,
+        "8": 0.02,
+        "9": 0.01
+      }
+    },
+    "event_type": {
+      "name": "event_type",
+      "clean_distribution": {
+        "AP": 9.0,
+        "DEATH": 3.0,
+        "ED": 33.0,
+        "GP": 63.0
+      }
+    }
+  },
+  "crosstabs": {
+    "_event_duration_since_last_": {
+      "name": "_event_duration_since_last_",
+      "number_of_states": 9,
+      "clean_num_rows": 9,
+      "clean_min_weight": 0.01,
+      "clean_max_weight": 2.56,
+      "clean_total_weight": 5.109999999999999,
+      "noisy_num_rows": 9,
+      "noisy_min_weight": 0.01,
+      "noisy_max_weight": 2.56,
+      "noisy_total_weight": 5.109999999999999,
+      "rows_lost": 0,
+      "rows_added": 0
+    },
+    "_patient_age_": {
+      "name": "_patient_age_",
+      "number_of_states": 3,
+      "clean_num_rows": 3,
+      "clean_min_weight": 30.0,
+      "clean_max_weight": 48.0,
+      "clean_total_weight": 108.0,
+      "noisy_num_rows": 3,
+      "noisy_min_weight": 30.0,
+      "noisy_max_weight": 48.0,
+      "noisy_total_weight": 108.0,
+      "rows_lost": 0,
+      "rows_added": 0
+    },
+    "_event_duration_": {
+      "name": "_event_duration_",
+      "number_of_states": 9,
+      "clean_num_rows": 9,
+      "clean_min_weight": 0.01,
+      "clean_max_weight": 2.56,
+      "clean_total_weight": 5.109999999999999,
+      "noisy_num_rows": 9,
+      "noisy_min_weight": 0.01,
+      "noisy_max_weight": 2.56,
+      "noisy_total_weight": 5.109999999999999,
+      "rows_lost": 0,
+      "rows_added": 0
+    },
+    "_event_type_": {
+      "name": "_event_type_",
+      "number_of_states": 4,
+      "clean_num_rows": 4,
+      "clean_min_weight": 3.0,
+      "clean_max_weight": 63.0,
+      "clean_total_weight": 108.0,
+      "noisy_num_rows": 4,
+      "noisy_min_weight": 3.0,
+      "noisy_max_weight": 63.0,
+      "noisy_total_weight": 108.0,
+      "rows_lost": 0,
+      "rows_added": 0
+    }
+  }
+}

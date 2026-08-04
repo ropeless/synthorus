@@ -14,6 +14,7 @@ spec = {
     data_format: parquet,
     min_cell_size: 1,
     sensitivity: 1,
+    epsilon: 1,
 
     # Default states for all rvs
     states: infer_distinct,

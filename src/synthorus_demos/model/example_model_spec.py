@@ -2,7 +2,7 @@ from typing import Dict
 
 from synthorus.model.datasource_spec import DatasourceSpec
 from synthorus.model.model_spec import ModelRVSpec, ModelEntitySpec, ModelSpec, ModelCrosstabSpec, \
-    ModelFieldSpecSample
+    ModelFieldSpecSample, ForeignKeyField
 from synthorus_demos.dataset import example_datasource
 
 
@@ -19,7 +19,7 @@ def make_model_spec_one_entity() -> ModelSpec:
     rvs: Dict[str, ModelRVSpec] = make_rvs_for_datasources(datasources)
 
     # Define a cross-table over all datasource rvs
-    crosstabs = {'my_crosstab': ModelCrosstabSpec(rvs=datasource.rvs, datasource=datasource_name)}
+    crosstabs = {'my_crosstab': ModelCrosstabSpec(rvs=datasource.rvs, datasource=datasource_name, epsilon=0.5)}
 
     # Define an entity, sampling all rvs
     entities = {'my_entity': ModelEntitySpec(fields=sample_rvs(*datasource.rvs))}
@@ -53,12 +53,15 @@ def make_model_spec_two_entities() -> ModelSpec:
     rvs: Dict[str, ModelRVSpec] = make_rvs_for_datasources(datasources)
 
     # Define a cross-table over the whole datasource
-    crosstabs = {'my_crosstab': ModelCrosstabSpec(rvs=datasource.rvs, datasource=datasource_name)}
+    crosstabs = {'my_crosstab': ModelCrosstabSpec(rvs=datasource.rvs, datasource=datasource_name, epsilon=0.5)}
 
     # Define entities
     entities = {
         'entity_1': ModelEntitySpec(fields=sample_rvs('A')),
-        'entity_2': ModelEntitySpec(fields=sample_rvs('C'), parent='entity_1', foreign_field_name='_entity_1__id_'),
+        'entity_2': ModelEntitySpec(
+            fields=sample_rvs('C'),
+            foreign_key_fields=[ForeignKeyField(foreign_entity='entity_1', foreign_key_field_name='_entity_1__id_')],
+        ),
     }
 
     # Put it all together to make a model spec

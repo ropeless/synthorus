@@ -48,6 +48,7 @@ def demo_one_spec_file(spec_file: Path | Traversable) -> None:
         make_model_definition_files(model_spec, model_definition_dir, cwd=ROOT_DIR)
         simulator: Simulator = make_simulator_from_files(model_definition_dir)
 
+    print()
     simulator.run(DebugRecorder(), iterations=10)
 
     print()

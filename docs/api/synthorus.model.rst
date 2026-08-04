@@ -60,6 +60,14 @@ synthorus.model.model\_index module
    :undoc-members:
    :show-inheritance:
 
+synthorus.model.model\_meta module
+----------------------------------
+
+.. automodule:: synthorus.model.model_meta
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 synthorus.model.model\_spec module
 ----------------------------------
 

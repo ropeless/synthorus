@@ -1,6 +1,6 @@
-from importlib.abc import Traversable
-from typing import List
 import importlib.resources as resources
+from importlib.resources.abc import Traversable
+from typing import List
 
 # Where to find data files
 ROOT_DIR: Traversable = resources.files('synthorus_demos.demo_files')

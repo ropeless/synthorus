@@ -1,6 +1,7 @@
 from typing import Mapping, Dict, List, Optional, Tuple, Any
 
 from synthorus.error import SynthorusError
+from synthorus.model.model_spec import ForeignKeyField
 from synthorus.simulator.condition_spec import FieldRef, ConditionSpec, ConditionSpecFixedLimit, \
     ConditionSpecVariableLimit, ConditionSpecStates
 from synthorus.simulator.sim_entity import SimSampler, SimEntity
@@ -53,9 +54,10 @@ def _sort_entity_r(
     if state is None:
         entity_state[entity_name] = 1
         entity_spec = entities[entity_name]
-        parent: Optional[str] = entity_spec.parent
-        if parent is not None:
-            _sort_entity_r(parent, entities, sorted_entities, entity_state)
+        foreign_key_field: ForeignKeyField
+        for foreign_key_field in entity_spec.foreign_key_fields:
+            parent_name: str = foreign_key_field.foreign_entity
+            _sort_entity_r(parent_name, entities, sorted_entities, entity_state)
         sorted_entities.append((entity_name, entity_spec))
         entity_state[entity_name] = 2
     elif state == 1:
@@ -79,15 +81,22 @@ def _add_entity(
     kwargs: Dict[str, Any] = {
         'id_field_name': _default(entity_spec.id_field_name, DEFAULT_ID_FIELD),
         'count_field_name': _default(entity_spec.count_field_name, DEFAULT_COUNT_FIELD),
-        'foreign_field_name': entity_spec.foreign_field_name,
     }
 
-    parent_name: Optional[str] = entity_spec.parent
-    if parent_name is not None:
+    foreign_key_fields: List[Tuple[str, SimEntity]] = []
+    foreign_key_field: ForeignKeyField
+    for foreign_key_field in entity_spec.foreign_key_fields:
+        foreign_entity_name: str = foreign_key_field.foreign_entity
         try:
-            kwargs['parent'] = sim.entity(parent_name)
+            foreign_key_fields.append(
+                (
+                    foreign_key_field.foreign_key_field_name,
+                    sim.entity(foreign_entity_name)
+                )
+            )
         except KeyError:
-            raise SynthorusError(f'cannot find parent: {parent_name}')
+            raise SynthorusError(f'cannot foreign entity: {foreign_entity_name!r}')
+    kwargs['foreign_key_fields'] = foreign_key_fields
 
     sampler_name: Optional[str] = entity_spec.sampler
     if sampler_name is not None:
@@ -140,7 +149,7 @@ def _get_field_order_r(
                 input_field_name: str
                 input_field_entity: str
                 if isinstance(input_field, FieldRef):
-                    input_field_name = input_field.name
+                    input_field_name = input_field.field
                     input_field_entity = input_field.entity
                 else:
                     input_field_name = input_field
@@ -210,30 +219,31 @@ def _get_sim_field(sim: Simulator, entity: SimEntity, field: FieldRef | str) -> 
 
 
 def _find_sim_field_str(sim: Simulator, entity: SimEntity, field: str, found: List[SimField]) -> None:
-    while True:
-        got: Optional[SimField] = entity.get(field)
+    got: Optional[SimField] = entity.get(field)
+    if got is not None:
+        found.append(got)
+    for ancestor in entity.ancestors():
+        got = ancestor.get(field)
         if got is not None:
             found.append(got)
-        if entity.parent is None:
-            _find_sim_field_param(sim, field, found)
-            return
-        entity = entity.parent
+    _find_sim_field_param(sim, field, found)
 
 
 def _find_sim_field_ref(sim: Simulator, entity: SimEntity, field_ref: FieldRef, found: List[SimField]) -> None:
     if field_ref.entity == '':
         _find_sim_field_param(sim, field_ref.field, found)
         return
-
-    while True:
-        if field_ref.entity == entity.name:
-            got: Optional[SimField] = entity.get(field_ref.field)
+    if field_ref.entity == entity.name:
+        got: Optional[SimField] = entity.get(field_ref.field)
+        if got is not None:
+            found.append(got)
+        return
+    for ancestor in entity.ancestors():
+        if ancestor.name == field_ref.entity:
+            got = ancestor.get(field_ref.field)
             if got is not None:
                 found.append(got)
             return
-        if entity.parent is None:
-            return
-        entity = entity.parent
 
 
 def _find_sim_field_param(sim: Simulator, field: str, found: List[SimField]) -> None:

@@ -7,8 +7,6 @@ __author__ = 'Barry Drake'
 from synthorus.spec_file.keys import *
 
 spec = {
-    sensitivity: 0,          # for all datasources
-    min_cell_size: 0,         # for all cross-tables
     states: infer_distinct,  # for all rvs
 
     datasources: {
@@ -62,7 +60,7 @@ spec = {
             rvs: ['X', 'Y', 'Z'],
         },
         'event': {
-            parent: 'patient',
+            foreign_keys: 'patient',
             rvs: ['Q'],
             fields: {
                 'const_field': {value: 123},

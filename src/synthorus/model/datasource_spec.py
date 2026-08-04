@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from importlib.abc import Traversable
-from pathlib import Path
 from typing import List, Sequence, Self, Set
 
 from pydantic import BaseModel, NonNegativeFloat, model_validator
 
 from synthorus.dataset import Dataset
 from synthorus.model.dataset_spec import DatasetSpec
+from synthorus.utils.file_extras import DataPath
 
 
 class DatasourceSpec(BaseModel):
@@ -23,7 +22,7 @@ class DatasourceSpec(BaseModel):
     dataset_spec: DatasetSpec  # The definition for getting the data
     non_distribution_rvs: List[str] = []  # The rvs that should _not_ be considered as providing a distribution
 
-    def dataset(self, roots: Sequence[Path | Traversable] = ()) -> Dataset:
+    def dataset(self, roots: Sequence[DataPath] = ()) -> Dataset:
         """
         Load the dataset for this datasource.
 

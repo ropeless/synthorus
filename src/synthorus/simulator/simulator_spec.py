@@ -9,6 +9,7 @@ from ck.pgm import State
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from synthorus.model.defaults import DEFAULT_ID_FIELD, DEFAULT_COUNT_FIELD
+from synthorus.model.model_spec import ForeignKeyField, check_fields
 from synthorus.simulator.condition_spec import ConditionSpec, FieldRef
 
 
@@ -32,37 +33,21 @@ class SimulatorSpec(BaseModel):
 
 
 class SimEntitySpec(BaseModel):
-    parent: Optional[str] = None  # name of parent entity
     sampler: Optional[str] = None  # name of sampler
     id_field_name: str = DEFAULT_ID_FIELD  # name of the field holding row ID for the entity
     count_field_name: str = DEFAULT_COUNT_FIELD  # name of the field holding row count for the entity
-    foreign_field_name: Optional[str] = None  # name of the field holding row ID for the _parent_ entity
+    foreign_key_fields: List[ForeignKeyField] = []
     fields: Dict[str, ValueSpec] = {}
     cardinality: List[ConditionSpec] = []
 
     @model_validator(mode='after')
     def validate_model(self) -> Self:
-        if (self.parent is None) != (self.foreign_field_name is None):
-            raise ValueError(f'foreign field name required if and only if the entity has a parent')
-
-        if self.id_field_name in self.fields:
-            raise ValueError(f'id field name cannot be an explicit field: {self.id_field_name!r}')
-        if self.count_field_name in self.fields:
-            raise ValueError(f'count field name cannot be an explicit field: {self.count_field_name!r}')
-        if self.foreign_field_name in self.fields:
-            raise ValueError(f'foreign field name cannot be an explicit field: {self.foreign_field_name!r}')
-
-        if len({self.count_field_name, self.id_field_name, self.foreign_field_name}) != 3:
-            raise ValueError(f'count, id and foreign field names must be different')
-
-        all_fields = list(self.fields.keys()) + [self.id_field_name, self.count_field_name]
-        if self.foreign_field_name is not None:
-            all_fields.append(self.foreign_field_name)
-
-        for field_name in all_fields:
-            if field_name == '':
-                raise ValueError('field name cannot be the empty string')
-
+        check_fields(
+            self.id_field_name,
+            self.count_field_name,
+            self.foreign_key_fields,
+            self.fields.keys(),
+        )
         return self
 
 

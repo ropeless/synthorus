@@ -42,7 +42,7 @@ def make_simulator() -> Simulator:
     e1.add_cardinality_fixed_count(8)
 
     # Entity 2
-    e2 = sim.add_entity('e2', parent=e1, foreign_field_name='_e1_id', sampler=s2)
+    e2 = sim.add_entity('e2', foreign_key_fields=[('_e1_id', e1)], sampler=s2)
     e2.add_field_sampled(field_name='f2', rv_name='rv2')
     e2.add_cardinality_fixed_count(8)
 

@@ -4,9 +4,6 @@ This is an example simple Synthorus spec file.
 from synthorus.spec_file.keys import *
 
 spec = {
-    sensitivity: 0,  # no data is sensitive data
-    min_cell_size: 0,  # no data will be redacted
-
     states: infer_distinct,  # all random variable states are inferred from the datasource.
 
     datasources: {

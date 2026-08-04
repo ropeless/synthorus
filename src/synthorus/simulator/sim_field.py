@@ -20,6 +20,9 @@ class SimField:
         self.value: State = value
         self._update: SimFieldUpdate = update
 
+    def __str__(self) -> str:
+        return f'{self.__class__.__name__}({self.name} = {self.value})'
+
     @property
     def name(self) -> str:
         return self._name
@@ -39,11 +42,12 @@ class SimFieldUpdate(ABC):
     """
     Abstract method for updating a field of an entity during a simulation.
 
-    A SimFieldUpdate is responsible for setting the value of a destination SimField.
+    A SimFieldUpdate is responsible for setting the value of a destination SimField
+    during a simulation.
     """
 
     @abstractmethod
-    def update(self, dest_field: SimField, ) -> None:
+    def update(self, dest_field: SimField) -> None:
         """
         Perform a field update.
         """

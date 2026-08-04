@@ -52,10 +52,10 @@ synthorus.workflows.make\_simulator\_from\_files module
    :undoc-members:
    :show-inheritance:
 
-synthorus.workflows.report\_helpers module
-------------------------------------------
+synthorus.workflows.report\_crosstabs module
+--------------------------------------------
 
-.. automodule:: synthorus.workflows.report_helpers
+.. automodule:: synthorus.workflows.report_crosstabs
    :members:
    :undoc-members:
    :show-inheritance:
@@ -80,6 +80,14 @@ synthorus.workflows.report\_utility module
 ------------------------------------------
 
 .. automodule:: synthorus.workflows.report_utility
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+synthorus.workflows.reporting\_helpers module
+---------------------------------------------
+
+.. automodule:: synthorus.workflows.reporting_helpers
    :members:
    :undoc-members:
    :show-inheritance:

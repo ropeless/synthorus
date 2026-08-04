@@ -146,17 +146,20 @@ class StripLinesTest(Fixture):
 
     def test_strip_blank_lines(self):
         input_string = (
+            "\n"
             "This is the first line\n"
             "\n"
             "  This line starts with two spaces  \n"
             "\n"
-            "\n"
             "This is the last line\n"
+            "\n"
         )
 
         expect_string = (
             "This is the first line\n"
+            "\n"
             "This line starts with two spaces\n"
+            "\n"
             "This is the last line\n"
         )
 

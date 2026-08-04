@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable, Union, Protocol, TypeAlias
+from typing import Callable, Union, Protocol, TypeAlias, List
 
 PrintFunction: TypeAlias = Callable[..., None]
 """
@@ -60,11 +60,10 @@ class Print(PrintFunction, Writable):
             default: destination to use if destination=None. If default=None, it means /dev/null.
             encoding: pass to builtin open() method.
         """
-        self._destinations = []
-        self._destinations.extend(
+        self._destinations: List[_Destination] = [
             _Destination(d, default, encoding)
             for d in destination
-        )
+        ]
 
     def __call__(self, *args, sep: str = ' ', end: str = '\n') -> None:
         for destination in self._destinations:
@@ -79,7 +78,7 @@ class Print(PrintFunction, Writable):
 
     def close(self):
         destinations = self._destinations
-        self._destinations = ()
+        self._destinations = []
         errors = []
         for destination in destinations:
             try:
@@ -112,6 +111,7 @@ class _Destination:
 
         self.file = None
         self.to_close = None
+        self.call: PrintFunction
 
         if destination is None:
             self.call = NO_LOG

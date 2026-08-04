@@ -2,11 +2,9 @@ import json
 from abc import ABC, abstractmethod
 from collections.abc import KeysView
 from io import TextIOWrapper, StringIO
-from os import PathLike
 from pathlib import Path
 from typing import Sequence, Iterator, Dict, Iterable, Tuple, Mapping, List, Any
 
-import numpy as np
 import pandas as pd
 from ck.pgm import State
 
@@ -119,7 +117,7 @@ class CSVRecorder(SimRecorder):
     records are still available.
     """
 
-    def __init__(self, directory: PathLike, sep: str = ',', start_id: int = 1) -> None:
+    def __init__(self, directory: Path | str, sep: str = ',', start_id: int = 1) -> None:
         self._directory: Path = Path(directory)
         self._files: Dict[str, TextIOWrapper] = {}
         self._field_names: Dict[str, List[str]] = {}
@@ -308,12 +306,6 @@ class PandasRecorder(SimRecorder, Mapping[str, pd.DataFrame]):
 
     def keys(self) -> KeysView[str]:
         return self._memory.records.keys()
-
-    def values(self) -> Iterator[pd.DataFrame]:
-        return (self[key] for key in self.keys())
-
-    def items(self) -> Iterator[Tuple[str, pd.DataFrame]]:
-        return ((key, self[key]) for key in self.keys())
 
     def __contains__(self, key: Any) -> bool:
         return key in self._cache

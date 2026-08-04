@@ -2,8 +2,10 @@ from itertools import repeat
 from types import MappingProxyType
 from typing import Mapping, List, Iterator, Sequence, Optional, Dict
 
+from attr import dataclass
 from ck.pgm import RandomVariable, Indicator, Instance, State
 from ck.pgm_circuit.wmc_program import WMCProgram
+from ck.sampling.sampler import Sampler
 
 from synthorus.error import SynthorusError
 from synthorus.simulator.sim_entity import SimEntity, SimSampler
@@ -54,7 +56,7 @@ class PGMSimSampler(SimSampler):
         self._updaters: Dict[str, SimFieldUpdate] = {}
         self._conditions: Mapping[RandomVariable, str] = conditions
         self._conditioners: List[_Conditioner] = []
-        self._entity: Optional[SimEntity] = None
+        self._entity_for_stream: Optional[SimEntity] = None
 
         # Check that all condition rvs are actually part of the wmc
         all_rvs = set(wmc.rvs)
@@ -86,12 +88,14 @@ class PGMSimSampler(SimSampler):
         values in the given entity (or its parents).
         """
         # Make sure we have the right conditioners for the given entity.
-        if self._entity is not entity:
+        # Normally there will be one sampler per entity so the efficiency of
+        # setting up conditioners is ignored.
+        if self._entity_for_stream is not entity:
             self._conditioners = [
-                _Conditioner(rv, field_name, entity)
+                _Conditioner(rv, entity.find_ancestor_field(field_name))
                 for rv, field_name in self._conditions.items()
             ]
-            self._entity = entity
+            self._entity_for_stream = entity
 
         # Apply the conditions
         condition = tuple(
@@ -100,7 +104,8 @@ class PGMSimSampler(SimSampler):
         )
 
         # Get a conditioned sample stream
-        sampler = self._ck_wmc.sample_direct(rvs=self._ck_sample_rvs, condition=condition)
+        sampler: Sampler = self._ck_wmc.sample_direct(rvs=self._ck_sample_rvs, condition=condition)
+        # noinspection PyTypeChecker
         self._ck_samples = iter(sampler)
 
     def next(self) -> None:
@@ -113,39 +118,44 @@ class _SamplerUpdate(SimFieldUpdate):
     """
 
     def __init__(self, sim_sampler: PGMSimSampler, sample_idx: int, rv_states: Sequence[State]):
+        """
+        In order to update a destination field,
+        Args:
+            sim_sampler: provides the current sample `sim_sampler._ck_sample`.
+            sample_idx: identifies which element of `sim_sampler._ck_sample` provides
+                the value for the destination field.
+            rv_states: provide the translation from a state index in `sim_sampler._ck_sample[sample_idx]`
+                to the value for the destination field.
+        """
         self._sim_sampler = sim_sampler
         self._sample_idx = sample_idx
         self._rv_states = rv_states
 
     def update(self, dest_field: SimField):
         # noinspection PyProtectedMember
-        sample: Instance = self._sim_sampler._ck_sample
-        dest_field.value = self._rv_states[sample[self._sample_idx]]
+        state_index: int = self._sim_sampler._ck_sample[self._sample_idx]
+        dest_field.value = self._rv_states[state_index]
 
 
+@dataclass
 class _Conditioner:
     """
     Helper class for getting a conditioning indicator for a random variable.
+
+    A conditioner is responsible for supporting the conditioning of one random
+    variable from one field.
     """
-
-    def __init__(self, rv: RandomVariable, field_name: str, entity: SimEntity):
-        parent: Optional[SimEntity] = entity.parent
-        if parent is None:
-            raise SynthorusError(f'the entity has no parent so cannot do conditioned sampling: {entity.name}')
-        fields: List[SimField] = []
-        while parent is not None:
-            if field_name in parent:
-                fields.append(parent[field_name])
-            parent = parent.parent
-        if len(fields) == 0:
-            raise SynthorusError(f'cannot find conditioning field: {field_name}, rv: {rv.name}')
-        if len(fields) > 1:
-            raise SynthorusError(f'multiple matching conditioning fields: {field_name}, rv: {rv.name}')
-
-        self.field: SimField = fields[0]  # The field providing a value
-        self.rv: RandomVariable = rv  # The random variable being conditioned on the value
+    rv: RandomVariable  # The random variable being conditioned on the fie
+    field: SimField  # The field providing the conditioning value
 
     def get_condition(self) -> Indicator:
+        """
+        What  is the conditioning indicator of `self.rv` that corresponds to
+        the current value of `self.field`?
+
+        Returns:
+            An indicator of `self.rv` suitable as a WMC condition?
+        """
         state: State = self.field.value
         idx: int = self.rv.state_idx(state)
         return self.rv[idx]

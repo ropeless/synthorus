@@ -11,7 +11,6 @@ DEMO_NAME: str = Path(__file__).stem
 
 def main() -> None:
     print(DEMO_NAME, 'make_model_spec_one_entity')
-
     model_spec: ModelSpec = make_model_spec_one_entity()
 
     # Create a managed directory for the output model definition files.

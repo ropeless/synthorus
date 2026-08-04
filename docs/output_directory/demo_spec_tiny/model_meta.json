@@ -1,0 +1,69 @@
+{
+  "rvs": {
+    "Z": {
+      "name": "Z",
+      "clean_distribution": {
+        "n": 4.0,
+        "y": 4.0
+      }
+    },
+    "X": {
+      "name": "X",
+      "clean_distribution": {
+        "n": 4.0,
+        "y": 4.0
+      }
+    },
+    "Y": {
+      "name": "Y",
+      "clean_distribution": {
+        "n": 4.0,
+        "y": 4.0
+      }
+    }
+  },
+  "crosstabs": {
+    "_Z_": {
+      "name": "_Z_",
+      "number_of_states": 2,
+      "clean_num_rows": 2,
+      "clean_min_weight": 4.0,
+      "clean_max_weight": 4.0,
+      "clean_total_weight": 8.0,
+      "noisy_num_rows": 2,
+      "noisy_min_weight": 4.0,
+      "noisy_max_weight": 4.0,
+      "noisy_total_weight": 8.0,
+      "rows_lost": 0,
+      "rows_added": 0
+    },
+    "_X_": {
+      "name": "_X_",
+      "number_of_states": 2,
+      "clean_num_rows": 2,
+      "clean_min_weight": 4.0,
+      "clean_max_weight": 4.0,
+      "clean_total_weight": 8.0,
+      "noisy_num_rows": 2,
+      "noisy_min_weight": 4.0,
+      "noisy_max_weight": 4.0,
+      "noisy_total_weight": 8.0,
+      "rows_lost": 0,
+      "rows_added": 0
+    },
+    "_Y_": {
+      "name": "_Y_",
+      "number_of_states": 2,
+      "clean_num_rows": 2,
+      "clean_min_weight": 4.0,
+      "clean_max_weight": 4.0,
+      "clean_total_weight": 8.0,
+      "noisy_num_rows": 2,
+      "noisy_min_weight": 4.0,
+      "noisy_max_weight": 4.0,
+      "noisy_total_weight": 8.0,
+      "rows_lost": 0,
+      "rows_added": 0
+    }
+  }
+}

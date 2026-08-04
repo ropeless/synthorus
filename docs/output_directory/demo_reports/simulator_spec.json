@@ -5,11 +5,10 @@
   },
   "entities": {
     "patient": {
-      "parent": null,
       "sampler": "patient",
       "id_field_name": "_id_",
       "count_field_name": "_count_",
-      "foreign_field_name": null,
+      "foreign_key_fields": [],
       "fields": {
         "patient_age": {
           "type": "sample",
@@ -26,11 +25,15 @@
       ]
     },
     "event": {
-      "parent": "patient",
       "sampler": "event",
       "id_field_name": "_id_",
       "count_field_name": "_count_",
-      "foreign_field_name": "_patient__id_",
+      "foreign_key_fields": [
+        {
+          "foreign_key_field_name": "_patient__id_",
+          "foreign_entity": "patient"
+        }
+      ],
       "fields": {
         "event_type": {
           "type": "sample",

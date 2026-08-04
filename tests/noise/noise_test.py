@@ -62,7 +62,7 @@ class NoiseTest(Fixture):
         rvs = self.rvs_from_crosstab(cross_table)
         noiser = BasicLaplaceNoise()
 
-        noise_result = noiser(
+        noise_result = noiser.add_noise(
             cross_table.copy(),
             rvs,
             SafeRandom(n=4),
@@ -93,7 +93,7 @@ class NoiseTest(Fixture):
         rvs = self.rvs_from_crosstab(cross_table)
         noiser = BasicLaplaceNoise()
 
-        noise_result = noiser(
+        noise_result = noiser.add_noise(
             cross_table.copy(),
             rvs,
             SafeRandom(n=4),
@@ -137,7 +137,7 @@ class NoiseTest(Fixture):
         rvs = self.rvs_from_crosstab(cross_table)
         noiser = BasicLaplaceNoise()
 
-        noise_result = noiser(
+        noise_result = noiser.add_noise(
             cross_table.copy(),
             rvs,
             SafeRandom(n=4),
@@ -184,7 +184,7 @@ class NoiseTest(Fixture):
         rvs = self.rvs_from_crosstab(cross_table)
         noiser = LaplaceNoise(max_add_rows=1000)
 
-        noise_result = noiser(
+        noise_result = noiser.add_noise(
             cross_table.copy(),
             rvs, SafeRandom(n=4),
             sensitivity,
@@ -214,7 +214,7 @@ class NoiseTest(Fixture):
         rvs = self.rvs_from_crosstab(cross_table)
         noiser = LaplaceNoise(max_add_rows=1000)
 
-        noise_result = noiser(
+        noise_result = noiser.add_noise(
             cross_table.copy(),
             rvs,
             SafeRandom(n=4),
@@ -261,7 +261,7 @@ class NoiseTest(Fixture):
         rvs = self.rvs_from_crosstab(cross_table)
         noiser = LaplaceNoise(max_add_rows=1000)
 
-        noise_result = noiser(
+        noise_result = noiser.add_noise(
             cross_table.copy(),
             rvs,
             SafeRandom(n=4),
@@ -311,7 +311,7 @@ class NoiseTest(Fixture):
         rvs = self.rvs_from_crosstab(cross_table)
         noiser = LaplaceNoise(max_add_rows=1000)
 
-        noise_result = noiser(
+        noise_result = noiser.add_noise(
             cross_table.copy(),
             rvs,
             SafeRandom(n=4),
@@ -377,7 +377,7 @@ class NoiseTest(Fixture):
         rvs = self.rvs_from_crosstab(cross_table)
         noiser = DecompositionLaplaceNoise(max_add_rows=1000)
 
-        noise_result = noiser(
+        noise_result = noiser.add_noise(
             cross_table.copy(),
             rvs,
             SafeRandom(n=4),

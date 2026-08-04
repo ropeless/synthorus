@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Dict, List, Optional, Sequence, Mapping
+from typing import Dict, List, Optional, Sequence, Mapping, Iterable, Tuple
 
 from synthorus.error import SynthorusError
 from synthorus.model.defaults import DEFAULT_ID_FIELD, DEFAULT_COUNT_FIELD
@@ -24,45 +24,38 @@ class Simulator:
             self,
             name: str,
             *,
+            sampler: SimSampler = NO_SIM_SAMPLER,
             id_field_name: str = DEFAULT_ID_FIELD,
             count_field_name: str = DEFAULT_COUNT_FIELD,
-            foreign_field_name: Optional[str] = None,
-            parent: Optional[SimEntity] = None,
-            sampler: SimSampler = NO_SIM_SAMPLER
+            foreign_key_fields: Iterable[Tuple[str, SimEntity]] = (),
     ) -> SimEntity:
         """
         Add an entity to the simulator.
 
         Args:
             name: a name of the entity, which must be unique.
+            sampler: what sampler to use for the entities sampled fields.
             id_field_name: the name given to the entity's ID field.
             count_field_name: the name given to the entity's count field.
-            foreign_field_name: the name given to the entity's foreign ID field. Ignored if
-                `parent` is None, required otherwise.
-            parent: optional parent entity.
-            sampler: what sampler to use for the entities sampled fields.
+            foreign_key_fields: foreign key names with the entity each refers to.
 
         Returns:
              the newly created entity.
+
+        Raises:
+
         """
         if name in self._entities.keys():
             raise SynthorusError(f'entity name must be unique: {name!r}')
 
-        if parent is None:
-            foreign_field_name = '_none_'  # not needed - ignore it
-        else:
-            if self._entities[parent.name] is not parent:
-                raise SynthorusError(f'parent entity must be in this simulator: {parent.name!r}')
-            if foreign_field_name is None:
-                raise SynthorusError(f'parent entity specified by no foreign field name: {parent.name!r}')
-
         entity = SimEntity(
             name=name,
+            sampler=sampler,
             id_field_name=id_field_name,
             count_field_name=count_field_name,
-            foreign_id_field_name=foreign_field_name,
-            parent=parent,
-            sampler=sampler,
+            foreign_key_fields=foreign_key_fields,
+            owner=id(self),
+            order=len(self._entities),
         )
         self._entities[name] = entity
         return entity
@@ -169,10 +162,12 @@ class Simulator:
             self._run_nodes(node.children, recorder)
 
     def _form_tree(self) -> Sequence[_SimNode]:
-        nodes: Dict[str, _SimNode] = {}
+        nodes: Dict[str, _SimNode] = {}  # maps entity name to _SimNode
+        entity: SimEntity
         for entity in self._entities.values():
             self._form_tree_r(nodes, entity)
-        roots = [node for node in nodes.values() if node.entity.parent is None]
+        # Collect the roots, ensuring they are in entity order
+        roots = [nodes[name] for name in self._entities.keys() if nodes[name].is_root]
         return roots
 
     def _form_tree_r(self, nodes: Dict[str, _SimNode], entity: SimEntity) -> _SimNode:
@@ -180,8 +175,10 @@ class Simulator:
         if node is None:
             node = _SimNode(entity)
             nodes[entity.name] = node
-            parent = entity.parent
-            if parent is not None:
+            foreign_key_fields: Sequence[Tuple[SimField, SimEntity]] = entity.foreign_key_fields
+            if len(foreign_key_fields) > 0:
+                node.is_root = False
+                parent: SimEntity = foreign_key_fields[-1][1]  # parent is the last foreign entity
                 parent_node = self._form_tree_r(nodes, parent)
                 parent_node.children.append(node)
         return node
@@ -190,8 +187,8 @@ class Simulator:
 @dataclass
 class _SimNode:
     """
-    A Node in an entity tree.
+    A Node in a simulation execution tree.
     """
-
     entity: SimEntity
+    is_root: bool = True
     children: List[_SimNode] = field(default_factory=list)

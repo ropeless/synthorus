@@ -7,7 +7,6 @@ __author__ = 'Barry Drake'
 from synthorus.spec_file.keys import *
 
 spec = {
-    sensitivity: 0,          # for all datasources
     epsilon: 1.2,            # sound end up as zero due to zero sensitivity
     states: infer_distinct,  # for all rvs
 

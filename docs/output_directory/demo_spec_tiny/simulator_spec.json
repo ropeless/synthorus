@@ -2,12 +2,15 @@
   "parameters": {},
   "entities": {
     "_default_entity_": {
-      "parent": null,
       "sampler": "_default_entity_",
       "id_field_name": "_id_",
       "count_field_name": "_count_",
-      "foreign_field_name": null,
+      "foreign_key_fields": [],
       "fields": {
+        "Z": {
+          "type": "sample",
+          "rv_name": "Z"
+        },
         "X": {
           "type": "sample",
           "rv_name": "X"
@@ -15,10 +18,6 @@
         "Y": {
           "type": "sample",
           "rv_name": "Y"
-        },
-        "Z": {
-          "type": "sample",
-          "rv_name": "Z"
         }
       },
       "cardinality": []

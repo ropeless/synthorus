@@ -31,7 +31,7 @@ def main() -> None:
         print('------------------------------------')
         print(entity)
         print()
-        print(dataframe.to_string())
+        print(dataframe.to_string(index=False))
     print('------------------------------------')
     print('Done.')
 

@@ -1,11 +1,10 @@
-from pathlib import Path
-
 from ck.pgm import PGM
 
 from synthorus.utils import py_loader
+from synthorus.utils.file_extras import DataPath
 
 
-def load_entity_pgm(pgms_path: Path, entity_name: str) -> PGM:
+def load_entity_pgm(pgms_path: DataPath, entity_name: str) -> PGM:
     """
     Load a specific entity model previously saved to `pgms_path`.
     """

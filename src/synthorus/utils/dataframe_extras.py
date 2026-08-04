@@ -1,14 +1,47 @@
 """
-Functions for creating and manipulating cross-tables.
+Functions for creating and manipulating dataframes.
 """
 
-from typing import Iterable, Union, Callable, Optional, Tuple, Dict, Sequence, List
+from typing import Iterable, Union, Callable, Optional, Tuple, Dict, List, Any
+from typing import Sequence, Literal
 
 import numpy as np
 import pandas as pd
 from numpy import dtype as Dtype
+# noinspection PyProtectedMember
+from pandas._typing import ReadCsvBuffer
+from pandas.core.groupby import DataFrameGroupBy
 
 from synthorus.error import SynthorusError
+from .file_extras import DataPathLike
+
+# Use some more useful display options
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', 999)
+
+
+def read_csv(
+        filepath_or_buffer: DataPathLike | ReadCsvBuffer[str],
+        sep: str | None = ',',
+        header: int | Sequence[int] | None | Literal['infer'] = 'infer',
+        skip_blank_lines: bool = True,
+        skipinitialspace: bool = False,
+        low_memory=False,
+) -> pd.DataFrame:
+    """
+    This is a wrapper around Pandas read_csv to improve type inference.
+    """
+    # Expect multiple IDE warnings due to problematic type inferencing with Pandas :-(
+    # noinspection PyTypeChecker, argument-list
+    return pd.read_csv(
+        filepath_or_buffer,
+        sep=sep,
+        header=header,
+        skip_blank_lines=skip_blank_lines,
+        skipinitialspace=skipinitialspace,
+        low_memory=low_memory,
+    )
 
 
 def make_crosstab(
@@ -74,7 +107,7 @@ def make_crosstab(
 def adjust_cross_table(
         cross_table: pd.DataFrame,
         cond_cross_table: pd.DataFrame,
-        log=print
+        log: Callable = print
 ) -> pd.DataFrame:
     """
     Group cross_table by the random variables in cond_cross_table.
@@ -147,12 +180,13 @@ def adjust_cross_table(
 
     else:
         # General case - more than 1 conditioning random variable
-        weight_dict: Dict[Tuple] = {
+        weight_dict: Dict[Tuple, Any] = {
             row[:-1]: row[-1]
             for row in cond_cross_table.itertuples(index=False)
         }
-        groups = cross_table.groupby(cond_rv_names, observed=True, dropna=False)
+        groups: DataFrameGroupBy = cross_table.groupby(cond_rv_names, observed=True, dropna=False)
         key: Tuple
+        group: pd.DataFrame
         for key, group in groups:
             weights = group.iloc[:, -1]
             group_sum = weights.sum()
@@ -300,6 +334,7 @@ def _functional_series(
             # Try using np.fromiter.
             # np.fromiter can be a bit finicky with undocumented assumptions.
             # If it fails, it fails immediately, but if works it's efficient.
+            # noinspection PyBroadException
             try:
                 array = np.fromiter(
                     (column_function(*args) for args in zip(*input_series)),
@@ -307,7 +342,6 @@ def _functional_series(
                     dtype=dtype
                 )
                 return pd.Series(array)
-            # noinspection PyBroadException
             except Exception:
                 pass
 

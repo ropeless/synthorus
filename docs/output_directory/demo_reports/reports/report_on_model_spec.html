@@ -24,7 +24,7 @@
         <tbody>
           <tr>
             <td style="color: gray; padding: 8px;">Report date</td>
-            <td style="padding: 8px;">2026-07-23 15:48:31 (AUS Eastern Standard Time)</td>
+            <td style="padding: 8px;">2026-08-07 13:01:46 (AUS Eastern Standard Time)</td>
           </tr>
           <tr>
             <td style="color: gray; padding: 8px;">Report author</td>
@@ -353,7 +353,7 @@ old,         DEATH,      3
           <details>
             <summary>All distribution crosstabs (1)</summary>
             <p>
-              <a href="#CROSSTAB__event_duration">_event_duration</a>
+              <a href="#CROSSTAB__event_duration_">_event_duration_</a>
             </p>
           </details>
           <details>
@@ -406,7 +406,7 @@ old,         DEATH,      3
           <details>
             <summary>All distribution crosstabs (1)</summary>
             <p>
-              <a href="#CROSSTAB__event_duration_since_last">_event_duration_since_last</a>
+              <a href="#CROSSTAB__event_duration_since_last_">_event_duration_since_last_</a>
             </p>
           </details>
           <details>
@@ -454,7 +454,7 @@ old,         DEATH,      3
           <details>
             <summary>All distribution crosstabs (1)</summary>
             <p>
-              <a href="#CROSSTAB__event_type">_event_type</a>
+              <a href="#CROSSTAB__event_type_">_event_type_</a>
             </p>
           </details>
           <details>
@@ -501,7 +501,7 @@ old,         DEATH,      3
           <details>
             <summary>All distribution crosstabs (1)</summary>
             <p>
-              <a href="#CROSSTAB__patient_age">_patient_age</a>
+              <a href="#CROSSTAB__patient_age_">_patient_age_</a>
             </p>
           </details>
           <details>
@@ -517,8 +517,8 @@ old,         DEATH,      3
     <details class="tree-menu">
       <summary>Cross-tables (4)</summary>
       <details>
-        <summary>_event_duration</summary>
-        <div id="CROSSTAB__event_duration">
+        <summary>_event_duration_</summary>
+        <div id="CROSSTAB__event_duration_">
           <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
             <tbody>
               <tr>
@@ -613,14 +613,11 @@ old,         DEATH,      3
           <details>
             <summary>Issues (0)</summary>
           </details>
-          <details>
-            <summary>Recommendations (0)</summary>
-          </details>
         </div>
       </details>
       <details>
-        <summary>_event_duration_since_last</summary>
-        <div id="CROSSTAB__event_duration_since_last">
+        <summary>_event_duration_since_last_</summary>
+        <div id="CROSSTAB__event_duration_since_last_">
           <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
             <tbody>
               <tr>
@@ -715,14 +712,11 @@ old,         DEATH,      3
           <details>
             <summary>Issues (0)</summary>
           </details>
-          <details>
-            <summary>Recommendations (0)</summary>
-          </details>
         </div>
       </details>
       <details>
-        <summary>_event_type</summary>
-        <div id="CROSSTAB__event_type">
+        <summary>_event_type_</summary>
+        <div id="CROSSTAB__event_type_">
           <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
             <tbody>
               <tr>
@@ -817,14 +811,11 @@ old,         DEATH,      3
           <details>
             <summary>Issues (0)</summary>
           </details>
-          <details>
-            <summary>Recommendations (0)</summary>
-          </details>
         </div>
       </details>
       <details>
-        <summary>_patient_age</summary>
-        <div id="CROSSTAB__patient_age">
+        <summary>_patient_age_</summary>
+        <div id="CROSSTAB__patient_age_">
           <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
             <tbody>
               <tr>
@@ -919,9 +910,6 @@ old,         DEATH,      3
           <details>
             <summary>Issues (0)</summary>
           </details>
-          <details>
-            <summary>Recommendations (0)</summary>
-          </details>
         </div>
       </details>
     </details>
@@ -948,18 +936,21 @@ old,         DEATH,      3
                 <td style="color: gray; padding: 8px;">Count field name</td>
                 <td style="padding: 8px;">_count_</td>
               </tr>
-              <tr>
-                <td style="color: gray; padding: 8px;">Parent</td>
-                <td style="padding: 8px;">
-                  <a href="#ENTITY_patient">patient</a>
-                </td>
-              </tr>
-              <tr>
-                <td style="color: gray; padding: 8px;">Foreign field name</td>
-                <td style="padding: 8px;">_patient__id_</td>
-              </tr>
             </tbody>
           </table>
+          <details>
+            <summary>Foreign keys (1)</summary>
+            <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+              <tbody>
+                <tr>
+                  <td style="color: gray; padding: 8px;">_patient__id_</td>
+                  <td style="padding: 8px;">
+                    <a href="#ENTITY_patient">patient</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
           <details>
             <summary>Fields (4)</summary>
             <details>
@@ -1057,12 +1048,14 @@ Field(event_type) in {'DEATH'}
                 <td style="color: gray; padding: 8px;">Count field name</td>
                 <td style="padding: 8px;">_count_</td>
               </tr>
-              <tr>
-                <td style="color: gray; padding: 8px;">Parent</td>
-                <td style="padding: 8px;"></td>
-              </tr>
             </tbody>
           </table>
+          <details>
+            <summary>Foreign keys (0)</summary>
+            <table border="1" style="width: 1%; white-space: nowrap; border-collapse: collapse;">
+              <tbody></tbody>
+            </table>
+          </details>
           <details>
             <summary>Fields (1)</summary>
             <details>

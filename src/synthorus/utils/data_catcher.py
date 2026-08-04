@@ -3,7 +3,8 @@ from __future__ import annotations
 import json
 from abc import abstractmethod, ABC
 from io import StringIO
-from typing import MutableMapping, Iterator, Dict, Iterable, List, Mapping, Sequence, Tuple, Set
+from typing import MutableMapping, Iterator, Dict, Iterable, List, Mapping, Sequence, Tuple, Set, KeysView, ValuesView, \
+    ItemsView
 
 import numpy as np
 import pandas as pd
@@ -93,6 +94,7 @@ class DataCatcher(ABC):
             a numpy array.
         """
         if dtype is not None:
+            # noinspection PyBroadException
             try:
                 # Fragile but efficient if it works :-(
                 return np.fromiter(
@@ -103,7 +105,6 @@ class DataCatcher(ABC):
                     count=len(self),
                     dtype=dtype
                 )
-            # noinspection PyBroadException
             except Exception:
                 pass
         return np.array(self.get_column_list(column, default), dtype=dtype)
@@ -244,15 +245,15 @@ class Record(MutableMapping[str, ValueType]):
         ...
 
     @abstractmethod
-    def items(self) -> Iterable[Tuple[str, ValueType]]:
+    def items(self) -> ItemsView[str, ValueType]:
         ...
 
     @abstractmethod
-    def keys(self) -> Iterable[str]:
+    def keys(self) -> KeysView[str]:
         ...
 
     @abstractmethod
-    def values(self) -> Iterable[ValueType]:
+    def values(self) -> ValuesView[ValueType]:
         ...
 
     @abstractmethod
@@ -345,13 +346,13 @@ class RamRecord(Record):
     def __iter__(self) -> Iterator[str]:
         return self._data.__iter__()
 
-    def items(self) -> Iterable[Tuple[str, ValueType]]:
+    def items(self) -> ItemsView[str, ValueType]:
         return self._data.items()
 
-    def keys(self) -> Iterable[str]:
+    def keys(self) -> KeysView[str]:
         return self._data.keys()
 
-    def values(self) -> Iterable[ValueType]:
+    def values(self) -> ValuesView[ValueType]:
         return self._data.values()
 
     def get(self, column: str, default=None):

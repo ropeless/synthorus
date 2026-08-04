@@ -29,6 +29,9 @@ class output_directory(Path):
     ```
     """
 
+    def __new__(cls, demo_name: str, overwrite: bool = True, allow_tmp: bool = True):
+        return super().__new__(cls)
+
     def __init__(self, demo_name: str, overwrite: bool = True, allow_tmp: bool = True):
         """
         Prepare an output directory for output files of a demo script.

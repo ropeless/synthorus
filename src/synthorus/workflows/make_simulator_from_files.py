@@ -1,4 +1,3 @@
-from os import PathLike
 from pathlib import Path
 from typing import Dict, Mapping
 
@@ -13,14 +12,15 @@ from synthorus.simulator.pgm_sim_sampler import PGMSimSampler
 from synthorus.simulator.sim_entity import SimSampler
 from synthorus.simulator.simulator import Simulator
 from synthorus.simulator.simulator_spec import SimulatorSpec, SimEntitySpec
+from synthorus.utils.file_extras import DataPathLike, open_text, DataPath
 from synthorus.utils.print_function import PrintFunction
 from synthorus.utils.stop_watch import timer
-from synthorus.workflows.file_names import SIMULATOR_SPEC_NAME, ENTITY_MODELS, MODEL_INDEX_NAME
+from synthorus.workflows.file_names import SIMULATOR_SPEC_FILE_NAME, ENTITY_MODELS, MODEL_INDEX_FILE_NAME
 from synthorus.workflows.load_entity_pgm import load_entity_pgm
 
 
 def make_simulator_from_files(
-        model_definition_directory: PathLike,
+        model_definition_directory: DataPathLike,
         *,
         log: PrintFunction = print,
 ) -> Simulator:
@@ -33,12 +33,13 @@ def make_simulator_from_files(
     """
     log(f'make_simulator_from_files started')
 
-    model_definition_directory: Path = Path(model_definition_directory)
+    if isinstance(model_definition_directory, str):
+        model_definition_directory: Path = Path(model_definition_directory)
 
-    with open(model_definition_directory / SIMULATOR_SPEC_NAME) as f:
+    with open_text(model_definition_directory / SIMULATOR_SPEC_FILE_NAME) as f:
         sim_spec: SimulatorSpec = SimulatorSpec.model_validate_json(f.read())
 
-    with open(model_definition_directory / MODEL_INDEX_NAME) as f:
+    with open_text(model_definition_directory / MODEL_INDEX_FILE_NAME) as f:
         model_index: ModelIndex = ModelIndex.model_validate_json(f.read())
 
     with timer('make samplers', logger=log):
@@ -54,7 +55,7 @@ def make_simulator_from_files(
 def _make_samplers(
         sim_spec: SimulatorSpec,
         model_index: ModelIndex,
-        pgms_path: Path,
+        pgms_path: DataPath,
         log: PrintFunction,
 ) -> Dict[str, SimSampler]:
     """
@@ -67,7 +68,7 @@ def _make_samplers(
 
     for entity_name, entity_spec in sim_spec.entities.items():
         entity_index: EntityIndex = model_index.entities[entity_name]
-        if len(entity_index.sampled_fields) > 0:
+        if len(entity_index.sample_rvs()) > 0:
             result[entity_name] = _make_sampler(entity_name, entity_index, pgms_path, log)
     return result
 
@@ -75,7 +76,7 @@ def _make_samplers(
 def _make_sampler(
         entity_name: str,
         entity_index: EntityIndex,
-        pgms_path: Path,
+        pgms_path: DataPath,
         log: PrintFunction,
 ) -> PGMSimSampler:
     """

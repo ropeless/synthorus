@@ -10,7 +10,6 @@ spec = {
     datasources: {
         'my_table': {
             data_format: odbc,
-            sensitivity: 0,
             table: 'my_table',
             schema: 'my_schema',
             connection: {
