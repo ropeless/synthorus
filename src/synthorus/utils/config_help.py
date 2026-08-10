@@ -33,7 +33,7 @@ Example usage:
 from __future__ import annotations
 
 import os
-from typing import Dict, Any, Mapping, KeysView, ValuesView, Iterator, ItemsView, Iterable, Optional, Self, List, Tuple
+from typing import Dict, Any, Mapping, KeysView, ValuesView, Iterator, ItemsView
 
 from synthorus.utils.const import Const
 
@@ -93,7 +93,7 @@ class Config(Mapping[str, Any]):
     def __iter__(self) -> Iterator[str]:
         return iter(self._config)
 
-    def __contains__(self, key: str, /) -> bool:
+    def __contains__(self, key: Any, /) -> bool:
         return key in self._config
 
     def __getitem__(self, key, /) -> Any:

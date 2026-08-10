@@ -31,6 +31,10 @@
     }
   },
   "rvs": {
+    "Z": {
+      "states": "infer_distinct",
+      "ensure_none": false
+    },
     "X": {
       "states": "infer_distinct",
       "ensure_none": false
@@ -38,43 +42,39 @@
     "Y": {
       "states": "infer_distinct",
       "ensure_none": false
-    },
-    "Z": {
-      "states": "infer_distinct",
-      "ensure_none": false
     }
   },
   "crosstabs": {
-    "_X": {
-      "rvs": [
-        "X"
-      ],
-      "datasource": "xyz",
-      "epsilon": 0.1,
-      "min_cell_size": 0.0,
-      "noiser": {
-        "type": "laplace",
-        "max_add_rows": 1000000
-      }
-    },
-    "_Y": {
-      "rvs": [
-        "Y"
-      ],
-      "datasource": "xyz",
-      "epsilon": 0.1,
-      "min_cell_size": 0.0,
-      "noiser": {
-        "type": "laplace",
-        "max_add_rows": 1000000
-      }
-    },
-    "_Z": {
+    "_Z_": {
       "rvs": [
         "Z"
       ],
       "datasource": "xyz",
-      "epsilon": 0.1,
+      "epsilon": 0.0,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
+    },
+    "_X_": {
+      "rvs": [
+        "X"
+      ],
+      "datasource": "xyz",
+      "epsilon": 0.0,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
+    },
+    "_Y_": {
+      "rvs": [
+        "Y"
+      ],
+      "datasource": "xyz",
+      "epsilon": 0.0,
       "min_cell_size": 0.0,
       "noiser": {
         "type": "laplace",
@@ -88,6 +88,10 @@
       "count_field_name": "_count_",
       "foreign_field_name": null,
       "fields": {
+        "Z": {
+          "type": "sample",
+          "rv_name": "Z"
+        },
         "X": {
           "type": "sample",
           "rv_name": "X"
@@ -95,10 +99,6 @@
         "Y": {
           "type": "sample",
           "rv_name": "Y"
-        },
-        "Z": {
-          "type": "sample",
-          "rv_name": "Z"
         }
       },
       "cardinality": [],

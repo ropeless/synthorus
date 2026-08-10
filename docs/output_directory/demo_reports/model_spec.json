@@ -76,7 +76,7 @@
       "states": "infer_distinct",
       "ensure_none": false
     },
-    "event_duration": {
+    "patient_age": {
       "states": "infer_distinct",
       "ensure_none": false
     },
@@ -84,54 +84,54 @@
       "states": "infer_distinct",
       "ensure_none": false
     },
-    "patient_age": {
+    "event_duration": {
       "states": "infer_distinct",
       "ensure_none": false
     }
   },
   "crosstabs": {
-    "_event_duration_since_last": {
+    "_event_duration_since_last_": {
       "rvs": [
         "event_duration_since_last"
       ],
       "datasource": "event_duration_since_last",
-      "epsilon": 0.1,
+      "epsilon": 0.0,
       "min_cell_size": 0.0,
       "noiser": {
         "type": "laplace",
         "max_add_rows": 1000000
       }
     },
-    "_event_duration": {
-      "rvs": [
-        "event_duration"
-      ],
-      "datasource": "event_duration",
-      "epsilon": 0.1,
-      "min_cell_size": 0.0,
-      "noiser": {
-        "type": "laplace",
-        "max_add_rows": 1000000
-      }
-    },
-    "_event_type": {
-      "rvs": [
-        "event_type"
-      ],
-      "datasource": "patient_age__event_type",
-      "epsilon": 0.1,
-      "min_cell_size": 0.0,
-      "noiser": {
-        "type": "laplace",
-        "max_add_rows": 1000000
-      }
-    },
-    "_patient_age": {
+    "_patient_age_": {
       "rvs": [
         "patient_age"
       ],
       "datasource": "patient_age__event_type",
-      "epsilon": 0.1,
+      "epsilon": 0.0,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
+    },
+    "_event_type_": {
+      "rvs": [
+        "event_type"
+      ],
+      "datasource": "patient_age__event_type",
+      "epsilon": 0.0,
+      "min_cell_size": 0.0,
+      "noiser": {
+        "type": "laplace",
+        "max_add_rows": 1000000
+      }
+    },
+    "_event_duration_": {
+      "rvs": [
+        "event_duration"
+      ],
+      "datasource": "event_duration",
+      "epsilon": 0.0,
       "min_cell_size": 0.0,
       "noiser": {
         "type": "laplace",

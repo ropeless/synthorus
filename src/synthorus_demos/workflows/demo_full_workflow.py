@@ -10,7 +10,7 @@ from synthorus_demos.demo_files import SPEC_FILES, ROOT_DIR
 from synthorus_demos.utils.output_directory import output_directory
 
 DEMO_NAME: str = Path(__file__).stem
-DEMO_SPEC_FILE_NAME: str = 'spec_5.py'
+DEMO_SPEC_FILE_NAME: str = 'spec_simple_pjm.py'
 
 
 def main() -> None:
@@ -20,11 +20,11 @@ def main() -> None:
 
     # Create a managed directory for the output model definition files.
     with output_directory(DEMO_NAME, overwrite=True) as model_definition_dir:
-
-        make_model_definition_files(model_spec, model_definition_dir)
+        make_model_definition_files(model_spec, model_definition_dir, cwd=ROOT_DIR)
         simulator: Simulator = make_simulator_from_files(model_definition_dir)
 
-    simulator.run(DebugRecorder(), iterations=10)
+    print()
+    simulator.run(DebugRecorder(), iterations=3)
 
 
 if __name__ == '__main__':

@@ -44,7 +44,7 @@ class Noiser(ABC):
     """
 
     @abstractmethod
-    def __call__(
+    def add_noise(
             self,
             cross_table: pd.DataFrame,
             rvs: Dict[str, Sequence[State]],
@@ -100,12 +100,12 @@ class LaplaceNoise(Noiser):
         Args:
             max_add_rows: a limit on the number of rows to add to a cross-table.
         """
-        self._basic = BasicLaplaceNoise()
-        self._naive = NaiveLaplaceNoise(max_add_rows)
-        self._decomp = DecompositionLaplaceNoise(max_add_rows)
-        self.max_add_rows = max_add_rows
+        self._basic: Noiser = BasicLaplaceNoise()
+        self._naive: Noiser = NaiveLaplaceNoise(max_add_rows)
+        self._decomp: Noiser = DecompositionLaplaceNoise(max_add_rows)
+        self.max_add_rows: int = max_add_rows
 
-    def __call__(
+    def add_noise(
             self,
             cross_table: pd.DataFrame,
             rvs: Dict[str, Sequence[State]],
@@ -135,7 +135,7 @@ class LaplaceNoise(Noiser):
             else:
                 # but still enforcing min cell size
                 log(f'no sensitivity: using {self._basic.__class__.__name__}')
-                return self._basic(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log)
+                return self._basic.add_noise(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log)
 
         num_states = state_space_size(rvs, cross_table.columns[:-1])
         num_rows = cross_table.shape[0]
@@ -148,23 +148,23 @@ class LaplaceNoise(Noiser):
         if num_suppressed == 0:
             # There are no suppressed rows - just use the basic method.
             log(f'no suppressed rows: using {self._basic.__class__.__name__}')
-            return self._basic(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log)
+            return self._basic.add_noise(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log)
 
         elif num_suppressed <= self.max_add_rows and alpha > 0.5:
             # The number of suppressed rows is low enough to just add them,
             # and alpha is high so no value expected from the decomposition method.
             log(f'low suppressed rows: using {self._naive.__class__.__name__}')
-            return self._naive(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log)
+            return self._naive.add_noise(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log)
 
         elif min_cell_size <= 0:
             # The decomposition method only works when min_cell_size > 0.
             log(f'no min cell size: using {self._naive.__class__.__name__}')
-            return self._naive(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log)
+            return self._naive.add_noise(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log)
 
         else:
             # Use the decomposition method.
             log('using decomposition_method')
-            return self._decomp(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log)
+            return self._decomp.add_noise(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log)
 
 
 class DecompositionLaplaceNoise(Noiser):
@@ -192,10 +192,10 @@ class DecompositionLaplaceNoise(Noiser):
         Args:
             max_add_rows: a limit on the number of rows to add to a cross-table.
         """
-        self._basic = BasicLaplaceNoise()
-        self.max_add_rows = max_add_rows
+        self._basic: Noiser = BasicLaplaceNoise()
+        self.max_add_rows: int = max_add_rows
 
-    def __call__(
+    def add_noise(
             self,
             cross_table: pd.DataFrame,
             rvs: Dict[str, Sequence[State]],
@@ -217,7 +217,7 @@ class DecompositionLaplaceNoise(Noiser):
         max_weight = cross_table[weight_col].max()
 
         # Apply the basic method to original rows (i.e., rows already in cross_table).
-        basic_result = self._basic(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log)
+        basic_result = self._basic.add_noise(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log)
         if num_suppressed == 0:
             # If there were no suppressed rows, then it is all done
             return basic_result
@@ -327,10 +327,10 @@ class NaiveLaplaceNoise(Noiser):
             max_add_rows: an optional limit on the number of rows to add to a cross-table.
                 If provided then an exception is raised if this limit is exceeded.
         """
-        self._basic = BasicLaplaceNoise()
-        self.max_add_rows = max_add_rows
+        self._basic: Noiser = BasicLaplaceNoise()
+        self.max_add_rows: Optional[int] = max_add_rows
 
-    def __call__(
+    def add_noise(
             self,
             cross_table: pd.DataFrame,
             rvs: Dict[str, Sequence[State]],
@@ -375,7 +375,7 @@ class NaiveLaplaceNoise(Noiser):
 
         # Use the `basic` method to add noise to the weights,
         # then enforce min_cell_size, which may end up deleting rows.
-        cross_table = self._basic(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log).cross_table
+        cross_table = self._basic.add_noise(cross_table, rvs, safe_random, sensitivity, epsilon, min_cell_size, log).cross_table
 
         # A function to check if a row from `cross_table` was an existing row
         def is_old_row(_row) -> bool:
@@ -406,7 +406,7 @@ class BasicLaplaceNoise(Noiser):
     This noiser will never add new rows.
     """
 
-    def __call__(
+    def add_noise(
             self,
             cross_table: pd.DataFrame,
             rvs: Dict[str, Sequence[State]],

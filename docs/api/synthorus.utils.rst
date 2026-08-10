@@ -60,6 +60,22 @@ synthorus.utils.dict\_extras module
    :undoc-members:
    :show-inheritance:
 
+synthorus.utils.file\_extras module
+-----------------------------------
+
+.. automodule:: synthorus.utils.file_extras
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+synthorus.utils.iter\_extras module
+-----------------------------------
+
+.. automodule:: synthorus.utils.iter_extras
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 synthorus.utils.math\_extras module
 -----------------------------------
 

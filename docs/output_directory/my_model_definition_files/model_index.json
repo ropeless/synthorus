@@ -1,22 +1,5 @@
 {
   "rvs": {
-    "Y": {
-      "name": "Y",
-      "states": [
-        "n",
-        "y"
-      ],
-      "primary_datasource": "xyz",
-      "all_datasources": [
-        "xyz"
-      ],
-      "all_distribution_crosstabs": [
-        "_Y"
-      ],
-      "all_sampling_entities": [
-        "_default_entity_"
-      ]
-    },
     "X": {
       "name": "X",
       "states": [
@@ -28,7 +11,24 @@
         "xyz"
       ],
       "all_distribution_crosstabs": [
-        "_X"
+        "_X_"
+      ],
+      "all_sampling_entities": [
+        "_default_entity_"
+      ]
+    },
+    "Y": {
+      "name": "Y",
+      "states": [
+        "n",
+        "y"
+      ],
+      "primary_datasource": "xyz",
+      "all_datasources": [
+        "xyz"
+      ],
+      "all_distribution_crosstabs": [
+        "_Y_"
       ],
       "all_sampling_entities": [
         "_default_entity_"
@@ -45,7 +45,7 @@
         "xyz"
       ],
       "all_distribution_crosstabs": [
-        "_Z"
+        "_Z_"
       ],
       "all_sampling_entities": [
         "_default_entity_"
@@ -53,30 +53,8 @@
     }
   },
   "crosstabs": {
-    "_Y": {
-      "name": "_Y",
-      "rvs": [
-        "Y"
-      ],
-      "non_distribution_rvs": [],
-      "distribution_rvs": [
-        "Y"
-      ],
-      "datasource": "xyz",
-      "number_of_states": 2,
-      "clean_num_rows": 2,
-      "clean_min_weight": 4.0,
-      "clean_max_weight": 4.0,
-      "clean_total_weight": 8.0,
-      "noisy_num_rows": 2,
-      "noisy_min_weight": 4.0,
-      "noisy_max_weight": 4.0,
-      "noisy_total_weight": 8.0,
-      "rows_lost": 0,
-      "rows_added": 0
-    },
-    "_X": {
-      "name": "_X",
+    "_X_": {
+      "name": "_X_",
       "rvs": [
         "X"
       ],
@@ -97,8 +75,30 @@
       "rows_lost": 0,
       "rows_added": 0
     },
-    "_Z": {
-      "name": "_Z",
+    "_Y_": {
+      "name": "_Y_",
+      "rvs": [
+        "Y"
+      ],
+      "non_distribution_rvs": [],
+      "distribution_rvs": [
+        "Y"
+      ],
+      "datasource": "xyz",
+      "number_of_states": 2,
+      "clean_num_rows": 2,
+      "clean_min_weight": 4.0,
+      "clean_max_weight": 4.0,
+      "clean_total_weight": 8.0,
+      "noisy_num_rows": 2,
+      "noisy_min_weight": 4.0,
+      "noisy_max_weight": 4.0,
+      "noisy_total_weight": 8.0,
+      "rows_lost": 0,
+      "rows_added": 0
+    },
+    "_Z_": {
+      "name": "_Z_",
       "rvs": [
         "Z"
       ],
@@ -125,21 +125,13 @@
       "name": "_default_entity_",
       "parent": null,
       "sampled_fields": {
-        "Y": "Y",
         "X": "X",
+        "Y": "Y",
         "Z": "Z"
       },
       "entity_crosstabs": [
         {
-          "crosstab": "_Y",
-          "sampled_rvs": [
-            "Y"
-          ],
-          "condition_rvs": [],
-          "non_distribution_rvs": []
-        },
-        {
-          "crosstab": "_Z",
+          "crosstab": "_Z_",
           "sampled_rvs": [
             "Z"
           ],
@@ -147,9 +139,17 @@
           "non_distribution_rvs": []
         },
         {
-          "crosstab": "_X",
+          "crosstab": "_X_",
           "sampled_rvs": [
             "X"
+          ],
+          "condition_rvs": [],
+          "non_distribution_rvs": []
+        },
+        {
+          "crosstab": "_Y_",
+          "sampled_rvs": [
+            "Y"
           ],
           "condition_rvs": [],
           "non_distribution_rvs": []

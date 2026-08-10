@@ -1,12 +1,13 @@
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy as np
 import pandas as pd
+from psycopg.sql import Composable
 
 
 def query(
         connection,
-        sql: str,
+        sql: Union[str, Composable],
         variables: Tuple = ()
 ) -> pd.DataFrame:
     """

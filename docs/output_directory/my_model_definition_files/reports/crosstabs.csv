@@ -1,4 +1,4 @@
 Cross-table,Random variables,Number-of-rvs,Datasource,State space size,Clean number of rows,Clean number of suppressed rows,Clean min weight,Clean max weight,Clean total weight,Sensitivity,Epsilon,Min cell size,Noiser,Orig rows,Lost rows,Lost rows%,Added rows,Added rows%,Final rows,Final rows%,Final min weight,Final max weight,Final total weight
-_Y,'Y',1,xyz,2,2,0,4,4,8,0.0,0.1,0.0,"{""type"":""laplace"",""max_add_rows"":1000000}",2,0,0.0,0,0.0,2,100.0,4.0,4.0,8.0
-_X,'X',1,xyz,2,2,0,4,4,8,0.0,0.1,0.0,"{""type"":""laplace"",""max_add_rows"":1000000}",2,0,0.0,0,0.0,2,100.0,4.0,4.0,8.0
-_Z,'Z',1,xyz,2,2,0,4,4,8,0.0,0.1,0.0,"{""type"":""laplace"",""max_add_rows"":1000000}",2,0,0.0,0,0.0,2,100.0,4.0,4.0,8.0
+_X_,'X',1,xyz,2,2,0,4,4,8,0.0,0.0,0.0,"{""type"":""laplace"",""max_add_rows"":1000000}",2,0,0.0,0,0.0,2,100.0,4.0,4.0,8.0
+_Y_,'Y',1,xyz,2,2,0,4,4,8,0.0,0.0,0.0,"{""type"":""laplace"",""max_add_rows"":1000000}",2,0,0.0,0,0.0,2,100.0,4.0,4.0,8.0
+_Z_,'Z',1,xyz,2,2,0,4,4,8,0.0,0.0,0.0,"{""type"":""laplace"",""max_add_rows"":1000000}",2,0,0.0,0,0.0,2,100.0,4.0,4.0,8.0

@@ -1,7 +1,7 @@
 Privacy Report
 ==============
 
-Report date: 2026-07-23 15:48:31 (AUS Eastern Standard Time)
+Report date: 2026-08-10 13:02:10 (AUS Eastern Standard Time)
 Report author: barry
 
 Model name: spec_simple_pjm
@@ -39,6 +39,7 @@ Datasources (3):
     Entropy: 2.5175932387933115
 
 Cross-tables (4):
+    Cross-table name: _event_duration_
     Random variables: event_duration
     State space size: 9
     Datasource: event_duration
@@ -49,6 +50,7 @@ Cross-tables (4):
     Total weight: 5.11
     Entropy: 1.9795669564757818
 
+    Cross-table name: _event_duration_since_last_
     Random variables: event_duration_since_last
     State space size: 9
     Datasource: event_duration_since_last
@@ -59,6 +61,7 @@ Cross-tables (4):
     Total weight: 5.11
     Entropy: 1.979566956475782
 
+    Cross-table name: _event_type_
     Random variables: event_type
     State space size: 4
     Datasource: patient_age__event_type
@@ -69,6 +72,7 @@ Cross-tables (4):
     Total weight: 108
     Entropy: 2.5175932387933115
 
+    Cross-table name: _patient_age_
     Random variables: patient_age
     State space size: 3
     Datasource: patient_age__event_type

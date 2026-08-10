@@ -1,5 +1,5 @@
 import timeit as _timeit
-from typing import TypeVar, Iterable, Iterator, Optional
+from typing import TypeVar, Iterable, Iterator, Optional, Callable
 
 _PROG_ITEM = TypeVar('_PROG_ITEM')
 
@@ -43,13 +43,13 @@ def progress(
         iterable: Iterable[_PROG_ITEM], *,
         counter_start=1,
         label='progress',
-        iter_message='{label}: {counter:,} of {total}',
-        end_message='{label}: finished {counter:,}',
+        iter_message: Optional[str] = '{label}: {counter:,} of {total}',
+        end_message: Optional[str] = '{label}: finished {counter:,}',
         always_log_end=False,
         iter_frequency=None,
         iter_seconds=None,
         total=None,
-        log=print
+        log: Callable = print
 ) -> Iterator[_PROG_ITEM]:
     """
     This is a loop progress logger, similar in spirit to tqdm, but is
@@ -106,7 +106,9 @@ def progress(
         total = '?'
 
     # Construct a checking function 'should_log(counter)'
-    if iter_message is None:
+    if iter_message is None or iter_message == '':
+        iter_message = ''
+
         def should_log(_):
             return False
     elif iter_frequency is not None:

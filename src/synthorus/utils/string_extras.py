@@ -31,17 +31,15 @@ def unindent(s: str) -> str:
 
 def strip_lines(s: str) -> str:
     """
-    Strip all lines, and delete empty lines.
+    Strip all lines, and delete empty leading or trailing lines.
     The last line is terminated in a new line (unless the result is empty).
     """
-    lines = filter(
-        lambda l: l != '',
-        (line.strip() for line in s.splitlines())
-    )
-    lines = '\n'.join(lines)
-
-    # Ensure the last (non-empty) line has a return
-    if len(lines) > 0:
-        lines += '\n'
-
-    return lines
+    lines = list(line.strip() for line in s.splitlines())
+    while len(lines) > 0 and lines[-1] == '':
+        lines.pop(-1)
+    while len(lines) > 0 and lines[0] == '':
+        lines.pop(0)
+    if len(lines) == 0:
+        return ''
+    else:
+        return '\n'.join(lines) + '\n'

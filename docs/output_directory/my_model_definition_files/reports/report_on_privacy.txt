@@ -1,7 +1,7 @@
 Privacy Report
 ==============
 
-Report date: 2026-07-23 15:47:44 (AUS Eastern Standard Time)
+Report date: 2026-08-10 13:01:50 (AUS Eastern Standard Time)
 Report author: barry
 
 Model name: spec_tiny
@@ -23,6 +23,7 @@ Datasources (1):
     Entropy: 3.0
 
 Cross-tables (3):
+    Cross-table name: _X_
     Random variables: X
     State space size: 2
     Datasource: xyz
@@ -33,6 +34,7 @@ Cross-tables (3):
     Total weight: 8
     Entropy: 3.0
 
+    Cross-table name: _Y_
     Random variables: Y
     State space size: 2
     Datasource: xyz
@@ -43,6 +45,7 @@ Cross-tables (3):
     Total weight: 8
     Entropy: 3.0
 
+    Cross-table name: _Z_
     Random variables: Z
     State space size: 2
     Datasource: xyz

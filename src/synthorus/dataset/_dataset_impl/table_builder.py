@@ -3,9 +3,13 @@ from pathlib import Path
 from typing import Union
 
 import pandas as pd
-from pandas._typing import ReadCsvBuffer
 
 from synthorus.error import SynthorusError
+from synthorus.utils.file_extras import DataPath
+from synthorus.utils.dataframe_extras import ReadCsvBuffer
+from synthorus.utils.dataframe_extras import read_csv
+
+# noinspection PyProtectedMember
 
 SEP = ','  # The field separator
 SENTINEL = '"Total"' + SEP  # Start of line indicating no more records
@@ -71,7 +75,7 @@ class SourceWrapper(ReadCsvBuffer[str]):
 
         return line
 
-    def read(self, n: Union[int, None] = ...) -> str:
+    def read(self, n: Union[int, None] = -1) -> str:
         if self.read_buff == '':
             self.read_buff = self.readline()
 
@@ -114,15 +118,17 @@ class SourceWrapper(ReadCsvBuffer[str]):
                 return
 
 
-def read_table_builder(source: Union[StringIO, Path]) -> pd.DataFrame:
+def read_table_builder(source: Union[StringIO, DataPath]) -> pd.DataFrame:
     """
     Read a CSV file created by ABS TableBuilder.
     """
     if isinstance(source, Path):
         with open(source, 'r') as file:
-            return pd.read_csv(SourceWrapper(file), sep=SEP)
+            df = read_csv(SourceWrapper(file), sep=SEP)
     elif isinstance(source, StringIO):
-        return pd.read_csv(SourceWrapper(source), sep=SEP)
+        df = read_csv(SourceWrapper(source), sep=SEP)
     else:
         # noinspection PyUnreachableCode
         raise SynthorusError(f'unexpected source {type(source)}')
+    assert isinstance(df, pd.DataFrame)
+    return df

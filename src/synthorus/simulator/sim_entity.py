@@ -26,6 +26,21 @@ class SimEntity(Mapping[str, SimField]):
             count_field_name: str,
             foreign_id_field_name: str,
     ):
+        """
+        Construct a SimEntity object within a Simulator.
+
+        This method should only be called by `Simulator.add_entity`.
+
+        Args:
+            name: name of the entity.
+            sampler: the sampler to use for sampled fields.
+            id_field_name: name of the primary key field.
+            count_field_name: name of the "count" field.
+            parent: name of the parent entity, if there is one.
+            foreign_id_field_name: name of the foreign key field, if there is a parent.
+        Raises:
+            SynthorusError if any foreign entity in `foreign_key_fields` has a different owner.
+        """
         self._name: str = name
         self._parent: Optional[SimEntity] = parent
         self._sampler: SimSampler = sampler

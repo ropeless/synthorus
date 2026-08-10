@@ -18,7 +18,44 @@
         "event_duration_since_last"
       ],
       "all_distribution_crosstabs": [
-        "_event_duration_since_last"
+        "_event_duration_since_last_"
+      ],
+      "all_sampling_entities": [
+        "event"
+      ]
+    },
+    "patient_age": {
+      "name": "patient_age",
+      "states": [
+        "middle_aged",
+        "old",
+        "young"
+      ],
+      "primary_datasource": "patient_age__event_type",
+      "all_datasources": [
+        "patient_age__event_type"
+      ],
+      "all_distribution_crosstabs": [
+        "_patient_age_"
+      ],
+      "all_sampling_entities": [
+        "patient"
+      ]
+    },
+    "event_type": {
+      "name": "event_type",
+      "states": [
+        "AP",
+        "DEATH",
+        "ED",
+        "GP"
+      ],
+      "primary_datasource": "patient_age__event_type",
+      "all_datasources": [
+        "patient_age__event_type"
+      ],
+      "all_distribution_crosstabs": [
+        "_event_type_"
       ],
       "all_sampling_entities": [
         "event"
@@ -42,53 +79,16 @@
         "event_duration"
       ],
       "all_distribution_crosstabs": [
-        "_event_duration"
+        "_event_duration_"
       ],
       "all_sampling_entities": [
         "event"
-      ]
-    },
-    "event_type": {
-      "name": "event_type",
-      "states": [
-        "AP",
-        "DEATH",
-        "ED",
-        "GP"
-      ],
-      "primary_datasource": "patient_age__event_type",
-      "all_datasources": [
-        "patient_age__event_type"
-      ],
-      "all_distribution_crosstabs": [
-        "_event_type"
-      ],
-      "all_sampling_entities": [
-        "event"
-      ]
-    },
-    "patient_age": {
-      "name": "patient_age",
-      "states": [
-        "middle_aged",
-        "old",
-        "young"
-      ],
-      "primary_datasource": "patient_age__event_type",
-      "all_datasources": [
-        "patient_age__event_type"
-      ],
-      "all_distribution_crosstabs": [
-        "_patient_age"
-      ],
-      "all_sampling_entities": [
-        "patient"
       ]
     }
   },
   "crosstabs": {
-    "_event_duration_since_last": {
-      "name": "_event_duration_since_last",
+    "_event_duration_since_last_": {
+      "name": "_event_duration_since_last_",
       "rvs": [
         "event_duration_since_last"
       ],
@@ -109,30 +109,30 @@
       "rows_lost": 0,
       "rows_added": 0
     },
-    "_event_duration": {
-      "name": "_event_duration",
+    "_patient_age_": {
+      "name": "_patient_age_",
       "rvs": [
-        "event_duration"
+        "patient_age"
       ],
       "non_distribution_rvs": [],
       "distribution_rvs": [
-        "event_duration"
+        "patient_age"
       ],
-      "datasource": "event_duration",
-      "number_of_states": 9,
-      "clean_num_rows": 9,
-      "clean_min_weight": 0.01,
-      "clean_max_weight": 2.56,
-      "clean_total_weight": 5.109999999999999,
-      "noisy_num_rows": 9,
-      "noisy_min_weight": 0.01,
-      "noisy_max_weight": 2.56,
-      "noisy_total_weight": 5.109999999999999,
+      "datasource": "patient_age__event_type",
+      "number_of_states": 3,
+      "clean_num_rows": 3,
+      "clean_min_weight": 30.0,
+      "clean_max_weight": 48.0,
+      "clean_total_weight": 108.0,
+      "noisy_num_rows": 3,
+      "noisy_min_weight": 30.0,
+      "noisy_max_weight": 48.0,
+      "noisy_total_weight": 108.0,
       "rows_lost": 0,
       "rows_added": 0
     },
-    "_event_type": {
-      "name": "_event_type",
+    "_event_type_": {
+      "name": "_event_type_",
       "rvs": [
         "event_type"
       ],
@@ -153,25 +153,25 @@
       "rows_lost": 0,
       "rows_added": 0
     },
-    "_patient_age": {
-      "name": "_patient_age",
+    "_event_duration_": {
+      "name": "_event_duration_",
       "rvs": [
-        "patient_age"
+        "event_duration"
       ],
       "non_distribution_rvs": [],
       "distribution_rvs": [
-        "patient_age"
+        "event_duration"
       ],
-      "datasource": "patient_age__event_type",
-      "number_of_states": 3,
-      "clean_num_rows": 3,
-      "clean_min_weight": 30.0,
-      "clean_max_weight": 48.0,
-      "clean_total_weight": 108.0,
-      "noisy_num_rows": 3,
-      "noisy_min_weight": 30.0,
-      "noisy_max_weight": 48.0,
-      "noisy_total_weight": 108.0,
+      "datasource": "event_duration",
+      "number_of_states": 9,
+      "clean_num_rows": 9,
+      "clean_min_weight": 0.01,
+      "clean_max_weight": 2.56,
+      "clean_total_weight": 5.109999999999999,
+      "noisy_num_rows": 9,
+      "noisy_min_weight": 0.01,
+      "noisy_max_weight": 2.56,
+      "noisy_total_weight": 5.109999999999999,
       "rows_lost": 0,
       "rows_added": 0
     }
@@ -185,7 +185,7 @@
       },
       "entity_crosstabs": [
         {
-          "crosstab": "_patient_age",
+          "crosstab": "_patient_age_",
           "sampled_rvs": [
             "patient_age"
           ],
@@ -205,7 +205,7 @@
       },
       "entity_crosstabs": [
         {
-          "crosstab": "_event_duration_since_last",
+          "crosstab": "_event_duration_since_last_",
           "sampled_rvs": [
             "event_duration_since_last"
           ],
@@ -213,7 +213,7 @@
           "non_distribution_rvs": []
         },
         {
-          "crosstab": "_event_type",
+          "crosstab": "_event_type_",
           "sampled_rvs": [
             "event_type"
           ],
@@ -221,7 +221,7 @@
           "non_distribution_rvs": []
         },
         {
-          "crosstab": "_event_duration",
+          "crosstab": "_event_duration_",
           "sampled_rvs": [
             "event_duration"
           ],

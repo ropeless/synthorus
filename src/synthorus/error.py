@@ -10,10 +10,13 @@ class SpecFileError(SynthorusError):
     """
 
     def __init__(self, error: str, section=None, details=None):
+        self.error = error
+        self.section = section
+        self.details = details
         if section is not None:
-            error += f' in section {section}'
+            error += f': section {section}'
         if details is not None:
-            error += f': {details}'
+            error += f': {details!r}'
         super().__init__(error)
 
 

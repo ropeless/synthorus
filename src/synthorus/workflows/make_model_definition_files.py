@@ -1,6 +1,4 @@
 import shutil
-from importlib.abc import Traversable
-from os import PathLike
 from pathlib import Path
 from typing import Optional, Sequence, List, Dict
 
@@ -20,10 +18,11 @@ from synthorus.simulator.make_simulator_spec_from_model_spec import make_simulat
 from synthorus.simulator.simulator_spec import SimulatorSpec
 from synthorus.utils.config_help import config
 from synthorus.utils.data_catcher import RamDataCatcher
+from synthorus.utils.file_extras import DataPathLike
 from synthorus.utils.print_function import PrintFunction
 from synthorus.workflows.cross_table_loader import save_cross_table, CrossTableLoader
 from synthorus.workflows.file_names import CLEAN_CROSS_TABLES, NOISY_CROSS_TABLES, REPORTS, \
-    MODEL_SPEC_NAME, SIMULATOR_SPEC_NAME, CROSSTAB_REPORT_FILE_NAME, MODEL_INDEX_NAME, ENTITY_MODELS, \
+    MODEL_SPEC_FILE_NAME, SIMULATOR_SPEC_FILE_NAME, CROSSTAB_REPORT_FILE_NAME, MODEL_INDEX_FILE_NAME, ENTITY_MODELS, \
     PRIVACY_REPORT_FILE_NAME, MODEL_SPEC_REPORT_FILE_NAME
 from synthorus.workflows.make_pgms import make_entity_pgms
 from synthorus.workflows.report_privacy import report_privacy
@@ -35,9 +34,9 @@ CACHE_LOADED_CROSSTABS: bool = config.get('CACHE_LOADED_CROSSTABS', True)
 
 def make_model_definition_files(
         model_spec: ModelSpec,
-        model_definition_directory: Path,
+        model_definition_directory: Path | str,
         *,
-        cwd: Optional[Path | Traversable] = None,
+        cwd: Optional[DataPathLike] = None,
         overwrite: bool = False,
         save_clean: bool = True,
         save_noisy: bool = True,
@@ -73,7 +72,7 @@ def make_model_definition_files(
         model_spec: The model specification defining cross-tables, datasources, etc.
         cwd: working directory for interpreting roots in `model_spec`.
         model_definition_directory: Directory where to save cross-tables and other information.
-        overwrite: if true, the existing output directory will first be emptied.
+        overwrite: if true, any existing output directory will first be emptied.
         save_clean: flag whether to save clean cross-tables or not.
         save_noisy: flag whether to save noisy cross-tables or not.
         make_privacy_report: flag whether to save a privacy report or not.
@@ -105,7 +104,7 @@ def make_model_definition_files(
 
     # Infer the simulator from the model spec and save it
     simulator_spec: SimulatorSpec = make_simulator_spec_from_model_spec(model_spec)
-    with open(model_directory_path / SIMULATOR_SPEC_NAME, 'w') as file:
+    with open(model_directory_path / SIMULATOR_SPEC_FILE_NAME, 'w') as file:
         print(simulator_spec.model_dump_json(indent=2), file=file)
 
     # Extract and save cross-tables
@@ -128,11 +127,11 @@ def make_model_definition_files(
         make_entity_pgms(model_index, crosstab_loader, entity_models_directory, log=log)
 
     # Save the model spec
-    with open(model_directory_path / MODEL_SPEC_NAME, 'w') as file:
+    with open(model_directory_path / MODEL_SPEC_FILE_NAME, 'w') as file:
         print(model_spec.model_dump_json(indent=2), file=file)
 
     # Save the model index
-    with open(model_directory_path / MODEL_INDEX_NAME, 'w') as file:
+    with open(model_directory_path / MODEL_INDEX_FILE_NAME, 'w') as file:
         print(model_index.model_dump_json(indent=2), file=file)
 
     # Save initial reports
@@ -151,7 +150,7 @@ def make_model_definition_files(
     log('make_cross_tables completed')
 
 
-def _set_up_model_directory(model_definition_directory: PathLike, overwrite: bool) -> Path:
+def _set_up_model_directory(model_definition_directory: Path | str, overwrite: bool) -> Path:
     model_directory: Path = Path(model_definition_directory)
     if model_directory.exists():
         if not model_directory.is_dir():
@@ -340,7 +339,7 @@ def _extract_cross_table(
         _track('Noiser', crosstab_spec.noiser.model_dump_json())
 
         noiser: Noiser = crosstab_spec.noiser.noiser()
-        noiser_result: NoiserResult = noiser(
+        noiser_result: NoiserResult = noiser.add_noise(
             crosstab,
             crosstab_rvs,
             random,

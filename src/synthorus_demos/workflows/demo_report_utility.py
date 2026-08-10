@@ -4,6 +4,7 @@ import pandas as pd
 
 from synthorus.model.model_spec import ModelSpec
 from synthorus.spec_file.interpret_spec_file import load_spec_file
+from synthorus.utils.dataframe_extras import read_csv
 from synthorus.workflows.file_names import REPORTS, UTILITY_REPORT_FILE_NAME, UTILITY_RESULTS_FILE_NAME
 from synthorus.workflows.make_model_definition_files import make_model_definition_files
 from synthorus.workflows.report_utility import make_utility_report
@@ -52,10 +53,7 @@ def main() -> None:
         print()
         cat(model_definition_dir / REPORTS / UTILITY_REPORT_FILE_NAME)
         print()
-        df: pd.DataFrame = pd.read_csv(model_definition_dir / REPORTS / UTILITY_RESULTS_FILE_NAME)
-        pd.set_option('display.max_rows', None)
-        pd.set_option('display.max_columns', None)
-        pd.set_option('display.width', 999)
+        df: pd.DataFrame = read_csv(model_definition_dir / REPORTS / UTILITY_RESULTS_FILE_NAME)
         print(df)
 
 

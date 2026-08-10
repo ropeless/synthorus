@@ -1,4 +1,3 @@
-from os import PathLike
 from pathlib import Path
 from typing import Dict, Mapping
 
@@ -15,12 +14,12 @@ from synthorus.simulator.simulator import Simulator
 from synthorus.simulator.simulator_spec import SimulatorSpec, SimEntitySpec
 from synthorus.utils.print_function import PrintFunction
 from synthorus.utils.stop_watch import timer
-from synthorus.workflows.file_names import SIMULATOR_SPEC_NAME, ENTITY_MODELS, MODEL_INDEX_NAME
+from synthorus.workflows.file_names import SIMULATOR_SPEC_FILE_NAME, ENTITY_MODELS, MODEL_INDEX_FILE_NAME
 from synthorus.workflows.load_entity_pgm import load_entity_pgm
 
 
 def make_simulator_from_files(
-        model_definition_directory: PathLike,
+        model_definition_directory: Path | str,
         *,
         log: PrintFunction = print,
 ) -> Simulator:
@@ -35,10 +34,10 @@ def make_simulator_from_files(
 
     model_definition_directory: Path = Path(model_definition_directory)
 
-    with open(model_definition_directory / SIMULATOR_SPEC_NAME) as f:
+    with open(model_definition_directory / SIMULATOR_SPEC_FILE_NAME) as f:
         sim_spec: SimulatorSpec = SimulatorSpec.model_validate_json(f.read())
 
-    with open(model_definition_directory / MODEL_INDEX_NAME) as f:
+    with open(model_definition_directory / MODEL_INDEX_FILE_NAME) as f:
         model_index: ModelIndex = ModelIndex.model_validate_json(f.read())
 
     with timer('make samplers', logger=log):

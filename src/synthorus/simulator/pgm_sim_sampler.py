@@ -4,6 +4,7 @@ from typing import Mapping, List, Iterator, Sequence, Optional, Dict
 
 from ck.pgm import RandomVariable, Indicator, Instance, State
 from ck.pgm_circuit.wmc_program import WMCProgram
+from ck.sampling.sampler import Sampler
 
 from synthorus.error import SynthorusError
 from synthorus.simulator.sim_entity import SimEntity, SimSampler
@@ -86,6 +87,8 @@ class PGMSimSampler(SimSampler):
         values in the given entity (or its parents).
         """
         # Make sure we have the right conditioners for the given entity.
+        # Normally there will be one sampler per entity so the efficiency of
+        # setting up conditioners is ignored.
         if self._entity is not entity:
             self._conditioners = [
                 _Conditioner(rv, field_name, entity)
@@ -100,7 +103,8 @@ class PGMSimSampler(SimSampler):
         )
 
         # Get a conditioned sample stream
-        sampler = self._ck_wmc.sample_direct(rvs=self._ck_sample_rvs, condition=condition)
+        sampler: Sampler = self._ck_wmc.sample_direct(rvs=self._ck_sample_rvs, condition=condition)
+        # noinspection PyTypeChecker
         self._ck_samples = iter(sampler)
 
     def next(self) -> None:
@@ -113,14 +117,23 @@ class _SamplerUpdate(SimFieldUpdate):
     """
 
     def __init__(self, sim_sampler: PGMSimSampler, sample_idx: int, rv_states: Sequence[State]):
+        """
+        In order to update a destination field,
+        Args:
+            sim_sampler: provides the current sample `sim_sampler._ck_sample`.
+            sample_idx: identifies which element of `sim_sampler._ck_sample` provides
+                the value for the destination field.
+            rv_states: provide the translation from a state index in `sim_sampler._ck_sample[sample_idx]`
+                to the value for the destination field.
+        """
         self._sim_sampler = sim_sampler
         self._sample_idx = sample_idx
         self._rv_states = rv_states
 
     def update(self, dest_field: SimField):
         # noinspection PyProtectedMember
-        sample: Instance = self._sim_sampler._ck_sample
-        dest_field.value = self._rv_states[sample[self._sample_idx]]
+        state_index: int = self._sim_sampler._ck_sample[self._sample_idx]
+        dest_field.value = self._rv_states[state_index]
 
 
 class _Conditioner:
@@ -146,6 +159,13 @@ class _Conditioner:
         self.rv: RandomVariable = rv  # The random variable being conditioned on the value
 
     def get_condition(self) -> Indicator:
+        """
+        What is the conditioning indicator of `self.rv` that corresponds to
+        the current value of `self.field`?
+
+        Returns:
+            An indicator of `self.rv` suitable as a WMC condition?
+        """
         state: State = self.field.value
         idx: int = self.rv.state_idx(state)
         return self.rv[idx]

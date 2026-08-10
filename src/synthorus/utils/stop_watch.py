@@ -192,9 +192,9 @@ class StopWatch:
     def __str__(self) -> str:
         (hours, minutes, seconds) = self.hms()
         if hours > 0:
-            return f'{hours:}:{minutes:0>2}:{seconds:06.3f}'
+            return f'{hours}:{minutes:0>2}:{seconds:06.3f}'
         elif minutes > 0:
-            return f'{minutes:}:{seconds:06.3f}'
+            return f'{minutes}:{seconds:06.3f}'
         elif seconds >= 0.1:
             return f'{seconds:.3f}'
         elif seconds >= 0.01:
@@ -246,11 +246,11 @@ class StopWatch:
         self.multiply(multiplier)
         return self
 
-    def __eq__(self, other: StopWatch) -> bool:
-        return self.seconds() == other.seconds()
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, StopWatch) and self.seconds() == other.seconds()
 
-    def __ne__(self, other: StopWatch) -> bool:
-        return self.seconds() != other.seconds()
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
 
     def __lt__(self, other: StopWatch) -> bool:
         return self.seconds() < other.seconds()

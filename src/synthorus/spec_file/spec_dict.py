@@ -201,13 +201,13 @@ class SpecDict(MutableMapping[str, SpecValue]):
     def get_string(self, the_key, default: Optional[str] = None) -> str:
         the_val = self.check_exists(the_key, default=default)
         if not isinstance(the_val, str):
-            raise self.error('invalid value', f'{the_key} must be a string')
+            raise self.error(f'invalid value for {the_key}, must be a string', the_val)
         return the_val
 
     def get_string_optional(self, the_key) -> Optional[str]:
         the_val = self.find(the_key)
         if not isinstance(the_val, (type(None), str)):
-            raise self.error('invalid value', f'{the_key} must be a string')
+            raise self.error(f'invalid value for {the_key}, must be a string', the_val)
         return the_val
 
     def get_string_list(self, the_key, default: Optional[List[str]] = None) -> List[str]:
@@ -215,20 +215,20 @@ class SpecDict(MutableMapping[str, SpecValue]):
         if isinstance(the_val, str):
             return [the_val]
         elif isinstance(the_val, Mapping):
-            raise self.error('invalid value', f'{the_key} must be a string or list of strings')
+            raise self.error(f'invalid value for {the_key}, must be a string or list of strings', the_val)
         elif isinstance(the_val, Iterable):
             the_val = list(the_val)
         else:
-            raise self.error('invalid value', f'{the_key} must be a string or list of strings')
+            raise self.error(f'invalid value for {the_key}, must be a string or list of strings', the_val)
         for elem in the_val:
             if not isinstance(elem, str):
-                raise self.error('invalid value', f'{the_key} must be a string or list of strings')
+                raise self.error(f'invalid value for {the_key}, must be a string or list of strings', the_val)
         return the_val
 
     def get_state_optional(self, the_key: str) -> State:
         the_val = self.find(the_key)
         if not isinstance(the_val, (str, int, float, bool, type(None))):
-            raise self.error('invalid value', f'{the_key} must be a random variable state value')
+            raise self.error(f'invalid value for {the_key}, must be a random variable state value', the_val)
         return the_val
 
     def get_bool(self, the_key, default: Optional[bool] = None) -> bool:
@@ -277,30 +277,30 @@ class SpecDict(MutableMapping[str, SpecValue]):
     def get_numeric(self, the_key, predicate=None, error='must be numeric', default: Optional[float] = None) -> float:
         the_val = self.check_exists(the_key, default=default)
         if not isinstance(the_val, (int, float)):
-            raise self.error('invalid value', f'{the_key} {error}')
+            raise self.error(f'invalid value for {the_key}, {error}', the_val)
         if predicate is not None:
             if not predicate(the_val):
-                raise self.error('invalid value', f'{the_key} {error}')
-        return float(the_val)
+                raise self.error(f'invalid value for {the_key}, {error}', the_val)
+        return the_val
 
     def get_numeric_optional(self, the_key, predicate=None, error='must be numeric') -> Optional[float]:
         the_val = self.find(the_key)
         if the_val is None:
             return None
         if not isinstance(the_val, (int, float)):
-            raise self.error('invalid value', f'{the_key} {error}')
+            raise self.error(f'invalid value for {the_key}, {error}', the_val)
         if predicate is not None:
             if not predicate(the_val):
-                raise self.error('invalid value', f'{the_key} {error}')
-        return float(the_val)
+                raise self.error(f'invalid value for {the_key}, {error}', the_val)
+        return the_val
 
     def get_int(self, the_key, predicate=None, error='must be an integer', default: Optional[int] = None) -> int:
         the_val = self.check_exists(the_key, default=default)
         if not isinstance(the_val, int):
-            raise self.error('invalid value', f'{the_key} {error}')
+            raise self.error(f'invalid value for {the_key}, {error}', the_val)
         if predicate is not None:
             if not predicate(the_val):
-                raise self.error('invalid value', f'{the_key} {error}')
+                raise self.error(f'invalid value for {the_key}, {error}', the_val)
         return the_val
 
     def get_int_optional(self, the_key, predicate=None, error='must be an integer') -> Optional[int]:
@@ -309,10 +309,10 @@ class SpecDict(MutableMapping[str, SpecValue]):
             return None
 
         if not isinstance(the_val, int):
-            raise self.error('invalid value', f'{the_key} {error}')
+            raise self.error(f'invalid value for {the_key}, {error}', the_val)
         if predicate is not None:
             if not predicate(the_val):
-                raise self.error('invalid value', f'{the_key} {error}')
+                raise self.error(f'invalid value for {the_key}, {error}', the_val)
         return the_val
 
     def get_dict(
@@ -330,7 +330,7 @@ class SpecDict(MutableMapping[str, SpecValue]):
         """
         the_val = self.check_exists(the_key, default=default)
         if not isinstance(the_val, Mapping):
-            raise self.error('invalid value', f'{the_key} must be a dictionary')
+            raise self.error(f'invalid value for {the_key}, must be a dictionary', the_val)
         return self.sub_dict(the_key, update=the_val, dont_inherit=dont_inherit)
 
     def get_dict_optional(self, the_key, *, dont_inherit: Iterable[str] = ()) -> Optional[SpecDict]:
@@ -343,7 +343,7 @@ class SpecDict(MutableMapping[str, SpecValue]):
         if the_val is None:
             return None
         if not isinstance(the_val, Mapping):
-            raise self.error('invalid value', f'{the_key} must be a dictionary')
+            raise self.error(f'invalid value for {the_key}, must be a dictionary', the_val)
         return self.sub_dict(the_key, update=the_val, dont_inherit=dont_inherit)
 
     def check_exists(self, the_key, default=None) -> Any:
@@ -376,7 +376,7 @@ class SpecDict(MutableMapping[str, SpecValue]):
         if len(found) > 1:
             raise self.error(message, found)
 
-    def check_restricted(self, allowed_keys, *, message='unexpected key'):
+    def check_restricted(self, allowed_keys: Iterable[str], *, message='unexpected key'):
         """
         Confirm only the allowed keys are defined in our local keys.
         I.e., does not check inherited entries.
@@ -399,21 +399,21 @@ class SpecDict(MutableMapping[str, SpecValue]):
 
     def check_is_id(self, the_val, error='invalid id') -> str:
         if not isinstance(the_val, str):
-            raise self.error(error, repr(the_val))
+            raise self.error(error, the_val)
         if the_val == '':
             raise self.error(error, 'empty string is not permitted')
         if not set(the_val) <= _VALID_ID_CHARS:
-            raise self.error(error, repr(the_val))
+            raise self.error(error, the_val)
         return the_val
 
     def check_is_state(self, the_val) -> State:
         if not isinstance(the_val, (str, int, float, type(None))):
-            raise self.error('invalid state', repr(the_val))
+            raise self.error('invalid state', the_val)
         return the_val
 
     def check_is_string(self, the_val) -> str:
         if not isinstance(the_val, str):
-            raise self.error('invalid string', repr(the_val))
+            raise self.error('invalid string', the_val)
         return the_val
 
     def check_is_bool(self, the_val) -> bool:
@@ -425,7 +425,7 @@ class SpecDict(MutableMapping[str, SpecValue]):
             return True
         if check_val in (False, 0, '0', 'no', 'false'):
             return False
-        raise self.error('invalid Boolean', repr(the_val))
+        raise self.error('invalid Boolean', the_val)
 
     def check_is_positive(self, the_val) -> int | float:
         return self.check_is_numeric(
@@ -450,18 +450,18 @@ class SpecDict(MutableMapping[str, SpecValue]):
 
     def check_is_numeric(self, the_val, *, predicate=None, error='not a number') -> int | float:
         if not isinstance(the_val, (int, float)):
-            raise self.error(error, repr(the_val))
+            raise self.error(error, the_val)
         if predicate is not None:
             if not predicate(the_val):
-                raise self.error(error, repr(the_val))
+                raise self.error(error, the_val)
         return the_val
 
     def check_is_int(self, the_val, *, predicate=None, error='not an integer') -> int:
         if not isinstance(the_val, int):
-            raise self.error(error, repr(the_val))
+            raise self.error(error, the_val)
         if predicate is not None:
             if not predicate(the_val):
-                raise self.error(error, repr(the_val))
+                raise self.error(error, the_val)
         return the_val
 
     def error(self, error: str, details=None) -> SpecFileError:
@@ -497,15 +497,15 @@ class SpecDict(MutableMapping[str, SpecValue]):
         location_as_path = Path(location)
         if location_as_path.is_absolute():
             if not location_as_path.exists():
-                raise self.error(f'absolute file location but file not found', location)
+                raise self.error('absolute file location but file not found', location)
             return location_as_path
         found: Optional[Path] = None
         for root in roots:
             location_as_path = root / location
             if location_as_path.exists():
                 if found is not None:
-                    raise self.error(f'multiple source files found', location)
+                    raise self.error('multiple source files found', location)
                 found = location_as_path
         if found is None:
-            raise self.error(f'could not resolve file location', location)
+            raise self.error('could not resolve file location', location)
         return found

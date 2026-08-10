@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Dict, Annotated, Union, Literal, Optional, TypeAlias, Self, Iterator, Tuple, Set
 
 from ck.pgm import State
-from pydantic import BaseModel, Field, field_validator, PositiveInt, model_validator, PositiveFloat, NonNegativeFloat
+from pydantic import BaseModel, Field, field_validator, PositiveInt, model_validator, NonNegativeFloat
 
 from synthorus.model.datasource_spec import DatasourceSpec
 from synthorus.model.defaults import DEFAULT_ID_FIELD, DEFAULT_COUNT_FIELD, DEFAULT_NAME, DEFAULT_AUTHOR, \
@@ -84,6 +84,7 @@ class ModelSpec(BaseModel):
                 raise ValueError('entity name cannot be the empty string')
 
         # Ensure each cross-table rvs matches datasources.
+        # Ensure each cross-table has positive epsilon unless sensitivity is zero.
         for crosstab_name, crosstab_spec in self.crosstabs.items():
             datasource_name: str = crosstab_spec.datasource
             datasource: DatasourceSpec = self.datasources[datasource_name]
@@ -102,6 +103,12 @@ class ModelSpec(BaseModel):
                         f' is missing non-distribution random variable {rv_name!r}'
                         f' from datasource {datasource_name!r}'
                     )
+            if datasource.sensitivity > 0 and crosstab_spec.epsilon <= 0:
+                raise ValueError(
+                    f'cross-table {crosstab_name!r}'
+                    f' has sensitivity {datasource.sensitivity}'
+                    f' but epsilon {crosstab_spec.epsilon} is not positive'
+                )
 
         # Ensure entity hierarchy has no loop
         for entity_name, entity_spec in self.entities.items():
@@ -109,7 +116,7 @@ class ModelSpec(BaseModel):
             while parent is not None:
                 if parent == entity_name:
                     raise ValueError(f'entity loop detected: {entity_name}')
-                parent = self.entities.get(parent).parent
+                parent = self.entities[parent].parent
 
         return self
 
@@ -125,7 +132,7 @@ class ModelRVSpec(BaseModel):
 class ModelCrosstabSpec(BaseModel):
     rvs: List[str]
     datasource: str  # The datasource to used to create this cross-table
-    epsilon: PositiveFloat = DEFAULT_EPSILON
+    epsilon: NonNegativeFloat = DEFAULT_EPSILON
     min_cell_size: NonNegativeFloat = DEFAULT_MIN_CELL_SIZE
     noiser: NoiserSpec = NoiserSpecLaplace(max_add_rows=DEFAULT_MAX_ADD_ROWS)
 

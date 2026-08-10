@@ -8,13 +8,13 @@
       "count_field_name": "_count_",
       "foreign_field_name": null,
       "fields": {
-        "Y": {
-          "type": "sample",
-          "rv_name": "Y"
-        },
         "X": {
           "type": "sample",
           "rv_name": "X"
+        },
+        "Y": {
+          "type": "sample",
+          "rv_name": "Y"
         },
         "Z": {
           "type": "sample",

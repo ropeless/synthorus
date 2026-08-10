@@ -1,22 +1,26 @@
+import asyncio
 import shutil
 import subprocess
 import sys
+import warnings
 import webbrowser
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
 
+import nbformat
 import toml
+from nbconvert.preprocessors import ExecutePreprocessor
 
 from synthorus.utils.config_help import config
 from synthorus.utils.time_extras import timestamp
 from synthorus_demos.utils import output_directory
 
-FORCE_REBUILD: bool = True
-BUILD_API_DOCS: bool = True
-INSTANTIATE_TEMPLATES: bool = True
-EXECUTE_NOTEBOOKS: bool = True
-OPEN_DOCUMENT_HTML: bool = True
+FORCE_REBUILD: bool = config.get('BUILD_DOCS_FORCE_REBUILD', True)
+BUILD_API_DOCS: bool = config.get('BUILD_DOCS_BUILD_API_DOCS', True)
+INSTANTIATE_TEMPLATES: bool = config.get('BUILD_DOCS_INSTANTIATE_TEMPLATES', True)
+EXECUTE_NOTEBOOKS: bool = config.get('BUILD_DOCS_EXECUTE_NOTEBOOKS', True)
+OPEN_DOCUMENT_HTML: bool = config.get('BUILD_DOCS_OPEN_DOCUMENT_HTML', True)
 
 
 def main() -> None:
@@ -57,8 +61,10 @@ def main() -> None:
 
     run_jupyter_book()
 
+    uri: str = html_index.as_uri()
+    print(f'Documentation available at: {uri}')
     if OPEN_DOCUMENT_HTML:
-        webbrowser.open(html_index.as_uri())
+        webbrowser.open(uri)
 
 
 def get_config_out_dir() -> Path:
@@ -102,17 +108,18 @@ def copy_output_directory(
         shutil.copy2(source_path, target_path)
 
 
-def build_api_docs(ck_package_dir: Path, api_docs_dir: Path) -> None:
+def build_api_docs(api_package_dir: Path, api_docs_dir: Path) -> None:
     """
-    Instantiate Markdown documents from found templates.
+    Build the API documentation from docstring comments.
 
     Args:
-        ck_package_dir: where to find the Synthorus Python packages.
+        api_package_dir: where to find the API packages.
         api_docs_dir: where to put the API rst files.
 c    """
+    print('Generating API docs')
     api_docs_dir.mkdir(exist_ok=True)
     shutil.rmtree(api_docs_dir)
-    cmd: List[str] = ['sphinx-apidoc', '-o', api_docs_dir.as_posix(), ck_package_dir.as_posix()]
+    cmd: List[str] = ['sphinx-apidoc', '-o', api_docs_dir.as_posix(), api_package_dir.as_posix()]
     subprocess.run(cmd, capture_output=False, check=True)
 
 
@@ -120,8 +127,10 @@ def run_jupyter_book() -> None:
     """
     Run the Jupyter Book command to build the documentation.
     """
+    print('Running jupyter-book')
     cmd: List[str] = ['jupyter-book', 'build', '-qq', 'docs']
-    subprocess.run(cmd, capture_output=False, check=True)
+    subprocess.run(cmd, capture_output=False, check=True, stdout=subprocess.DEVNULL)
+    print('Finished generating HTML')
 
 
 def load_pyproject(file_path: Path) -> Dict[str, Any]:
@@ -146,6 +155,7 @@ def instantiate_templates(project_dir: Path, docs_dir: Path) -> None:
         project_dir: where to find the 'pyproject.toml' file.
         docs_dir: where to find the document files.
     """
+    print('Instantiating templates')
     pyproject = load_pyproject(project_dir / 'pyproject.toml')
 
     # These values will be inserted into the template using `str.format`.
@@ -177,22 +187,42 @@ def execute_notebook(notebook_path: Path) -> None:
         notebook_path: Path to the Jupyter notebook file.
     """
     print(f'Executing Jupyter notebook {notebook_path.name}')
+    factory = asyncio.SelectorEventLoop if sys.platform == "win32" else None
+    asyncio.run(_execute_notebook_inplace(notebook_path), loop_factory=factory)
 
-    # Construct the command to execute the notebook using nbconvert
-    command = [
-        sys.executable,
-        '-m',
-        'nbconvert',
-        '--to', 'notebook',
-        '--execute',
-        '--allow-errors',
-        '--log-level', 'ERROR',
-        '--inplace',
-        notebook_path,
-    ]
 
-    # Execute the command
-    subprocess.run(command, check=True)
+async def _execute_notebook_inplace(notebook_path: Path) -> None:
+    """
+    Executes a Jupyter notebook and save the output inplace.
+
+    Args:
+        notebook_path: Path to the Jupyter notebook file.
+    """
+    # 1. Read the existing notebook
+    with open(notebook_path, 'r', encoding='utf-8') as f:
+        nb = nbformat.read(f, as_version=4)
+
+    # 2. Configure the execution engine
+    # timeout=600 gives cells up to 10 minutes to run; kernel_name targets the current environment
+    ep = ExecutePreprocessor(timeout=600, kernel_name='python3')
+    ep.extra_arguments = ['Application.log_level=CRITICAL', '--IPKernelApp.log_level=CRITICAL']
+
+    # 3. Execute the notebook cells, ignoring some warnings
+    # noinspection PyTypeChecker
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            'ignore',
+            message=(
+                '(.*Socket operation on non-socket.*)'
+                '|(.*Proactor event loop does not implement.*)'
+                '|(.*Connection reset by peer.*)'
+            )
+        )
+        ep.preprocess(nb, {'metadata': {'path': './'}})
+
+    # 4. Write the executed notebook back to the original path
+    with open(notebook_path, 'w', encoding='utf-8') as f:
+        nbformat.write(nb, f)
 
 
 if __name__ == '__main__':

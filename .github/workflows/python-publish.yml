@@ -23,6 +23,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: support/v1
 
       - uses: actions/setup-python@v5
         with:

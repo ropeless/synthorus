@@ -4,8 +4,6 @@ Module for generating reports on a model specification.
 
 import getpass
 import math
-from importlib.abc import Traversable
-from os import PathLike
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Sequence
 
@@ -28,16 +26,17 @@ from synthorus.noise.noiser import recommended_min_cell_size
 from synthorus.simulator.condition_spec import ConditionSpec, ConditionSpecFixedLimit, ConditionSpecVariableLimit, \
     ConditionSpecStates
 from synthorus.utils.clean_num import clean_num
+from synthorus.utils.file_extras import DataPathLike
 from synthorus.utils.time_extras import timestamp
-from synthorus.workflows.file_names import REPORTS, MODEL_SPEC_REPORT_FILE_NAME, MODEL_SPEC_NAME, MODEL_INDEX_NAME
-from synthorus.workflows.report_helpers import dict_table, rng_n_str, calculate_privacy_budget, budget_str, \
+from synthorus.workflows.file_names import REPORTS, MODEL_SPEC_REPORT_FILE_NAME, MODEL_SPEC_FILE_NAME, MODEL_INDEX_FILE_NAME
+from synthorus.workflows.reporting_helpers import dict_table, rng_n_str, calculate_privacy_budget, budget_str, \
     render_comment, render_inline_data, render_code, add_head_styles
 
 
 def make_model_spec_report(
         model_directory_path: Path,
         *,
-        cwd: Optional[PathLike | Traversable] = None,
+        cwd: Optional[DataPathLike] = None,
         overwrite: bool = False,
         report_author: Optional[str] = None,
 ) -> None:
@@ -56,10 +55,10 @@ def make_model_spec_report(
     elif report_path.exists():
         raise RuntimeError(f'report already exists: {report_path}')
 
-    with open(model_directory_path / MODEL_SPEC_NAME, 'r') as file:
+    with open(model_directory_path / MODEL_SPEC_FILE_NAME, 'r') as file:
         model_spec: ModelSpec = ModelSpec.model_validate_json(file.read())
 
-    with open(model_directory_path / MODEL_INDEX_NAME, 'r') as file:
+    with open(model_directory_path / MODEL_INDEX_FILE_NAME, 'r') as file:
         model_index: ModelIndex = ModelIndex.model_validate_json(file.read())
 
     dataset_cache = DatasetCache(model_spec, cwd)
@@ -77,7 +76,7 @@ def report_model_spec(
         model_spec: ModelSpec,
         model_index: ModelIndex,
         dataset_cache: DatasetCache,
-        destination: Optional[PathLike] = None,
+        destination: Optional[Path | str] = None,
         *,
         report_author: Optional[str] = None
 ) -> None:

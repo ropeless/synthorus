@@ -8,6 +8,10 @@
       "count_field_name": "_count_",
       "foreign_field_name": null,
       "fields": {
+        "Z": {
+          "type": "sample",
+          "rv_name": "Z"
+        },
         "X": {
           "type": "sample",
           "rv_name": "X"
@@ -15,10 +19,6 @@
         "Y": {
           "type": "sample",
           "rv_name": "Y"
-        },
-        "Z": {
-          "type": "sample",
-          "rv_name": "Z"
         }
       },
       "cardinality": []

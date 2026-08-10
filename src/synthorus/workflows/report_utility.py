@@ -23,7 +23,7 @@ from synthorus.utils.multiprocessing_extras import run_trial_processes, NumProce
 from synthorus.utils.print_function import PrintFunction, Print
 from synthorus.utils.time_extras import timestamp
 from synthorus.workflows.cross_table_loader import CrossTableLoader
-from synthorus.workflows.file_names import MODEL_SPEC_NAME, MODEL_INDEX_NAME, REPORTS, UTILITY_REPORT_FILE_NAME, \
+from synthorus.workflows.file_names import MODEL_SPEC_FILE_NAME, MODEL_INDEX_FILE_NAME, REPORTS, UTILITY_REPORT_FILE_NAME, \
     CLEAN_CROSS_TABLES, UTILITY_RESULTS_FILE_NAME, ENTITY_MODELS
 from synthorus.workflows.load_entity_pgm import load_entity_pgm
 from synthorus.workflows.make_pgms import EntityCrossTableMaker
@@ -88,10 +88,10 @@ def make_utility_report(
     elif report_path.exists() or results_path.exists():
         raise RuntimeError(f'report already exists: {report_path}')
 
-    with open(model_directory_path / MODEL_SPEC_NAME, 'r') as file:
+    with open(model_directory_path / MODEL_SPEC_FILE_NAME, 'r') as file:
         model_spec: ModelSpec = ModelSpec.model_validate_json(file.read())
 
-    with open(model_directory_path / MODEL_INDEX_NAME, 'r') as file:
+    with open(model_directory_path / MODEL_INDEX_FILE_NAME, 'r') as file:
         model_index: ModelIndex = ModelIndex.model_validate_json(file.read())
 
     crosstab_loader = CrossTableLoader(model_directory_path / CLEAN_CROSS_TABLES, CACHE_LOADED_CROSSTABS)

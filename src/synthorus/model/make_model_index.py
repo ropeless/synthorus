@@ -17,7 +17,7 @@ from synthorus.model.model_spec import ModelRVSpec, ModelCrosstabSpec, ModelEnti
 from synthorus.utils.clean_state import clean_state
 
 
-def make_model_index(model_spec: ModelSpec, dataset_cache: DatasetCache) -> ModelIndex:
+def make_model_index(model_spec: ModelSpec, dataset_cache: Optional[DatasetCache]) -> ModelIndex:
     """
     Make a ModelIndex object for the given model spec.
 
@@ -28,6 +28,9 @@ def make_model_index(model_spec: ModelSpec, dataset_cache: DatasetCache) -> Mode
     Returns:
         model_index.
     """
+    if dataset_cache is None:
+        dataset_cache = DatasetCache(model_spec, cwd=None)
+
     index = ModelIndex()
     potential_dist_datasources = MapList[str, str]()
 
@@ -79,10 +82,11 @@ def _register_datasources(
         # Index the datasource with its random variables
         non_distribution_rvs: Set[str] = set(datasource.non_distribution_rvs)
         for rv_name in datasource.rvs:
-            rv_index: RVIndex = index.rvs[rv_name]
-            rv_index.all_datasources.append(datasource_name)
-            if rv_name not in non_distribution_rvs:
-                potential_dist_datasources.append(rv_name, datasource_name)
+            rv_index: Optional[RVIndex] = index.rvs.get(rv_name)
+            if rv_index is not None:
+                rv_index.all_datasources.append(datasource_name)
+                if rv_name not in non_distribution_rvs:
+                    potential_dist_datasources.append(rv_name, datasource_name)
 
 
 def _resolve_primary_datasources(

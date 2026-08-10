@@ -10,11 +10,13 @@ from synthorus.model.datasource_spec import DatasourceSpec
 from synthorus.model.model_index import ModelIndex, CrosstabIndex, RVIndex
 from synthorus.model.model_spec import ModelSpec, ModelCrosstabSpec
 from synthorus.utils.clean_num import clean_num
+from synthorus.utils.file_extras import DataPathLike
 from synthorus.utils.math_extras import p_log_p
 from synthorus.utils.print_function import PrintFunction, Destination, Print
 from synthorus.utils.time_extras import timestamp
-from synthorus.workflows.file_names import REPORTS, PRIVACY_REPORT_FILE_NAME, MODEL_SPEC_NAME, MODEL_INDEX_NAME
-from synthorus.workflows.report_helpers import rng_n_str, budget_str, calculate_privacy_budget
+from synthorus.workflows.file_names import REPORTS, PRIVACY_REPORT_FILE_NAME, MODEL_SPEC_FILE_NAME, \
+    MODEL_INDEX_FILE_NAME
+from synthorus.workflows.reporting_helpers import rng_n_str, budget_str, calculate_privacy_budget
 
 DEFAULT_INDENT = '    '
 
@@ -22,7 +24,7 @@ DEFAULT_INDENT = '    '
 def make_privacy_report(
         model_directory_path: Path,
         *,
-        cwd: Optional[Path] = None,
+        cwd: Optional[DataPathLike] = None,
         overwrite: bool = False,
         report_author: Optional[str] = None,
 ) -> None:
@@ -43,10 +45,10 @@ def make_privacy_report(
     elif report_path.exists():
         raise RuntimeError(f'report already exists: {report_path}')
 
-    with open(model_directory_path / MODEL_SPEC_NAME, 'r') as file:
+    with open(model_directory_path / MODEL_SPEC_FILE_NAME, 'r') as file:
         model_spec: ModelSpec = ModelSpec.model_validate_json(file.read())
 
-    with open(model_directory_path / MODEL_INDEX_NAME, 'r') as file:
+    with open(model_directory_path / MODEL_INDEX_FILE_NAME, 'r') as file:
         model_index: ModelIndex = ModelIndex.model_validate_json(file.read())
 
     dataset_cache = DatasetCache(model_spec, cwd)
@@ -139,7 +141,9 @@ def report_privacy(
             datasource: DatasourceSpec = model_spec.datasources[datasource_name]
             sensitivity: float = datasource.sensitivity
             dataset: Dataset = dataset_cache[datasource_name]
-            _privacy_report_crosstab(crosstab_spec, crosstab_index, dataset, sensitivity, _print, next_prefix)
+            _privacy_report_crosstab(
+                crosstab_name, crosstab_spec, crosstab_index, dataset, sensitivity, _print, next_prefix
+            )
             _print()
 
         rv_names: List[str] = sorted(model_spec.rvs.keys())
@@ -226,6 +230,7 @@ def _privacy_report_datasource(
 
 
 def _privacy_report_crosstab(
+        crosstab_name: str,
         crosstab_spec: ModelCrosstabSpec,
         crosstab_index: CrosstabIndex,
         dataset: Dataset,
@@ -234,11 +239,12 @@ def _privacy_report_crosstab(
         prefix: str,
 ):
     rv_names: str = ', '.join(crosstab_spec.rvs)
-
+    number_of_states: int = crosstab_index.number_of_states
     epsilon: float = 0 if sensitivity == 0 else crosstab_spec.epsilon
 
+    _print(f'{prefix}Cross-table name: {crosstab_name}')
     _print(f'{prefix}Random variables: {rv_names}')
-    _print(f'{prefix}State space size: {crosstab_index.number_of_states:,}')
+    _print(f'{prefix}State space size: {number_of_states:,}')
     _print(f'{prefix}Datasource: {crosstab_index.datasource}')
     _print(f'{prefix}Sensitivity: {clean_num(sensitivity)}')
     _print(f'{prefix}Epsilon: {clean_num(epsilon)}')

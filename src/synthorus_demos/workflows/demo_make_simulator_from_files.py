@@ -13,8 +13,8 @@ DEMO_NAME: str = Path(__file__).stem
 
 def main() -> None:
     print(DEMO_NAME, 'make_model_spec_two_entities')
-
     model_spec: ModelSpec = make_model_spec_two_entities()
+    model_spec.pgm_crosstabs = 'clean'
 
     # Create a managed directory for the output model definition files.
     with output_directory(DEMO_NAME, overwrite=True) as model_definition_dir:
@@ -24,7 +24,7 @@ def main() -> None:
     # ===================================
     #  Run simulation
     # ===================================
-
+    print()
     simulator.run(DebugRecorder(), iterations=8)
 
 

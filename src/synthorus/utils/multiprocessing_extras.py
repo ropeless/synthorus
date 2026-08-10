@@ -80,7 +80,7 @@ _TRIAL_RESULT = TypeVar('_TRIAL_RESULT')
 _COLLECTOR_RESULT = TypeVar('_COLLECTOR_RESULT')
 
 
-class TrialLogger(Protocol[_TRIAL_RESULT]):
+class TrialLogger[_TRIAL_RESULT](Protocol):
     """
     A trial logger is supplied by the caller when running trial processes.
     """
@@ -304,7 +304,7 @@ def _run_multi_process(
 @dataclass
 class _WrappedResult(Generic[_TRIAL_RESULT]):
     result: _TRIAL_RESULT
-    trial_name: str
+    trial_name: Optional[str]
     warnings: List[WarningMessage]
     exception: Optional[Exception]
 
@@ -342,11 +342,13 @@ def _wrap_run(
     Return:
         a _WrappedResult.
     """
-    trial_name = _trial_name(trial)
+    trial_name: Optional[str] = _trial_name(trial)
     try:
         with _warnings.catch_warnings(record=True) as the_warnings:
             _warnings.simplefilter('always')
             result = trial()
+            if the_warnings is None:
+                the_warnings = []
             return _WrappedResult(result, trial_name, list(the_warnings), None)
 
     except Exception as exception:
